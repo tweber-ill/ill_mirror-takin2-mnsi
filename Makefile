@@ -12,7 +12,7 @@ DEFS = -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
 	-DNO_MINIMISATION -DNO_REDEFINITIONS \
 	-D__HACK_FULL_INST__
 INCS = -Isrc -Iext -Iext/takin -I/usr/local/include \
-	-I/usr/include/lapacke -I/usr/local/opt/lpack/include \
+	-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
 	-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
 	#-I/home/tw/build/boost_1_73_0
 LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib
@@ -78,15 +78,15 @@ bin/drawskx: src/calc/drawskx.o
 	strip $@
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread -lgomp
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	strip $@
 
 bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread -lgomp
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	strip $@
 
 bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread -lgomp
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	strip $@
 # -----------------------------------------------------------------------------
 
