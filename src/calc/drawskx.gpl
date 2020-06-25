@@ -1,0 +1,58 @@
+#!/usr/local/bin/gnuplot -p
+#
+# Plots skx lattice
+# @author Tobias Weber <tweber@ill.fr>
+# @date mid-16 (from my phd thesis), aug-18
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+set term pdf enhanced font "Helvetica,24" size 10,10
+set output "skxlattice.pdf"
+
+show_axes = 1
+sc = 1
+xoffs = pi
+set xrange [(-4*pi-xoffs)*sc : (4*pi-xoffs)*sc]
+set yrange [-4*pi*sc : 4*pi*sc]
+set zrange [-1.5*sc : 1.5*sc]
+
+set xyplane 0
+unset key
+
+unset label 1
+unset label 2
+unset label 10
+unset obj 1
+unset obj 2
+unset obj 10
+
+unset xlabel
+unset ylabel
+unset zlabel
+
+set format x ""
+set format y ""
+set format z ""
+
+unset border
+unset tics
+
+set view 45,45, 1,1
+set pm3d depthorder hidden3d
+
+if(show_axes) {
+	set arrow 1 from graph 0.55, graph 0.5 to graph 0.55, graph 0.75 ls 1 lc rgb "#000000" lw 5 filled head front
+	set arrow 2 from graph 0.55, graph 0.5 to graph 0.3, graph 0.5 ls 1 lc rgb "#000000" lw 5 filled head front
+	set arrow 31 from graph 0.55, graph 0.5, graph 0 to graph 0.55, graph 0.5, graph 0.25 ls 1 lc rgb "#ffffff" lw 8 filled head front
+	set arrow 32 from graph 0.55, graph 0.5, graph 0 to graph 0.55, graph 0.5, graph 0.25 ls 1 lc rgb "#000000" lw 5 filled head front
+
+	set label 1 at graph 0.62, graph 0.75 center "q_{⟂1}" tc rgb "#000000" front
+	set label 2 at graph 0.3, graph 0.43 center "q_{⟂2}" tc rgb "#000000" front
+	set label 3 at graph 0.55, graph 0.4, graph 0.25 center "q_{||}" tc rgb "#000000" front
+}
+
+colrgb(r,g,b) = ((int(r*255)&0xff)<<16) | ((int(g*255)&0xff)<<8) | (int(b*255)&0xff)
+skxcol(len, zval) = (zval < 0) ? colrgb(len*1,0,-zval*2) : colrgb(len*1,zval*2,0)
+
+splot "drawskx.dat" using ($1*sc):($2*sc):($3*sc):4:5:6:(skxcol(sqrt($4*$4+$5*$5), $6)) \
+	with vectors lc rgb variable lw 2 filled head
