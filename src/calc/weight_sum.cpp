@@ -10,7 +10,6 @@
 
 #include <fstream>
 #include <future>
-#include <pwd.h>
 
 #include <boost/histogram.hpp>
 namespace hist = boost::histogram;

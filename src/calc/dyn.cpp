@@ -12,7 +12,10 @@
 #include <fstream>
 #include <future>
 #include <memory>
-#include <pwd.h>
+
+#ifndef __MINGW32__
+	#include <pwd.h>
+#endif
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
@@ -172,7 +175,9 @@ void calc_disp(char dyntype,
 
 	ofstr << "#\n";
 	ofstr << "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n";
+#ifndef __MINGW32__
 	ofstr << "# User: " << getpwuid(geteuid())->pw_name << "\n";
+#endif
 	ofstr << "# Calculation time: " << timer.GetDur() << " s.\n";
 	ofstr << "# Skx order: " << DEF_SKX_ORDER << "\n";
 	if(dyntype == 'h')
