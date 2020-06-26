@@ -2,7 +2,7 @@
 # skx grid
 # @author tweber@ill.fr
 # @date 4-feb-2020
-* @license GPLv2 (see 'LICENSE' file)
+# @license GPLv2 (see 'LICENSE' file)
 #
 
 import numpy as np
