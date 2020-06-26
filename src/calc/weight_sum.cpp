@@ -1,5 +1,5 @@
 /**
- * Calculates the integrated weights/energies for the reseda experiment
+ * Calculates integrated weights/energies
  * @author Tobias Weber <tweber@ill.fr>
  * @date jun-20
  * @license GPLv2 (see 'LICENSE' file)
@@ -43,7 +43,7 @@ void calc_disp(
 	skx.SetFourier(fourier_skx);
 	skx.SetProjNeutron(iProj!=0);
 	skx.SetT(-1000.);
-	skx.SetB(25.);	// BC2 = 40.3425
+	skx.SetB(25.);
 	skx.GenFullFourier();
  	skx.SetFilterZeroWeight(1);
 	skx.SetWeightEps(1e-6);
@@ -52,8 +52,8 @@ void calc_disp(
 	skx.SetG(Gx, Gy, Gz);
 	t_real Erange = 0.1;
 
-	t_real angle_begin = -135/180.*tl2::pi<t_real>;
-	t_real angle_end = 135/180.*tl2::pi<t_real>;
+	t_real angle_begin = (-135 + 90) / 180.*tl2::pi<t_real>;
+	t_real angle_end = (135 + 90) / 180.*tl2::pi<t_real>;
 	t_real angle_delta = 2*tl2::pi<t_real>/100.;
 
 	auto histWeights = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
@@ -77,7 +77,7 @@ void calc_disp(
 	for(const auto& val : boost::histogram::indexed(histWeights))
 	{
 		t_real E = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
-		t_real w = *val;
+		t_real w = *val / t_real{E_BINS};
 
 		std::cout << std::left << std::setw(15) << E << " " << std::left << std::setw(15) << w << "\n";
 	}
@@ -88,14 +88,11 @@ int main()
 {
 	std::cout.precision(5);
 
-	// kh = 0.02829 rlu
-	t_real Gx = 1., Gy = 0., Gz = 0.;
+	t_real Gx = 1., Gy = 1., Gz = 0.;
 	t_real Bx = 0., By = 0., Bz = 1.;
 	t_real q = 0.0123;
 	int proj = 1;
 
-	// setup used at reseda
 	calc_disp(Gx,Gy,Gz, Bx,By,Bz, 1,0,0, q, proj);
-
 	return 0;
 }
