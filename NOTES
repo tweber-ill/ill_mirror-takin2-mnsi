@@ -4,3 +4,13 @@ Manual compilation of takin external plugins:
 
 	g++ -std=c++17 -O2 -Isrc -Iext -Iext/takin -I/usr/local/include -I/usr/include/lapacke -I/usr/local/opt/lapack/include -L/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_MINIMISATION -DNO_REDEFINITIONS -D__HACK_FULL_INST__ -DPLUGIN_APPLI -o takinmod_skx src/takin/takin.cpp src/core/skx.cpp src/core/heli.cpp src/core/fp.cpp src/core/magsys.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp ext/tlibs/log/log.cpp ext/tlibs/math/rand.cpp -llapacke -lboost_system -lboost_filesystem -lrt -lpthread
 
+
+Manual compilation of Takin plugins:
+
+	x86_64-w64-mingw32-g++ -std=c++17 -O2 -shared -fPIC -Isrc -Iext -Iext/takin -I/usr/x86_64-w64-mingw32/sys-root/mingw/include -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/qt5 -L/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_MINIMISATION -DNO_REDEFINITIONS -D__HACK_FULL_INST__ -o lib/skxmod.dll src/takin/takin.cpp src/core/skx.cpp src/core/heli.cpp src/core/fp.cpp src/core/magsys.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp ext/tlibs/log/log.cpp ext/tlibs/math/rand.cpp -llapacke -lboost_system-x64 -lboost_filesystem-x64
+
+	x86_64-w64-mingw32-g++ -std=c++17 -O2 -shared -fPIC -DNO_REDEFINITIONS -Isrc -Iext -Iext/takin -I/usr/x86_64-w64-mingw32/sys-root/mingw/include -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/qt5 -I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/  -L/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ -o lib/skxmod_grid.dll src/takin/takin_grid.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp ext/tlibs/log/log.cpp ext/tlibs/math/rand.cpp -lboost_system-x64 -lboost_filesystem-x64 -lQt5Core
+
+
+Grid test:
+	g++ -std=c++17 -DDO_TEST -fPIC -o grid_tst -Isrc -Iext -Iext/takin -I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ -DNO_REDEFINITIONS src/takin/takin_grid.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp -lboost_system -lQt5Core

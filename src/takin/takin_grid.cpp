@@ -3,8 +3,6 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date nov-18
  * @license GPLv2 (see 'LICENSE' file)
- *
- * Test: g++ -std=c++17 -DDO_TEST -fPIC -o grid_tst -I. -I../ext -I../ext/takin -I /usr/include/qt5 -I /usr/include/x86_64-linux-gnu/qt5/ -DNO_REDEFINITIONS takin/takin_grid.cpp ../ext/takin/tools/monteconvo/sqwbase.cpp ../ext/tlibs2/libs/log.cpp -lboost_system -lQt5Core
  */
 
 #include "tools/monteconvo/sqwbase.h"
@@ -470,7 +468,25 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 
 
 // exports from so file
-BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
-BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+#ifndef __MINGW32__
+	BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
+	BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+#else
+	// hack because BOOST_DLL_ALIAS does not seem to work with Mingw
+
+	extern "C" __declspec(dllexport)
+	std::tuple<std::string, std::string, std::string> takin_sqw_info()
+	{
+		return sqw_info();
+	}
+
+	extern "C" __declspec(dllexport)
+	std::shared_ptr<SqwBase> takin_sqw(const std::string& strCfgFile)
+	{
+		return sqw_construct(strCfgFile);
+	}
+#endif
 // ----------------------------------------------------------------------------
+
+
 #endif

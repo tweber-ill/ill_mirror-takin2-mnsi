@@ -5,11 +5,11 @@
  * @license GPLv2 (see 'LICENSE' file)
  */
 
-#ifndef PLUGIN_APPLI
-	#include <boost/dll/alias.hpp>
-#else
+#ifdef PLUGIN_APPLI
 	#include "takin/tools/monteconvo/sqw_proc.h"
 	#include "takin/tools/monteconvo/sqw_proc_impl.h"
+#else
+	#include <boost/dll/alias.hpp>
 #endif
 
 #include "takin/tools/monteconvo/sqwbase.h"
@@ -344,8 +344,24 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 
 
 // exports from so file
-BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
-BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+#ifndef __MINGW32__
+	BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
+	BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+#else
+	// hack because BOOST_DLL_ALIAS does not seem to work with Mingw
+
+	extern "C" __declspec(dllexport)
+	std::tuple<std::string, std::string, std::string> takin_sqw_info()
+	{
+		return sqw_info();
+	}
+
+	extern "C" __declspec(dllexport)
+	std::shared_ptr<SqwBase> takin_sqw(const std::string& strCfgFile)
+	{
+		return sqw_construct(strCfgFile);
+	}
+#endif
 
 
 #else
