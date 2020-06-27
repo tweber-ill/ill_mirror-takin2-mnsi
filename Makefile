@@ -58,7 +58,7 @@ STD = -std=c++17
 LIBDEFS = -fPIC
 DEFS = -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
 	-DNO_MINIMISATION -DNO_REDEFINITIONS \
-	-D__HACK_FULL_INST__
+	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI
 INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 # -----------------------------------------------------------------------------
 

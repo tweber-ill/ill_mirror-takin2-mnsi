@@ -5,7 +5,12 @@
  * @license GPLv2 (see 'LICENSE' file)
  */
 
-#include <boost/dll/alias.hpp>
+#ifndef PLUGIN_APPLI
+	#include <boost/dll/alias.hpp>
+#else
+	#include "takin/tools/monteconvo/sqw_proc.h"
+	#include "takin/tools/monteconvo/sqw_proc_impl.h"
+#endif
 
 #include "takin/tools/monteconvo/sqwbase.h"
 #include "takin/libs/version.h"
@@ -317,11 +322,16 @@ SqwBase* SqwMod::shallow_copy() const
 
 
 // ----------------------------------------------------------------------------
-// exported symbols
+// takin interface
 
 static const char* pcModIdent = "skxmod";
 static const char* pcModName = "MnSi Magnon Dynamics";
 
+
+#ifndef PLUGIN_APPLI
+
+
+// exported symbols
 std::tuple<std::string, std::string, std::string> sqw_info()
 {
 	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
@@ -336,4 +346,29 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 // exports from so file
 BOOST_DLL_ALIAS(sqw_info, takin_sqw_info);
 BOOST_DLL_ALIAS(sqw_construct, takin_sqw);
+
+
+#else
+
+
+int main(int argc, char** argv)
+{
+	if(argc <= 2)
+	{
+		std::cout << "#\n# This is a Takin plugin module.\n#\n";
+		std::cout << "module_ident: " << pcModIdent << "\n";
+		std::cout << "module_name: " << pcModName << "\n";
+		std::cout << "required_takin_version: " << TAKIN_VER << "\n";
+		std::cout.flush();
+		return 0;
+	}
+
+	const char* pcCfgFile = argv[1];
+	const char* pcSharedMem = argv[2];
+	SqwProc<SqwMod> proc(pcCfgFile, SqwProcStartMode::START_CHILD, pcSharedMem);
+	return 0;
+}
+
+
+#endif
 // ----------------------------------------------------------------------------
