@@ -1,7 +1,6 @@
-This is the code for the Takin MnSi plugin module and its helper tools,
-by T. Weber, 2016-2020. It calculates the dispersion and the dynamical 
-structure factor for the helimagnetic, the field-polarised, and the 
-skyrmion phase of MnSi.
+This is the code for the Takin MnSi plugin module and its helper tools. 
+It calculates the dispersion and the dynamical structure factor for the 
+helimagnetic, the field-polarised, and the skyrmion phase of MnSi.
 
 The ext/ directory contains the source code of the external libraries on 
 which this code depends.

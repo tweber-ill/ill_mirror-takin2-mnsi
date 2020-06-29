@@ -14,7 +14,9 @@ strip_bins = 1
 # setup
 # -----------------------------------------------------------------------------
 ifneq ($(mingw_build), 1)
-	CXX = g++
+	ifeq ("$(CXX)", "")
+		CXX = g++
+	endif
 
 	SYSINCS = -I/usr/local/include \
 		-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
