@@ -2,7 +2,7 @@
  * tlibs2 -- magnon helper functions in preparation for the main tlibs2 repo: https://code.ill.fr/scientific-software/takin/tlibs2
  * @author Tobias Weber <tweber@ill.fr>
  * @date 30-may-2020
- * @license GPLv3, see 'LICENSE' file
+ * @license GPLv2 or GPLv3, see 'LICENSE' file
  * @desc tlibs forked on 7-Nov-2018 from the privately developed "tlibs" project (https://github.com/t-weber/tlibs).
  */
 
