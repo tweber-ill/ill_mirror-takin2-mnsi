@@ -30,8 +30,14 @@ tmp/**
 .DS_Store
 
 # External dependencies
-ext/**
-!ext/setup_externals.sh
+ext/tlibs
+ext/tlibs2
+ext/takin
+ext/takin2
+ext/tlibs/**
+ext/tlibs2/**
+ext/takin/**
+ext/takin2/**
 
 # Figures
 *.pdf
