@@ -89,7 +89,7 @@ prepare:
 # -----------------------------------------------------------------------------
 # Takin plugin modules
 # -----------------------------------------------------------------------------
-lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o \
+lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/longfluct.o src/core/magsys.o \
 	ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
 	@echo "Linking Takin module $@..."
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ -llapacke
