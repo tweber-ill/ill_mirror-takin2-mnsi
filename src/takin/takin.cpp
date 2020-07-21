@@ -49,7 +49,7 @@ protected:
 	Skx<t_real, t_cplx, SKX_ORDER> m_skx;
 	FP<t_real, t_cplx> m_fp;
 	Heli<t_real, t_cplx, HELI_ORDER> m_heli;
-    Longfluct m_lf;
+	Longfluct m_lf;
 
 	t_real m_dErange = 2.;	// E range around queried E to take into account
 	t_real m_dSigma = t_real(0.05);
@@ -59,12 +59,12 @@ protected:
 	t_real m_dT = 29.;
 	t_real m_dB = 0.35;
 	t_real m_dcut = 0.02;
-    
+
 	int m_iOnlyMode = -1;
 	int m_iPolChan = 0;
 	int m_iwhich_disp = 0;	// 0: skx, 1: fp, 2: heli
 	int m_iProjNeutron = 1;
-    int m_ionlylf = 0;
+	int m_ionlylf = 0;
 
 	t_vec m_vecG = tl2::make_vec<t_vec>({1,1,0});
 	t_vec m_vecB = tl2::make_vec<t_vec>({1,1,0});
@@ -104,7 +104,7 @@ SqwMod::SqwMod()
 	m_fp.SetB(0.35);
 	m_heli.SetT(29.);
 	m_heli.SetB(0.35);
-    m_lf.SetT(29.);
+	m_lf.SetT(29.);
 
 	std::vector<ublas::vector<t_cplx>> fourier_skx;
 	fourier_skx.reserve(_skxgs_allcomps.size()/3);
@@ -125,8 +125,8 @@ SqwMod::SqwMod()
 	m_heli.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
 	m_heli.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
 	m_heli.SetFilterZeroWeight(true);
-    
-    m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2], m_vecB[0],m_vecB[1],m_vecB[2]);
+
+	m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2], m_vecB[0],m_vecB[1],m_vecB[2]);
 
 	SqwBase::m_bOk = 1;
 }
@@ -255,8 +255,8 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 			m_fp.SetT(m_dT);
 			m_heli.SetT(m_dT);
 			// fixed (and theo units) for skx!
-            
-            m_lf.SetT(m_dT);
+
+			m_lf.SetT(m_dT);
 		}
 		else if(strVar == "B")
 		{
@@ -292,7 +292,7 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 
 			m_heli.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
 			m_heli.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
-            
+
 			m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2],
 				m_vecB[0],m_vecB[1],m_vecB[2]);
 		}
@@ -302,7 +302,7 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 
 			m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
 			m_skx.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
-            
+
 			m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2],
 				m_vecB[0],m_vecB[1],m_vecB[2]);
 		}
@@ -355,8 +355,8 @@ SqwBase* SqwMod::shallow_copy() const
 	pMod->m_skx = this->m_skx;
 	pMod->m_fp = this->m_fp;
 	pMod->m_heli = this->m_heli;
-    pMod->m_lf = this->m_lf;
-    pMod->m_ionlylf = this->m_ionlylf;
+	pMod->m_lf = this->m_lf;
+	pMod->m_ionlylf = this->m_ionlylf;
 	pMod->m_iPolChan = this->m_iPolChan;
 	pMod->m_vecG = this->m_vecG;
 	pMod->m_vecB = this->m_vecB;
