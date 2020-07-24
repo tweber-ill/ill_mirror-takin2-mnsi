@@ -73,7 +73,7 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 all: prepare lib/skxmod.so lib/skxmod_grid.so \
 	bin/genskx bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight \
-	#bin/heliphase bin/skx_gs bin/weight_sum
+#	bin/heliphase bin/skx_gs bin/weight_sum
 
 clean:
 	find . -name "*.o" -exec rm -fv {} \;
