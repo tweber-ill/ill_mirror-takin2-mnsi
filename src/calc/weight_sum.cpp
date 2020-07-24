@@ -34,7 +34,7 @@ void calc_disp(
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
-	t_real q, int iProj=1)
+	t_real q, int iProj = 1)
 {
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
@@ -58,7 +58,7 @@ void calc_disp(
 
 	skx.GenFullFourier();
 
- 	skx.SetFilterZeroWeight(1);
+	skx.SetFilterZeroWeight(1);
 	heli.SetFilterZeroWeight(1);
 
 	skx.SetWeightEps(1e-6);
@@ -88,20 +88,20 @@ void calc_disp(
 	std::ofstream ofstr_raw("weightsum_skx.dat");
 	std::ofstream ofstr_raw_heli("weightsum_heli.dat");
 
-    // write file header
-    for(std::ostream* ostr : {&ofstr_raw, &ofstr_raw_heli})
-    {
-        ostr->precision(8);
-        (*ostr)  << std::left << std::setw(COL_SIZE) << "# angle"
-            << " " << std::left << std::setw(COL_SIZE) << "qh"
-            << " " << std::left << std::setw(COL_SIZE) << "qk"
-            << " " << std::left << std::setw(COL_SIZE) << "ql"
-            << " " << std::left << std::setw(COL_SIZE) << "E"
-            << " " << std::left << std::setw(COL_SIZE) << "wSF1"
-            << " " << std::left << std::setw(COL_SIZE) << "wSF2"
-            << " " << std::left << std::setw(COL_SIZE) << "wNSF"
-            << "\n";
-    }
+	// write file header
+	for(std::ostream* ostr : {&ofstr_raw, &ofstr_raw_heli})
+	{
+		ostr->precision(8);
+		(*ostr)  << std::left << std::setw(COL_SIZE) << "# angle"
+			<< " " << std::left << std::setw(COL_SIZE) << "qh"
+			<< " " << std::left << std::setw(COL_SIZE) << "qk"
+			<< " " << std::left << std::setw(COL_SIZE) << "ql"
+			<< " " << std::left << std::setw(COL_SIZE) << "E"
+			<< " " << std::left << std::setw(COL_SIZE) << "wSF1"
+			<< " " << std::left << std::setw(COL_SIZE) << "wSF2"
+			<< " " << std::left << std::setw(COL_SIZE) << "wNSF"
+			<< "\n";
+	}
 
 
 	for(t_real angle=angle_begin; angle<angle_end; angle+=angle_delta)
@@ -119,15 +119,15 @@ void calc_disp(
 				histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
 				histWeightsSF(Es[i], hist::weight(wsSF1[i]));
 
-                ofstr_raw << std::left << std::setw(COL_SIZE) << angle
-                    << " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
-                    << " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
-                    << " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
-                    << " " << std::left << std::setw(COL_SIZE) << Es[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsSF1[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsSF2[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsNSF[i]
-                    << std::endl;
+				ofstr_raw << std::left << std::setw(COL_SIZE) << angle
+					<< " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
+					<< " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
+					<< " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
+					<< " " << std::left << std::setw(COL_SIZE) << Es[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsSF1[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsSF2[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsNSF[i]
+					<< std::endl;
 			}
 		}
 
@@ -138,15 +138,15 @@ void calc_disp(
 				histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
 				histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
 
-                ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
-                    << " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
-                    << " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
-                    << " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
-                    << " " << std::left << std::setw(COL_SIZE) << EsH[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsSF1H[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsSF2H[i]
-                    << " " << std::left << std::setw(COL_SIZE) << wsNSFH[i]
-                    << std::endl;
+				ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
+					<< " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
+					<< " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
+					<< " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
+					<< " " << std::left << std::setw(COL_SIZE) << EsH[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsSF1H[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsSF2H[i]
+					<< " " << std::left << std::setw(COL_SIZE) << wsNSFH[i]
+					<< std::endl;
 			}
 		}
 	}
@@ -215,7 +215,7 @@ void calc_disp(
 
 int main()
 {
-    // equivalent to the used setup around (000)
+	// equivalent to the used setup around (000)
 	t_real Gx = 1., Gy = 1., Gz = 0.;
 	t_real Bx = 0., By = 0., Bz = 1.;
 	t_real q = 0.0123;
