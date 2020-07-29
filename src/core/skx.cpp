@@ -6,8 +6,8 @@
  * 	- https://doi.org/10.1088/1361-6463/aa7573
  * 	- https://kups.ub.uni-koeln.de/7937/
  * @desc This file is based on:
- * 	- the Mathematica description of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
- * 	- the 2016 Python implementations by M. Kugler and G. Brandl of a preliminary version of the model.
+ * 	- the descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
+ * 	- the 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
  * @license GPLv2 (see 'LICENSE' file)
  */
 

@@ -6,7 +6,7 @@
  * 	- https://doi.org/10.1088/1361-6463/aa7573
  * 	- https://kups.ub.uni-koeln.de/7937/
  * @desc This file is based on:
- * 	- the Mathematica description of the field-polarised magnons by M. Garst, 2016.
+ * 	- the Mathematica description of the field-polarised magnon model by M. Garst, 2016.
  * @license GPLv2 (see 'LICENSE' file)
  */
 

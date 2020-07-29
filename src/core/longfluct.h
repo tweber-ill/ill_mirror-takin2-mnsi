@@ -25,7 +25,7 @@ public:
 		t_real upx=0, t_real upy=0, t_real upz=1);
 
 	t_real S_para(const t_vec& q, t_real E) const;
-	
+
 	void SetT(t_real T) { m_T = T; }
 	void SetGamma(t_real G) { m_Gamma = G; }
 	void SetInvCorrel(t_real k) { m_inv_correl = k; }

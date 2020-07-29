@@ -23,7 +23,7 @@ void Longfluct::SetPinning(t_real Px, t_real Py, t_real Pz,
 {
 	m_up = tl2::make_vec<t_vec>({upx, upy, upz});
 	m_up /= tl2::veclen(m_up);
-	
+
 	t_vec sat = tl2::make_vec<t_vec>({Px, Py, Pz});
 	sat = sat / tl2::veclen(sat) * g_kh_rlu_29K<t_real>;
 
@@ -32,7 +32,7 @@ void Longfluct::SetPinning(t_real Px, t_real Py, t_real Pz,
 	m_sats.clear();
 	m_sats.push_back(sat);
 	for(int i=1; i<6; ++i)
-		m_sats.emplace_back(tl2::prod_mv(rot, m_sats[i-1]));	
+		m_sats.emplace_back(tl2::prod_mv(rot, m_sats[i-1]));
 }
 
 
