@@ -215,12 +215,13 @@ void calc_disp(
 
 int main()
 {
-	// equivalent to the used setup around (000)
 	t_real Gx = 1., Gy = 1., Gz = 0.;
 	t_real Bx = 0., By = 0., Bz = 1.;
+	t_real Px = 1., Py = 1., Pz = 0.;
 	t_real q = 0.0123;
 	int proj = 1;
 
-	calc_disp(Gx,Gy,Gz, Bx,By,Bz, 1,0,0, q, proj);
+	// equivalent to setup used at reseda
+	calc_disp(Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, q, proj);
 	return 0;
 }
