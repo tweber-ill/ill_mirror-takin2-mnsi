@@ -21,6 +21,7 @@ ifneq ($(mingw_build), 1)
 	SYSINCS = -I/usr/local/include \
 		-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
+		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
 	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib
 
@@ -73,7 +74,7 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 all: prepare lib/skxmod.so lib/skxmod_grid.so \
 	bin/genskx bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight \
-#	bin/heliphase bin/skx_gs bin/weight_sum
+	bin/heliphase bin/skx_gs bin/weight_sum
 
 clean:
 	find . -name "*.o" -exec rm -fv {} \;
@@ -143,11 +144,11 @@ bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli
 # further tools needing specialised compilation options
 # -----------------------------------------------------------------------------
 bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke -lgomp
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/skx_gs: src/calc/skx_gs.cpp src/core/skx.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke -lgomp
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 

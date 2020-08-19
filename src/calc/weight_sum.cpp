@@ -215,13 +215,14 @@ void calc_disp(
 
 int main()
 {
-	t_real Gx = 1., Gy = 1., Gz = 0.;
+	t_real Gx = 0., Gy = 0., Gz = 0.;	// around (000)
+	//t_real Gx = 1., Gy = 1., Gz = 0.;	// around (110)
+	int proj = 0;	// using the orthogonal 1-|Q><Q| projector
+
 	t_real Bx = 0., By = 0., Bz = 1.;
 	t_real Px = 1., Py = 1., Pz = 0.;
 	t_real q = 0.0123;
-	int proj = 1;
 
-	// equivalent to setup used at reseda
 	calc_disp(Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, q, proj);
 	return 0;
 }

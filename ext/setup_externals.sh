@@ -46,5 +46,6 @@ else
 	echo -e "Cloning tlibs2-mag repo..."
 	git clone https://code.ill.fr/tweber/tlibs2_magnon_helpers.git
 	mv -v tlibs2_magnon_helpers tlibs2-mag
-	cp -v tlibs2-mag/mag.h tlibs2/libs/
 fi
+
+cp -v tlibs2-mag/mag.h tlibs2/libs/
