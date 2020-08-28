@@ -128,7 +128,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 		return false;
 	}
 
-	bool ok = tl2::minimise<NUM_MINPARAMS>(func, names, vars, errs, &fixed, m_debug);
+	bool ok = tl2::minimise<tl2::t_real_min, NUM_MINPARAMS>(func, names, vars, errs, &fixed, m_debug);
 	sys.SetFourier(vars_to_fourier(vars));
 	return ok;
 }
