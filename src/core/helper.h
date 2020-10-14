@@ -271,9 +271,9 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		// energies and spectral weights
 		struct EW
 		{
-				t_real E;
-				t_real wUnpol;
-				t_real wSF1, wSF2, wNSF;
+			t_real E;
+			t_real wUnpol;
+			t_real wSF1, wSF2, wNSF;
 		};
 
 		auto eigs = tl2::calc_dynstrucfact_landau<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
