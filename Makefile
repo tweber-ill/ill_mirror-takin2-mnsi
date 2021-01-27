@@ -72,7 +72,7 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 .PHONY: all clean
 
 all: prepare lib/skxmod.so lib/skxmod_grid.so \
-	bin/genskx bin/merge bin/convert bin/dump \
+	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight \
 	bin/heliphase bin/skx_gs bin/weight_sum
 
@@ -107,6 +107,10 @@ lib/skxmod_grid.so: src/takin/takin_grid.o ext/takin/tools/monteconvo/sqwbase.o 
 # tools
 # -----------------------------------------------------------------------------
 bin/genskx: src/takin/genskx.o src/core/skx.o src/core/magsys.o ext/tlibs2/libs/log.o
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
+	$(STRIP) $@$(BIN_SUFFIX)
+
+bin/genheli: src/takin/genheli.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
