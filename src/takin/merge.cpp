@@ -18,9 +18,14 @@ int main()
 	// --------------------------------------------------------------------
 	// modify these for each data file to process
 	std::string filename = "skxdyn";
-	constexpr std::size_t totaldirs = 100;
-	constexpr std::size_t totalfiles = 100;
+	constexpr std::size_t totaldirs = 101;
+	constexpr std::size_t totalfiles = 101;
 	constexpr std::size_t expectedidxsize = 808;
+
+	//std::string filename = "helidyn";
+	//constexpr std::size_t totaldirs = 100;
+	//constexpr std::size_t totalfiles = 100;
+	//constexpr std::size_t expectedidxsize = 800;
 	// --------------------------------------------------------------------
 
 
@@ -28,12 +33,12 @@ int main()
 	std::ofstream ofstrMergedBin(filename + ".bin");
 
 	std::size_t offs = 0;
-	for(std::size_t diridx=0; diridx<=totaldirs; ++diridx)
+	for(std::size_t diridx=0; diridx<totaldirs; ++diridx)
 	{
-		for(std::size_t fileidx=0; fileidx<=totalfiles; ++fileidx)
+		for(std::size_t fileidx=0; fileidx<totalfiles; ++fileidx)
 		{
-			std::string filename_idx = tl2::var_to_str(diridx) + "/" + filename + "_" + tl2::var_to_str(diridx) + "_" + tl2::var_to_str(fileidx) + ".idx";
-			std::string filename_bin = tl2::var_to_str(diridx) + "/" + filename + "_" + tl2::var_to_str(diridx) + "_" + tl2::var_to_str(fileidx) + ".bin";
+			std::string filename_idx = /*tl2::var_to_str(diridx) + "/" +*/ filename + "_" + tl2::var_to_str(diridx) + "_" + tl2::var_to_str(fileidx) + ".idx";
+			std::string filename_bin = /*tl2::var_to_str(diridx) + "/" +*/ filename + "_" + tl2::var_to_str(diridx) + "_" + tl2::var_to_str(fileidx) + ".bin";
 
 			std::cout << "Merging index file \"" << filename_idx << "\"..." << std::endl;
 
