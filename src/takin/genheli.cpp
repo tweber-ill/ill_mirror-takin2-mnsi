@@ -18,7 +18,7 @@ const auto g_j = t_cplx(0,1);
 
 // ranges
 const t_real qrange = 0.1;
-const t_real qstep = 0.001;
+const t_real qstep = 0.002;
 const t_real Erange = 1.0;
 
 
@@ -135,6 +135,7 @@ int main(int argc, char** argv)
 	std::cout << "idx = " << idx << std::endl;
 
 	std::string filename = "helidyn_" + tl2::var_to_str(idx);
+	//calc_disp(qh, 0,0,1, filename);
 	calc_disp(qh, 1,1,0, filename);
 
 	return 0;
