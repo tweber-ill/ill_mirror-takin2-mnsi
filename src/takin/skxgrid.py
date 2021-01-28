@@ -13,6 +13,7 @@ import numpy as np
 
 use_thales = True
 use_reseda = False
+slice = 1
 
 if use_thales:
     idxfile = "/home/tw/tmp/skx/skxdyn_asym.idx"
@@ -59,27 +60,33 @@ if use_reseda:
 
 
 numvals = 4     # [E, w1, w2, w3]
-
-
-# longitudinal
-#plot_hklbegin = np.array([-0.09, -0.09, -0.])
-#plot_hklend = np.array([0.09, 0.09, 0.])
-#plot_dir = 0
-
-# transversal
-plot_hklbegin = np.array([-0.09, 0.09, 0.])
-plot_hklend = np.array([0.09, -0.09, 0.])
-plot_dir = 0
-
-#plot_hklbegin = np.array([0., -0.03, 0.])
-#plot_hklend = np.array([0., 0.03, 0.])
-#plot_dir = 1
-
-#plot_hklbegin = np.array([0.03, -0.03, -0.])
-#plot_hklend = np.array([-0.03, 0.03, 0.])
-#plot_dir = 0
-
 plot_hklsteps = 512
+
+
+# selection of slices
+if slice==0:
+    # longitudinal
+    plot_hklbegin = np.array([-0.09, -0.09, -0.])
+    plot_hklend = np.array([0.09, 0.09, 0.])
+    plot_dir = 0
+elif slice==1:
+    # transversal
+    plot_hklbegin = np.array([-0.09, 0.09, 0.])
+    plot_hklend = np.array([0.09, -0.09, 0.])
+    plot_dir = 0
+elif slice==2:
+    # up
+    plot_hklbegin = np.array([0., 0., -0.09])
+    plot_hklend = np.array([0., 0., 0.09])
+    plot_dir = 2
+elif slice==3:
+    plot_hklbegin = np.array([0., -0.03, 0.])
+    plot_hklend = np.array([0., 0.03, 0.])
+    plot_dir = 1
+elif slice==4:
+    plot_hklbegin = np.array([0.03, -0.03, -0.])
+    plot_hklend = np.array([-0.03, 0.03, 0.])
+    plot_dir = 0
 # -----------------------------------------------------------------------------
 
 
@@ -244,6 +251,42 @@ def plot_disp(idxfilehandle, datafilehandle, hklbegin, hklend, hklsteps):
 
 
 
+# get the energies and weights of the dispersion branches at a specific (h,k,l) coordinate
+def get_branch(_idxfilehandle, _datafilehandle, hkl):
+    eps = 1e-8
+
+    qs_h = []
+    qs_k = []
+    qs_l = []
+    Es = []
+    wsSF1 = []
+    wsSF2 = []
+    wsNSF = []
+
+    branches = getE(_idxfilehandle, _datafilehandle, hkl)
+
+    newEs = [ branch[0] for branch in branches ]
+    Es.extend(newEs)
+    wsSF1.extend([ branch[1] if branch[1] > eps else 0. for branch in branches ])
+    wsSF2.extend([ branch[2] if branch[2] > eps else 0. for branch in branches ])
+    wsNSF.extend([ branch[3] if branch[3] > eps else 0. for branch in branches ])
+    qs_h.extend([hkl[0]] * len(newEs))
+    qs_k.extend([hkl[1]] * len(newEs))
+    qs_l.extend([hkl[2]] * len(newEs))
+
+    # convert to np
+    qs_h = np.array(qs_h)
+    qs_k = np.array(qs_k)
+    qs_l = np.array(qs_l)
+    Es = np.array(Es)
+    wsSF1 = np.abs(np.array(wsSF1))
+    wsSF2 = np.abs(np.array(wsSF2))
+    wsNSF = np.abs(np.array(wsNSF))
+    wsTotal = wsNSF + wsSF1 + wsSF2
+
+    return [ Es, wsTotal ]
+
+
 
 # open index and data file for mapping
 try:
@@ -253,7 +296,13 @@ except err as IOError:
     print(err)
     exit(-1)
 
+
+
+# get the values at a specific coordinate
+#print(get_branch(_idxfilehandle, _datafilehandle, [ -0.05, -0.05, 0. ]))
 #print(getE(_idxfilehandle, _datafilehandle, [-0.05, -0.05, 0.]))
 #exit()
+
+
 
 plot_disp(_idxfilehandle, _datafilehandle, plot_hklbegin, plot_hklend, plot_hklsteps)
