@@ -21,6 +21,7 @@ ifneq ($(mingw_build), 1)
 	SYSINCS = -I/usr/local/include \
 		-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
+		-I/usr/local/include/Minuit2 \
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
 	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib
