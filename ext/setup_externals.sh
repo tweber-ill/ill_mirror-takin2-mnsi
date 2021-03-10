@@ -49,3 +49,4 @@ else
 fi
 
 cp -v tlibs2-mag/mag.h tlibs2/libs/
+cp -v tlibs2-mag/math17.h tlibs2/libs/
