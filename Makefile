@@ -34,7 +34,8 @@ else
 	CXX = x86_64-w64-mingw32-g++
 
 	SYSINCS = -I/usr/x86_64-w64-mingw32/sys-root/mingw/include \
-		-I/usr/x86_64-w64-mingw32/sys-root/mingw/include/qt5
+		-I/usr/x86_64-w64-mingw32/sys-root/mingw/include/qt5 \
+		-I/usr/x86_64-w64-mingw32/sys-root/mingw/include/Minuit2
 	LIBDIRS = -L/usr/x86_64-w64-mingw32/sys-root/mingw/bin/
 
 	LIBBOOSTSYS = -lboost_system-x64
@@ -149,11 +150,11 @@ bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli
 # further tools needing specialised compilation options
 # -----------------------------------------------------------------------------
 bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/skx_gs: src/calc/skx_gs.cpp src/core/skx.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -llapacke
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 
