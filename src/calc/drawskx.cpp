@@ -5,7 +5,8 @@
  */
 
 #include <fstream>
-#include "tlibs2/libs/math17.h"
+//#include "tlibs2/libs/math17.h"
+#include "tlibs2-extras/math17.h"
 
 using t_real = double;
 using t_vec = ublas::vector<t_real>;
