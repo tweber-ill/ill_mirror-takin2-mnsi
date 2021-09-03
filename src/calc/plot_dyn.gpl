@@ -1,0 +1,150 @@
+#!/usr/local/bin/gnuplot -p
+
+#
+# plots dispersion curves
+# @author Tobias Weber <tweber@ill.fr>
+# @date august-2018
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+out_term = 1          # 1: pdf, 2: png, others: screen
+
+if(out_term == 1) {
+	set term pdf color enhanced font "Helvetica, 50" size 20, 15
+}
+if(out_term == 2) {
+	set term pngcairo enhanced font "Helvetica, 28" size 1333, 1000
+}
+
+
+a      = 4.558        # lattice constant
+#kh_A   = 0.036        # at 20 K
+kh_A   = 0.039        # at 29 K
+kh_rlu = kh_A / (2*pi / a)
+
+Bc2    = 0.3223
+g      = 2.
+muB    = 5.78838e-02  # codata value
+
+
+qrange       = 0.12   # q range to plot
+Erange       = 0.9    # E range to plot
+scale_weight = 1.5    # weight scale for plot
+
+show_key     = 1      # show legend
+show_scans   = 0      # indicate scans
+
+
+# input data file
+file_dyn = "dyn.dat"
+
+# output files
+if(out_term == 1) {
+	file_out = "dyn.pdf"
+	set output file_out
+}
+if(out_term == 2) {
+	file_out = "dyn.png"
+	set output file_out
+}
+
+
+# colours
+col_axis  = "#000000"  # colour for coordinate cross
+col_label = "#000000"  # colour for label
+col_scan  = "#aaaaaa"   # colour for scan marker
+col_full  = "#999999"  # colour for all weights
+col_pol1  = "#0000bb"  # colour for spin-flip channel 1
+col_pol2  = "#bb0000"  # colour for spin-flip channel 2
+col_pol3  = "#009900"  # colour for non-spin-flip channel
+
+
+# ranges
+set xrange  [ -qrange               : qrange               ]
+set x2range [ -qrange/kh_rlu        : qrange/kh_rlu        ]
+set yrange  [ -Erange               : Erange               ]
+set y2range [ -Erange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
+
+
+# ticks
+set xtics 0.05 nomirror
+set x2tics 2
+set mxtics 5
+set mx2tics 4
+
+set ytics 0.4 nomirror
+set y2tics 10
+set mytics 4
+set my2tics 2
+
+
+# labels
+set xlabel "{/Helvetica-Italic q}_{||} (rlu)" \
+	offset 0, 0.25
+set x2label "{/Helvetica-Italic q}_{||} (k_h)" \
+	offset 0, -0.4
+
+set ylabel \
+	"{/Helvetica-Italic E} (meV)" \
+	offset 2
+set y2label \
+	"{/Helvetica-Italic E} ({/Helvetica-Italic g} {/Helvetica-Italic μ_0} {/Helvetica-Italic μ_B} {/Helvetica-Italic H}_{c2}^{int})" \
+	offset -0.25, 0
+
+
+# legend
+if(show_key != 0) {
+        set key at graph 0.49, graph 0.97 height 0.3 samplen 0 Left reverse box opaque
+}
+else {
+        unset key
+}
+
+
+# show coordinate cross
+set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
+set arrow 2 from -qrange,0 to qrange,0 lw 2 dt 2 lc rgb col_axis nohead
+
+
+# indicate scans
+if(show_scans != 0) {
+	scanw = 0.0025
+
+	qpos1 = -0.05 * sqrt(2)
+	qpos2 = +0.05 * sqrt(2)
+
+	E_begin1 = -0.5
+	E_end1   = +0.5
+	E_begin2 = -0.5
+	E_end2   = +0.5
+
+	set obj 1 rect \
+		from first qpos1-scanw, first E_begin1 \
+		to first qpos1+scanw, first E_end1 \
+		fc rgb col_scan fs transparent solid 0.5 front
+
+	set obj 2 rect \
+		from first qpos2-scanw, first E_begin2 \
+		to first qpos2+scanw, first E_end2 \
+		fc rgb col_scan fs transparent solid 0.5 front
+
+	set label 1 at qpos1, 0.075 center "(i)" tc rgb col_label front
+	set label 2 at qpos2, 0.075 center "(ii)" tc rgb col_label front
+}
+
+
+# weight factor
+weight_raw(w)         = sqrt(w) * 2.5
+weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
+weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
+
+
+#set multiplot layout 1,2 margins 0.09,0.91, 0.14,0.81 spacing 0.01,0.05
+set clip
+
+plot \
+	file_dyn using ($11):($4)                                        with points pt 0        lc rgb col_full notitle, \
+	file_dyn using ($11):($4):(weight($7)*scale_weight)              with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
+	file_dyn using ($11):($4):(weight($6)*scale_weight)              with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
+	file_dyn using ($11):($4):(weight_ifminusE($7, $4)*scale_weight) with points pt 7 ps var lc rgb col_pol2 notitle, \
+	file_dyn using ($11):($4):(weight($8)*scale_weight)              with points pt 7 ps var lc rgb col_pol3 title "NSF"
