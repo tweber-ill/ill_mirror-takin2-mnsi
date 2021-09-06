@@ -2,6 +2,13 @@
  * Free energy in the skyrmion phase
  * @author tweber@ill.fr
  * @date jul-18
+ * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://kups.ub.uni-koeln.de/7937/
+ *	- personal communications with M. Garst
+ * @desc This file is based on:
+ *	- the descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
+ *	- the 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
  * @license GPLv2 (see 'LICENSE' file)
  */
 
@@ -55,8 +62,15 @@ public:
 		return std::make_shared<Skx<t_real, t_cplx, ORDER>>(*this);
 	}
 
-	virtual std::shared_ptr<MagSystem<t_real, t_cplx, ORDER_FOURIER>> copyCastSys() const override { return copy(); }
-	virtual std::shared_ptr<MagDynamics<t_real, t_cplx>> copyCastDyn() const override { return copy(); }
+	virtual std::shared_ptr<MagSystem<t_real, t_cplx, ORDER_FOURIER>> copyCastSys() const override
+	{
+		return copy();
+	}
+
+	virtual std::shared_ptr<MagDynamics<t_real, t_cplx>> copyCastDyn() const override
+	{
+		return copy();
+	}
 
 
 	void GenFullFourier();
@@ -88,8 +102,10 @@ private:
 	t_real m_evlimit = 0.9995;
 
 	// B matrix with 120 deg between (100) and (010), Q_lab = B*Q_rlu
-	t_mat m_Bmat = tl2::make_mat<t_mat>(
-		{{1, std::cos(tl2::d2r<t_real>(120))}, {0, std::sin(tl2::d2r<t_real>(120))}});
+	t_mat m_Bmat = tl2::make_mat<t_mat>({
+		{1, std::cos(tl2::d2r<t_real>(120))},
+		{0, std::sin(tl2::d2r<t_real>(120))}
+	});
 	t_mat m_Binv;
 
 	std::vector<t_mat> m_rot, m_rotRlu;

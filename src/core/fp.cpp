@@ -1,12 +1,12 @@
 /**
  * Field-polarised phase
  * @author Tobias Weber <tweber@ill.fr>
- * @date dec-16
+ * @date dec-16, sep-18
  * @desc This file implements the theoretical magnon model by M. Garst and J. Waizner, see:
  * 	- https://doi.org/10.1088/1361-6463/aa7573
  * 	- https://kups.ub.uni-koeln.de/7937/
  * @desc This file is based on:
- * 	- the Mathematica description of the field-polarised magnon model by M. Garst, 2016.
+ * 	- the descriptions and Mathematica implementations of the field-polarised magnon model by M. Garst, 2016.
  * @license GPLv2 (see 'LICENSE' file)
  */
 

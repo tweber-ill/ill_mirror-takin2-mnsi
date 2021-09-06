@@ -2,6 +2,14 @@
  * Free energy in the helimagnetic phase
  * @author tweber@ill.fr
  * @date mid-16, jul-18
+ * @desc This file implements the theoretical helimagnon model by M. Garst and J. Waizner, references:
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://kups.ub.uni-koeln.de/7937/
+ *	- https://doi.org/10.1103/PhysRevLett.115.097203
+ *	- personal communications with M. Garst
+ * @desc This file is based on:
+ *	- the descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
+ *	- the 2015 and 2016 Python implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
  * @license GPLv2 (see 'LICENSE' file)
  */
 
@@ -48,8 +56,15 @@ public:
 		return std::make_shared<Heli<t_real, t_cplx, ORDER>>(*this);
 	}
 
-	virtual std::shared_ptr<MagSystem<t_real, t_cplx, ORDER_FOURIER>> copyCastSys() const override { return copy(); }
-	virtual std::shared_ptr<MagDynamics<t_real, t_cplx>> copyCastDyn() const override { return copy(); }
+	virtual std::shared_ptr<MagSystem<t_real, t_cplx, ORDER_FOURIER>> copyCastSys() const override
+	{
+		return copy();
+	}
+
+	virtual std::shared_ptr<MagDynamics<t_real, t_cplx>> copyCastDyn() const override
+	{
+		return copy();
+	}
 
 	virtual t_real F() override;
 

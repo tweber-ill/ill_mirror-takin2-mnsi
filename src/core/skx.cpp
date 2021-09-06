@@ -28,7 +28,8 @@
 	#ifdef __HACK_FULL_INST__
 		template Skx<double, std::complex<double>, DEF_SKX_ORDER>::Skx();
 		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetG(double, double, double);
-		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(double, double, double, double,double,double);
+		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(
+			double, double, double, double, double, double);
 	#endif
 #endif
 
@@ -114,14 +115,17 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 	// #1
 	for(const auto& vec : peaks_180_t)
-		m_idx1.emplace_back(std::make_pair(int(std::round(vec[0])), int(std::round(vec[1]))));
+		m_idx1.emplace_back(std::make_pair(
+			int(std::round(vec[0])), int(std::round(vec[1]))));
 
 	// #2
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
 		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
 		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
-			m_idx2[1].emplace_back(std::make_pair(int(std::round(m_allpeaks[i][0])), int(std::round(m_allpeaks[i][1]))));
+			m_idx2[1].emplace_back(std::make_pair(
+				int(std::round(m_allpeaks[i][0])),
+				int(std::round(m_allpeaks[i][1]))));
 	}
 
 	// #3
@@ -131,8 +135,10 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
 
 		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
-				for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-					m_idx3[2].emplace_back(std::make_pair(int(std::round(m_allpeaks[i][0])), int(std::round(m_allpeaks[i][1]))));
+			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+				m_idx3[2].emplace_back(std::make_pair(
+					int(std::round(m_allpeaks[i][0])),
+					int(std::round(m_allpeaks[i][1]))));
 	}
 
 
@@ -312,7 +318,7 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
  * cross-product and fluctuation matrices
  */
 template<class t_real, class t_cplx, int ORDER>
-std::tuple<typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx, typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx> 
+std::tuple<typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx, typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx>
 Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	int iGh, int iGk, t_real qh, t_real qk, t_real ql) const
 {
@@ -335,8 +341,12 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	{
 		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 		{
-			idx2[0].emplace_back(std::make_pair(int(std::round(m_allpeaks[j][0])), int(std::round(m_allpeaks[j][1]))));
-			idx2[1].emplace_back(std::make_pair(int(std::round(m_allpeaks[i][0])), int(std::round(m_allpeaks[i][1]))));
+			idx2[0].emplace_back(std::make_pair(
+				int(std::round(m_allpeaks[j][0])),
+				int(std::round(m_allpeaks[j][1]))));
+			idx2[1].emplace_back(std::make_pair(
+				int(std::round(m_allpeaks[i][0])),
+				int(std::round(m_allpeaks[i][1]))));
 		}
 	}
 
@@ -349,7 +359,9 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-				idx3[2].emplace_back(std::make_pair(int(std::round(m_allpeaks[i][0])), int(std::round(m_allpeaks[i][1]))));
+				idx3[2].emplace_back(std::make_pair(
+					int(std::round(m_allpeaks[i][0])),
+					int(std::round(m_allpeaks[i][1]))));
 	}
 
 
@@ -512,10 +524,14 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
  */
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
+Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
+	int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql,
+	t_real minE, t_real maxE) const
 {
 	const t_real epshkl = 1e-5;
-	if(tl2::float_equal<t_real>(qh, 0., epshkl) && tl2::float_equal<t_real>(qk, 0., epshkl) && tl2::float_equal<t_real>(ql, 0., epshkl))
+	if(tl2::float_equal<t_real>(qh, 0., epshkl) &&
+		tl2::float_equal<t_real>(qk, 0., epshkl) &&
+		tl2::float_equal<t_real>(ql, 0., epshkl))
 	{ qh += epshkl; qk += epshkl; ql += epshkl; }
 
 	qh = qh; qk = qk; ql = -ql;
@@ -600,13 +616,15 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	};
 
 	auto iterClosest = std::min_element(sats.begin(), sats.end(),
-		[&Gmagrlu, &Qmagrlu](const t_vec& sat1, const t_vec& sat2) -> bool
+		[&Gmagrlu, &Qmagrlu, this](const t_vec& sat1, const t_vec& sat2) -> bool
 		{
 			t_vec qmag1 = Qmagrlu - (Gmagrlu+sat1);
 			t_vec qmag2 = Qmagrlu - (Gmagrlu+sat2);
 
-			return (qmag1[0]*qmag1[0] + qmag1[1]*qmag1[1] - qmag1[0]*qmag1[1]) <
-				(qmag2[0]*qmag2[0] + qmag2[1]*qmag2[1] - qmag2[0]*qmag2[1]);
+			t_vec q1 = tl2::prod_mv(m_Bmat, qmag1);
+			t_vec q2 = tl2::prod_mv(m_Bmat, qmag2);
+
+			return tl2::veclen(q1) < tl2::veclen(q2);
 		});
 
 	Gmagrlu += *iterClosest;
