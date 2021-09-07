@@ -10,7 +10,8 @@
 #ifndef __TLIBS2_MATH_H__
 #define __TLIBS2_MATH_H__
 
-//#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
+#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
+
 
 //#define USE_LINALG_OPS
 //#define USE_FADDEEVA

@@ -92,13 +92,15 @@ prepare:
 # -----------------------------------------------------------------------------
 # Takin plugin modules
 # -----------------------------------------------------------------------------
-lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/longfluct.o src/core/magsys.o \
-	ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
+lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o \
+		src/core/longfluct.o src/core/magsys.o \
+		ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
 	@echo "Linking Takin module $@..."
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ -llapacke
 	$(STRIP) $@
 
-lib/skxmod_grid.so: src/takin/takin_grid.o ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
+lib/skxmod_grid.so: src/takin/takin_grid.o \
+		ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
 	@echo "Linking Takin grid module $@..."
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ $(LIBBOOSTSYS) -lQt5Core
 	$(STRIP) $@
@@ -108,11 +110,13 @@ lib/skxmod_grid.so: src/takin/takin_grid.o ext/takin/tools/monteconvo/sqwbase.o 
 # -----------------------------------------------------------------------------
 # tools
 # -----------------------------------------------------------------------------
-bin/genskx: src/takin/genskx.o src/core/skx.o src/core/magsys.o ext/tlibs2/libs/log.o
+bin/genskx: src/takin/genskx.o src/core/skx.o \
+		src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/genheli: src/takin/genheli.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
+bin/genheli: src/takin/genheli.o src/core/heli.o \
+		src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
@@ -132,15 +136,18 @@ bin/drawskx: src/calc/drawskx.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
+bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
+		src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
+bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o \
+		src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o src/core/magsys.o ext/tlibs2/libs/log.o
+bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o \
+		src/core/magsys.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
@@ -149,12 +156,18 @@ bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli
 # -----------------------------------------------------------------------------
 # further tools needing specialised compilation options
 # -----------------------------------------------------------------------------
-bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
+bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp \
+		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 \
+		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
+		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/skx_gs: src/calc/skx_gs.cpp src/core/skx.cpp src/core/heli.cpp src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_REDEFINITIONS -D__HACK_FULL_INST__ $(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
+bin/skx_gs: src/calc/skx_gs.cpp src/core/skx.cpp src/core/heli.cpp \
+		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
+		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
+		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 
