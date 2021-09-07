@@ -10,8 +10,7 @@
 #ifndef __TLIBS2_MATH_H__
 #define __TLIBS2_MATH_H__
 
-#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
-
+//#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
 
 //#define USE_LINALG_OPS
 //#define USE_FADDEEVA
@@ -2006,7 +2005,7 @@ t_mat proj_matrix(T l, T r, T b, T t, T n, T f, bool bParallel)
 		matProj(2,2) = T(2)*f*n / (n-f);
 		matProj(2,3) = (n+f) / (n-f);
 	}
-	else			// perspectivic
+	else	// perspectivic
 	{
 		matProj(2,2) = (n+f) / (n-f);
 		matProj(2,3) = T(2)*f*n / (n-f);
@@ -2439,7 +2438,6 @@ t_mat adjugate(const t_mat& mat, bool bTranspose=1)
 template<class matrix_type = ublas::matrix<double>>
 typename matrix_type::value_type get_volume(const matrix_type& mat)
 {
-	//typedef typename matrix_type::value_type T;
 	return std::abs(determinant<matrix_type>(mat));
 }
 
@@ -3457,7 +3455,7 @@ hund(std::uint16_t l, std::uint16_t iNumEs)
 		throw Err("Too many electrons.");
 
 	std::vector<std::uint8_t> vecOrbitals;	// orbitals
-	std::vector<std::int16_t> vec_ml;		// mag. q.number
+	std::vector<std::int16_t> vec_ml;	// mag. q.number
 	vecOrbitals.resize(iNumOrbitals);
 	vec_ml.resize(iNumOrbitals);
 	std::iota(vec_ml.rbegin(), vec_ml.rend(), -l);
@@ -3768,7 +3766,7 @@ quat_type rot3_to_quat(const mat_type& rot)
 	const T tr = trace(rot);
 	T v[3], w;
 
-	if(tr > T(0))								// scalar component is largest
+	if(tr > T(0))	// scalar component is largest
 	{
 		w = T(0.5) * std::sqrt(tr+T(1));
 		v[0] = (rot(2,1) - rot(1,2)) / (T(4)*w);
@@ -3779,7 +3777,7 @@ quat_type rot3_to_quat(const mat_type& rot)
 	{
 		for(std::size_t iComp=0; iComp<3; ++iComp)	// find largest vector component
 		{
-			const std::size_t iM = iComp;			// major comp.
+			const std::size_t iM = iComp;		// major comp.
 			const std::size_t im1 = (iComp+1)%3;	// minor comp. 1
 			const std::size_t im2 = (iComp+2)%3;	// minor comp. 2
 
@@ -6188,12 +6186,10 @@ public:
 	t_vec GetPrincipalOffset() const
 	{
 		t_vec vecOffs = GetR();
-		//log_debug("offset in: ", vecOffs);
 
 		for(std::size_t i=0; i<vecOffs.size(); ++i)
 			vecOffs[i] /= -T(2)*GetQ()(i,i);
 
-		//log_debug("offset out: ", vecOffs);
 		return vecOffs;
 	}
 
@@ -6223,7 +6219,6 @@ public:
 		T b = inner(x0, vecQd);
 		b += inner(d, vecQx0);
 
-		//std::cout << "a=" << a << ", b=" << b << ", c=" << c << std::endl;
 		return quadratic_solve(a,b,c);
 	}
 };
@@ -6941,7 +6936,7 @@ bool qr(const ublas::matrix<T>& M,
 	const typename ublas::matrix<T>::size_type m = M.size1();
 	const typename ublas::matrix<T>::size_type n = M.size2();
 
-	const std::size_t iTauSize = m;//std::min<std::size_t>(m,n);
+	const std::size_t iTauSize = m; //std::min<std::size_t>(m,n);
 
 	std::unique_ptr<T, std::default_delete<T[]>>
 		uptrMem(new T[n*m + iTauSize]);
@@ -6956,7 +6951,6 @@ bool qr(const ublas::matrix<T>& M,
 
 	// see: http://www.math.utah.edu/software/lapack/lapack-d/dgeqrf.html
 	int iInfo = (*pfunc)(LAPACK_ROW_MAJOR, m, n, pMat, n, pTau);
-	//std::cout << "dgeqrt: " << iInfo << std::endl;
 
 	R = ublas::matrix<T>(m,n);
 	for(std::size_t i=0; i<m; ++i)
@@ -6967,7 +6961,6 @@ bool qr(const ublas::matrix<T>& M,
 			else
 				R(i,j) = 0.;
 		}
-	//std::cout << "R = " << R << std::endl;
 
 	ublas::vector<T> v(iTauSize);
 
@@ -6977,7 +6970,6 @@ bool qr(const ublas::matrix<T>& M,
 	for(std::size_t k=1; k<=iTauSize; ++k)
 	{
 		T dTau = pTau[k-1];
-		//std::cout << "tau " << k << " = " << dTau << std::endl;
 
 		for(std::size_t i=1; i<=k-1; ++i)
 			v[i-1] = 0.;
@@ -6992,7 +6984,6 @@ bool qr(const ublas::matrix<T>& M,
 		Q = prod_mm(Q, H);
 	}
 
-	//std::cout << "Q = " << Q << std::endl;
 	return (iInfo==0);
 }
 
@@ -7005,10 +6996,7 @@ template<typename T = double>
 bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v, ublas::vector<T>& x)
 {
 	if(M.size1() <= M.size2())
-	{
-		//std::cerr << "Error: Matrix has to be overdetermined." << std::endl;
 		return false;
-	}
 
 	ublas::matrix<T> Q, R;
 	if(!qr(M, Q, R))
@@ -7034,7 +7022,7 @@ bool solve_linear_approx(const ublas::matrix<T>& M, const ublas::vector<T>& v, u
 template<typename T /*= double*/>
 bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v, ublas::vector<T>& x)
 {
-	if(M.size1() == M.size2())		// determined, TODO: check rank
+	if(M.size1() == M.size2())	// determined, TODO: check rank
 	{
 		try
 		{
@@ -7069,11 +7057,6 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v, ublas::v
 
 		ublas::vector<T> vnew = prod_mv(transpose(Q), v);
 
-		/*std::cout << "M = " << M << std::endl;
-		std::cout << "Q = " << Q << std::endl;
-		std::cout << "R = " << R << std::endl;
-		std::cout << "v' = " << vnew << std::endl;*/
-
 		x = zero_v<ublas::vector<T>>(M.size2());
 		ublas::vector<T> xnew(R.size1());
 		bool bOk = 0;
@@ -7105,8 +7088,6 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v, ublas::v
 		for(std::ptrdiff_t iCol=std::ptrdiff_t(R.size2()-1); iCol>=0; --iCol)
 		{
 			Rsub = remove_column(R, (std::size_t)iCol);
-			//std::cout << "Rsub" << Rsub << std::endl;
-			//std::cout << "det: " << determinant(Rsub) << std::endl;
 
 			T det = determinant<ublas::matrix<T>>(Rsub);
 			if(!float_equal<T>(det, 0.))
@@ -7124,9 +7105,6 @@ bool solve_linear(const ublas::matrix<T>& M, const ublas::vector<T>& v, ublas::v
 		}
 
 		bOk = solve_linear(Rsub, vnew, xnew);
-		//std::cout << "Rsub = " << Rsub << std::endl;
-		//std::cout << "v' = " << vnew << std::endl;
-		//std::cout << "x' = " << xnew << std::endl;
 
 		for(t_int i=0, i0=0; i<xnew.size() && i0<x.size(); ++i, ++i0)
 		{
@@ -7646,7 +7624,6 @@ bool eigenvecsel_herm(const ublas::matrix<std::complex<T>>& mat,
 	// use maximum precision if none given
 	if(eps < T(0))
 		eps = lamch('S');
-	//std::cout << "eps = " << eps << std::endl;
 
 	// if an invalid range is given, select all eigenvalues
 	bool bSelectAll = (minval > maxval);
