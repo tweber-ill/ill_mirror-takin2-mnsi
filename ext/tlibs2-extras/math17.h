@@ -1321,19 +1321,30 @@ t_vec prod_vm(const t_vec& vec, const t_mat& mat)
 
 
 /**
+ * squared vector length
+ * useful when just comparing two vector lengths
+ */
+template<class t_vec = ublas::vector<double>>
+typename t_vec::value_type veclen_sq(const t_vec& vec)
+{
+	using T = typename t_vec::value_type;
+	T len_sq(0);
+
+	for(std::size_t i=0; i<vec.size(); ++i)
+		len_sq += vec[i]*vec[i];
+
+	return len_sq;
+}
+
+
+/**
  * 2-norm -- general version
  */
 template<class t_vec = ublas::vector<double>,
 	typename std::enable_if<!std::is_convertible<t_vec, ublas::vector<typename t_vec::value_type>>::value, char>::type=0>
 typename t_vec::value_type veclen(const t_vec& vec)
 {
-	using T = typename t_vec::value_type;
-	T len(0);
-
-	for(std::size_t i=0; i<vec.size(); ++i)
-		len += vec[i]*vec[i];
-
-	return std::sqrt(len);
+	return std::sqrt(veclen_sq<t_vec>(vec));
 }
 
 
@@ -1909,8 +1920,8 @@ template<class t_mat = ublas::matrix<double>>
 bool is_centering_matrix(const t_mat& mat)
 {
 	//if(is_identity_matrix(mat)) return 1;
+	//using T = typename t_mat::value_type;
 
-	using T = typename t_mat::value_type;
 	const std::size_t iN = mat.size1();
 	if(iN != mat.size2())
 		return false;
@@ -1921,7 +1932,7 @@ bool is_centering_matrix(const t_mat& mat)
 
 	// translation?
 	if(has_translation_components<t_mat>(mat))
-			return true;
+		return true;
 	return false;
 }
 
@@ -2128,7 +2139,8 @@ bool is_nan_or_inf(const T& mat)
 template<class mat_type = ublas::matrix<double>>
 bool inverse(const mat_type& mat, mat_type& inv)
 {
-	using T = typename mat_type::value_type;
+	//using T = typename mat_type::value_type;
+
 	const typename mat_type::size_type N = mat.size1();
 	if(N != mat.size2())
 		return false;
@@ -2377,7 +2389,7 @@ typename t_mat::value_type determinant(const t_mat& mat)
 template<class t_mat = ublas::matrix<double>>
 typename t_mat::value_type minor_det(const t_mat& mat, std::size_t iRow, std::size_t iCol)
 {
-	using T = typename t_mat::value_type;
+	//using T = typename t_mat::value_type;
 
 	t_mat M = submatrix(mat, iRow, iCol);
 	return determinant<t_mat>(M);
@@ -7654,7 +7666,7 @@ bool eigenvecsel_herm(const ublas::matrix<std::complex<T>>& mat,
 
 	evecs.resize(iNumFound);
 	evals.resize(iNumFound);
-	for(std::size_t i=0; i<iNumFound; ++i)
+	for(std::size_t i=0; i<(std::size_t)iNumFound; ++i)
 	{
 		for(std::size_t j=0; j<iOrder; ++j)
 			evecs[i][j] = /*pMatrix*/pEVsOrtho[j*iOrder + i];
@@ -7953,7 +7965,7 @@ template<class t_mat = ublas::matrix<double>,
 	template<class...> class t_lst = std::initializer_list>
 t_mat make_metric_cov(const t_lst<t_vec>& lstVecsCov)
 {
-	using T = typename t_mat::value_type;
+	//using T = typename t_mat::value_type;
 	const std::size_t iDim = std::min(lstVecsCov.size(), lstVecsCov.begin()->size());
 	t_mat matG(iDim, iDim);
 

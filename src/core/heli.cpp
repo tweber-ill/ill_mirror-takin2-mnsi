@@ -159,7 +159,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += 2. * g_chi<t_real> * std::norm(fourier_no0[i][2]);
 
 	// dmi
-	for(int i=0; i<ORDER; ++i)
+	for(std::size_t i=0; i<ORDER; ++i)
 	{
 		t_real k = t_real(i+1);
 
@@ -169,7 +169,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	}
 
 	// hoc
-	for(int i=0; i<ORDER; ++i)
+	for(std::size_t i=0; i<ORDER; ++i)
 	{
 		t_real k = t_real(i+1);
 
@@ -178,7 +178,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 	// phi^2 & phi^4
 	cF += (m_T + 1.) * fourier0*fourier0  +  fourier0*fourier0*fourier0*fourier0;
-	for(int i=0; i<ORDER; ++i)
+	for(std::size_t i=0; i<ORDER; ++i)
 	{
 		t_real k = t_real(i+1);
 
@@ -188,7 +188,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += (m_T + 1. + fourier0*fourier0) * lens[i];
 	}
 
-	for(int i=0; i<m_idx2[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
 		cF += 2. * fourier0 * get_comp(fourier_full_comp[2], m_idx2[0][i]) *
 		(
@@ -199,7 +199,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	}
 
 	// phi^4
-	for(int i=0; i<m_idx3[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		cF += 2. *
 		(

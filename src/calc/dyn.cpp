@@ -20,7 +20,6 @@
 using t_real = double;
 using t_cplx = std::complex<t_real>;
 using t_vec = ublas::vector<t_real>;
-const auto g_j = t_cplx(0,1);
 
 #include "core/skx_default_gs.cxx"
 

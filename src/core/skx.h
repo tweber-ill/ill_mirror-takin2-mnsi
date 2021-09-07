@@ -44,6 +44,7 @@ public:
 
 public:
 	Skx();
+	virtual ~Skx() = default;
 
 	virtual t_real F() override;
 
@@ -106,26 +107,26 @@ private:
 		{1, std::cos(tl2::d2r<t_real>(120))},
 		{0, std::sin(tl2::d2r<t_real>(120))}
 	});
-	t_mat m_Binv;
+	t_mat m_Binv{};
 
-	std::vector<t_mat> m_rot, m_rotRlu;
+	std::vector<t_mat> m_rot{}, m_rotRlu{};
 
 	t_real m_pitch = 1;
 	t_real m_B = 0;
 	t_real m_T = -100;
 	t_real m_Bc2 = 0;
 
-	std::vector<t_vec_cplx> m_fourier;
+	std::vector<t_vec_cplx> m_fourier{};
 
 	// all six sixth
-	std::vector<std::vector<t_vec>> m_peaks_360;
+	std::vector<std::vector<t_vec>> m_peaks_360{};
 	// one sixth of the magnetic lattice
-	std::vector<t_vec> m_peaks_60, m_peaks_60_lab;
-	std::vector<t_vec> m_allpeaks;
+	std::vector<t_vec> m_peaks_60{}, m_peaks_60_lab{};
+	std::vector<t_vec> m_allpeaks{};
 
-	ublas::matrix<t_vec_cplx> m_M;
-	t_vec m_Grlu;
-	t_quat m_rotCoord;
+	ublas::matrix<t_vec_cplx> m_M{};
+	t_vec m_Grlu{};
+	t_quat m_rotCoord{};
 
 	std::vector<t_mat_cplx> m_polMat =
 	{{
@@ -137,7 +138,7 @@ private:
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
 
-	std::vector<std::pair<int, int>> m_idx1, m_idx2[3], m_idx3[4];
+	std::vector<std::pair<int, int>> m_idx1{}, m_idx2[3], m_idx3[4];
 };
 
 

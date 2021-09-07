@@ -39,9 +39,9 @@ public:
 
 private:
 	// skx satellites
-	std::vector<t_vec> m_sats;
+	std::vector<t_vec> m_sats{};
 
-	t_vec m_up;
+	t_vec m_up{};
 
 	t_real m_T = 29.;
 	t_real m_Gamma = 0.5;

@@ -477,7 +477,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	// ------------------------------------------------------------------------
 
 
-	auto mk_2dim = [VIRTSIZE, CRYSSIZE, SIZE, iGh, iGk](const /*auto&*/ decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](const /*auto&*/ decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(VIRTSIZE);
 		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);
@@ -534,7 +534,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 		tl2::float_equal<t_real>(ql, 0., epshkl))
 	{ qh += epshkl; qk += epshkl; ql += epshkl; }
 
-	qh = qh; qk = qk; ql = -ql;
+	ql = -ql;
 
 	t_real sqrtfac = std::sqrt(t_real(-0.5 - m_T*0.5));
 	const t_real E_scale_fac_heli = 0.0387;		// calculated with heli.cpp
@@ -624,7 +624,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 			t_vec q1 = tl2::prod_mv(m_Bmat, qmag1);
 			t_vec q2 = tl2::prod_mv(m_Bmat, qmag2);
 
-			return tl2::veclen(q1) < tl2::veclen(q2);
+			return tl2::veclen_sq(q1) < tl2::veclen_sq(q2);
 		});
 
 	Gmagrlu += *iterClosest;

@@ -41,6 +41,7 @@ public:
 
 public:
 	FP();
+	virtual ~FP() = default;
 
 	std::shared_ptr<FP<t_real, t_cplx>> copy() const
 	{
@@ -71,8 +72,8 @@ private:
 	t_real m_B = 0.7;
 	t_real m_T = 20;
 
-	t_vec m_Grlu;
-	t_quat m_rotCoord;
+	t_vec m_Grlu{};
+	t_quat m_rotCoord{};
 
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;

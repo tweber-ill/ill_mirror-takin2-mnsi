@@ -218,8 +218,8 @@ t_mat get_chiralbasismat()
 template<class t_mat = ublas::matrix<std::complex<double>>>
 t_mat get_polmat(int which)
 {
-	using t_cplx = typename t_mat::value_type;
-	constexpr t_cplx j = t_cplx(0,1);
+	//using t_cplx = typename t_mat::value_type;
+	//constexpr t_cplx j = t_cplx(0,1);
 
 	// all channels
 	if(which < 1 || which > 3) return tl2::unit_m<t_mat>(3);
@@ -289,7 +289,7 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		for(std::size_t ieval=0; ieval<numEVals; ++ieval)
 		{
 			auto E_weight = tl2::get_dynstrucfact_neutron<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-				std::get<0>(eigs)[ieval], std::get<1>(eigs)[ieval], std::get<2>(eigs)[ieval],
+				std::get<0>(eigs)[ieval],  std::get<2>(eigs)[ieval],
 				bProjNeutron ? &projNeutron : nullptr, &polMat);
 
 			// filter energies if requested

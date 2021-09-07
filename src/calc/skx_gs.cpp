@@ -12,7 +12,6 @@
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
-const auto g_j = t_cplx(0,1);
 
 
 // initial values

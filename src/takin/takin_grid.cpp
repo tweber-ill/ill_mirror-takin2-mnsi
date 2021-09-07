@@ -50,7 +50,7 @@ class SqwMod : public SqwBase
 		t_vec m_vecRotTo = tl2::make_vec<t_vec>({1,0,0});
 
 		// grid descriptors
-		std::string m_strIndexFile, m_strDataFile;
+		std::string m_strIndexFile{}, m_strDataFile{};
 
 		t_real m_hmin=0., m_hmax=0., m_hstep=0.;
 		t_real m_kmin=0., m_kmax=0., m_kstep=0.;
@@ -296,7 +296,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
  */
 t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	t_real dInc=0, dS_p=0, dS_m=0;
+	t_real dInc=0;
 	if(!tl2::float_equal(m_dIncAmp, t_real(0)))
 		dInc = tl2::gauss_model(dE, t_real(0), m_dIncSigma, m_dIncAmp, t_real(0));
 

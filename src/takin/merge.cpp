@@ -94,7 +94,7 @@ int main()
 			char* data = new char[sizeBin];
 			memset(data, 0, sizeBin);
 			ifstrBin.read(data, sizeBin);
-			if(ifstrBin.gcount() != sizeBin)
+			if(ifstrBin.gcount() != (std::streamsize)sizeBin)
 			{
 				std::cerr << "Could not merge binary file." << std::endl;
 				return -1;

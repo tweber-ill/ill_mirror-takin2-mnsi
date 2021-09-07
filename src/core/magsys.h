@@ -20,6 +20,9 @@ template<class t_real = double>
 class HasTandB
 {
 public:
+	HasTandB() = default;
+	virtual ~HasTandB() = default;
+
 	virtual void SetB(t_real B) = 0;
 	virtual void SetT(t_real T) = 0;
 };
@@ -36,6 +39,9 @@ public:
 	using value_type_c = t_cplx;
 
 public:
+	MagSystem() = default;
+	virtual ~MagSystem() = default;
+
 	virtual t_real F() = 0;
 
 	virtual void SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier) = 0;
@@ -63,6 +69,9 @@ template<class t_real = double, class t_cplx = std::complex<t_real>>
 class MagDynamics : public HasTandB<t_real>
 {
 public:
+	MagDynamics() = default;
+	virtual ~MagDynamics() = default;
+
 	// unpol, SF-+, SF+-, NSF
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const = 0;

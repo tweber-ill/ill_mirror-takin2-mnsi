@@ -146,7 +146,7 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 	for(std::size_t iInteract=0; iInteract<Interactevals.size(); ++iInteract)
 	{
-		const t_cplx& eval = Interactevals[iInteract];
+		//const t_cplx& eval = Interactevals[iInteract];
 		const t_vec_cplx& evec = Interactevecs[iInteract];
 
 		auto evec_scale = prod_mv(Mxx, evec);
@@ -171,8 +171,9 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<t_real, std::vector<t_real>>
 get_dynstrucfact_neutron(
-	const t_cplx& eval, const t_vec_cplx& evec, const t_mat_cplx& _emat,
-	const t_mat_cplx* projNeutron=nullptr, const std::vector<t_mat_cplx>* pol = nullptr)
+	const t_cplx& eval, const t_mat_cplx& _emat,
+	const t_mat_cplx* projNeutron=nullptr,
+	const std::vector<t_mat_cplx>* pol = nullptr)
 {
 	t_real E = eval.real();
 	t_mat_cplx emat = _emat;

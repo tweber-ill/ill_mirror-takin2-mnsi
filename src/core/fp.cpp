@@ -79,7 +79,7 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 
 
 	// eigensystems
-	auto get_evecs = [&theta, &qvec, &q, &dh0, &imag, &sigma, &ident2](t_real phi) -> auto
+	auto get_evecs = [&qvec, &q, &dh0, &imag, &sigma, &ident2](t_real phi) -> auto
 	{
 		// Hamiltonian
 		t_cplx qp = qvec[0] + imag*qvec[1];

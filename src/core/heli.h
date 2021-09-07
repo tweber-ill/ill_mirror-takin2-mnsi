@@ -50,6 +50,7 @@ public:
 
 public:
 	Heli();
+	virtual ~Heli() = default;
 
 	virtual std::shared_ptr<Heli<t_real, t_cplx, ORDER>> copy() const
 	{
@@ -97,7 +98,7 @@ private:
 	t_real m_pitch = 1;
 	t_real m_B = 0, m_T = -100;
 
-	std::vector<ublas::vector<t_cplx>> m_fourier;
+	std::vector<ublas::vector<t_cplx>> m_fourier{};
 
 
 	int m_onlymode = -1;
@@ -106,8 +107,8 @@ private:
 	t_real m_weighteps = 1e-6;
 
 	t_real m_Bc2 = 0;
-	t_vec m_Grlu;
-	t_quat m_rotCoord;
+	t_vec m_Grlu{};
+	t_quat m_rotCoord{};
 
 	std::vector<t_mat_cplx> m_polMat =
 	{{

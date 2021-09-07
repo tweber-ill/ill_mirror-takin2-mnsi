@@ -46,10 +46,10 @@ public:
 	using t_cplx = std::complex<t_real>;
 
 protected:
-	Skx<t_real, t_cplx, SKX_ORDER> m_skx;
-	FP<t_real, t_cplx> m_fp;
-	Heli<t_real, t_cplx, HELI_ORDER> m_heli;
-	Longfluct m_lf;
+	Skx<t_real, t_cplx, SKX_ORDER> m_skx{};
+	FP<t_real, t_cplx> m_fp{};
+	Heli<t_real, t_cplx, HELI_ORDER> m_heli{};
+	Longfluct m_lf{};
 
 	t_real m_dErange = 2.;	// E range around queried E to take into account
 	t_real m_dSigma = t_real(0.05);
@@ -177,7 +177,7 @@ t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	}
 
 	// incoherent
-	t_real dInc=0, dS_p=0, dS_m=0;
+	t_real dInc=0;
 	if(!tl2::float_equal(m_dIncAmp, t_real(0)))
 		dInc = tl2::gauss_model(dE, t_real(0), m_dIncSigma, m_dIncAmp, t_real(0));
 
