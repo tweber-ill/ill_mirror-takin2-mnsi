@@ -1,4 +1,4 @@
-# Helical and skyrmion dynamics in MnSi
+# Skyrmion and helical dynamics in MnSi
 
 
 ## Description
@@ -28,7 +28,7 @@ Their repositories are available here:
 
 ## Acknowledgements
 This code is based on theoretical magnon dispersion models and their Mathematica
-implementations by M. Garst and J. Waizner, see our papers above and these references:
+implementations by M. Garst and J. Waizner, see these references and our papers below:
 - https://doi.org/10.1088/1361-6463/aa7573
 - https://kups.ub.uni-koeln.de/7937/
 
