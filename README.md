@@ -1,7 +1,7 @@
 # Helical and skyrmion dynamics in MnSi
 
 
-##Description
+## Description
 This is the supplementary source code to the paper
 *Topological magnon band structure of emergent Landau levels in a skyrmion lattice*.
 
@@ -13,14 +13,14 @@ The development repository can be found here:
 https://code.ill.fr/scientific-software/takin/plugins/mnsi
 
 
-##Dependencies
+## Dependencies
 [*Takin 2*](https://doi.org/10.5281/zenodo.4117437) and the *tlibs*/*tlibs2* libraries are needed for compilation.
 Their repositories are available here:
 	- https://github.com/t-weber/takin2
 	- https://code.ill.fr/scientific-software/takin
 
 
-##Setup
+## Setup
 	- Download external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
 	- The ext/ directory contains the source code of the external libraries.
 	- Build the module: `make -j4`.
