@@ -10,8 +10,8 @@ authors:
     affiliation: "Institut Laue-Langevin (ILL), Grenoble, France"
 abstract: "Supplementary source code for the paper 'Topological magnon band structure of emergent
   Landau levels in a skyrmion lattice.'"
-message: "Please cite using the DOI 10.5281/zenodo.TODO."
-#doi: 10.5281/zenodo.TODO
+message: "Please cite using the DOI 10.5281/zenodo.5718363."
+doi: 10.5281/zenodo.5718363
 type: software
 license: GPL-2.0-only
 repository-code: "https://code.ill.fr/scientific-software/takin/plugins/mnsi"
