@@ -39,7 +39,7 @@ This source code is based on theoretical magnon dispersion models and their *Mat
 - M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. **50** 293002, https://doi.org/10.1088/1361-6463/aa7573 (2017).
 - J. Waizner, PhD thesis, Universität zu Köln, https://kups.ub.uni-koeln.de/7937/ (2017).
 
-Furthermore, the present source code is based on optimised *Python* implementations by M. Kugler and G. Brandl of early versions of the theoretical models mentioned above:
+Furthermore, the present source code is based on optimised *Python* implementations by M. Kugler and G. Brandl of early versions of the theoretical models mentioned above; it started as a translation of these *Python* codes into *C++*:
 - G. Brandl and M. Kugler, Helimagnon implementation in *Python*, personal communications (2015-2016).
 - M. Kugler, G. Brandl, J. Waizner, M. Janoschek, R. Georgii, A. Bauer, K. Seemann, A. Rosch, C. Pfleiderer, P. Böni, and M. Garst, Phys. Rev. Lett. **115**, 097203, https://doi.org/10.1103/PhysRevLett.115.097203 (2015).
 - M. Kugler and G. Brandl, Skyrmion spin-wave implementation in *Python*, personal communication (2016).
