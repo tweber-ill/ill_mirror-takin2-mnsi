@@ -6,7 +6,7 @@
  *	- https://doi.org/10.1088/1361-6463/aa7573
  *	- https://kups.ub.uni-koeln.de/7937/
  *	- https://doi.org/10.1103/PhysRevLett.115.097203
- *	- personal communications with M. Garst
+ *	- personal communications with M. Garst, 2014-2019.
  * @desc This file is based on:
  *	- the descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
  *	- the 2015 and 2016 Python implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
