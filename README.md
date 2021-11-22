@@ -13,7 +13,7 @@ The development repository can be found here:
 
 
 ## Dependencies
-[*Takin 2*](https://doi.org/10.5281/zenodo.4117437) and the *tlibs* / *tlibs2* libraries are needed for compilation.
+[*Takin*](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779) are needed for compilation.
 Their repositories are available here:
 - https://github.com/t-weber/takin2
 - https://code.ill.fr/scientific-software/takin
