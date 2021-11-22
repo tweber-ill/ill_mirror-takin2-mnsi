@@ -15,8 +15,9 @@ The development repository can be found here:
 
 
 ## Dependencies
-The [*Takin* software](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779) are needed for compilation.
-Their repositories are available here:
+This software depends on [*Takin*](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779).
+An archived copy of their source codes are included in the directory ext/.
+Furthermore, their repositories are available here:
 - Stable releases: https://github.com/t-weber/takin2
 - Development versions: https://code.ill.fr/scientific-software/takin
 - Binary releases: https://wiki.mlz-garching.de/takin
@@ -24,8 +25,8 @@ Their repositories are available here:
 
 
 ## Setup
-- Download the external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
-- The ext/ directory should now contain the source code of the external libraries.
+- Set up the external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
+- The ext/ directory should now contain the source code of the external libraries (Takin and tlibs).
 - Build the module: `make -j4`.
 - Copy the built plugin modules to *Takin's* plugin directory: `mkdir -pv ~/.takin/plugins/ && cp -v lib/*.so ~/.takin/plugins/`
 - The helper tools can be found in the bin/ directory.
