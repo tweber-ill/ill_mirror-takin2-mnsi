@@ -21,12 +21,12 @@ Furthermore, their repositories are available here:
 - Stable releases: https://github.com/t-weber/takin2
 - Development versions: https://code.ill.fr/scientific-software/takin
 - Binary releases: https://wiki.mlz-garching.de/takin
-- DOIs: Takin 2: [10.5281/zenodo.4117437](https://doi.org/10.5281/zenodo.4117437), tlibs 2: [10.5281/zenodo.5717779](https://doi.org/10.5281/zenodo.5717779), old Takin 1 and tlibs 1: [10.5281/zenodo.3961491](https://doi.org/10.5281/zenodo.3961491).
+- DOIs: *Takin 2*: [10.5281/zenodo.4117437](https://doi.org/10.5281/zenodo.4117437), *tlibs 2*: [10.5281/zenodo.5717779](https://doi.org/10.5281/zenodo.5717779), old *Takin 1* and *tlibs 1*: [10.5281/zenodo.3961491](https://doi.org/10.5281/zenodo.3961491).
 
 
 ## Setup
 - Set up the external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
-- The ext/ directory should now contain the source code of the external libraries (Takin and tlibs).
+- The ext/ directory should now contain the source code of the external libraries (*Takin* and *tlibs*).
 - Build the module: `make -j4`.
 - Copy the built plugin modules to *Takin's* plugin directory: `mkdir -pv ~/.takin/plugins/ && cp -v lib/*.so ~/.takin/plugins/`
 - The helper tools can be found in the bin/ directory.
