@@ -1,5 +1,5 @@
 /**
- * Free energy in the skyrmion phase
+ * free energy and dynamics in the skyrmion phase
  * @author tweber@ill.fr
  * @date jul-18
  * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:

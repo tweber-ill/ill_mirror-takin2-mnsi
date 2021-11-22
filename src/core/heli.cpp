@@ -1,5 +1,5 @@
 /**
- * Free energy in the helimagnetic phase
+ * free energy and dynamics in the helimagnetic phase
  * @author tweber@ill.fr
  * @date mid-16, jul-18
  * @desc This file implements the theoretical helimagnon model by M. Garst and J. Waizner, references:

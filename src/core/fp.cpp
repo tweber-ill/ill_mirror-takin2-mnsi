@@ -1,5 +1,5 @@
 /**
- * Field-polarised phase
+ * dynamics in the field-polarised phase
  * @author Tobias Weber <tweber@ill.fr>
  * @date dec-16, sep-18
  * @desc This file implements the theoretical magnon model by M. Garst and J. Waizner, see:

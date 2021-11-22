@@ -1,11 +1,11 @@
 /**
- * Free energy in the skyrmion phase
+ * free energy and dynamics in the skyrmion phase
  * @author tweber@ill.fr
  * @date jul-18
  * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:
  *	- https://doi.org/10.1088/1361-6463/aa7573
  *	- https://kups.ub.uni-koeln.de/7937/
- *	- personal communications with M. Garst
+ *	- personal communications with M. Garst, 2017-2020.
  * @desc This file is based on:
  *	- the descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
  *	- the 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
