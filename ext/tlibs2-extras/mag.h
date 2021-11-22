@@ -1,5 +1,5 @@
 /**
- * tlibs2 -- magnon helper functions in preparation for the main tlibs2 repo: https://code.ill.fr/scientific-software/takin/tlibs2
+ * tlibs2 -- magnon helper functions moved from the main tlibs2 repo: https://code.ill.fr/scientific-software/takin/tlibs2
  * @author Tobias Weber <tweber@ill.fr>
  * @date 30-may-2020
  * @license see 'LICENSE' file
@@ -13,7 +13,8 @@
  *	- https://doi.org/10.1103/PhysRevLett.115.097203
  *
  * ----------------------------------------------------------------------------
- * tlibs (DOI: 10.5281/zenodo.5717779)
+ * This file is a (former) part of tlibs (DOI: 10.5281/zenodo.5717779).
+ * tlibs
  * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
