@@ -1,11 +1,11 @@
-# Skyrmion and helical dynamics in MnSi
+# Skyrmion, helical, and field-polarised magnon dynamics in MnSi
 
 
 ## Description
 This is the supplementary source code to the paper
 *Topological magnon band structure of emergent Landau levels in a skyrmion lattice*.
 
-The code contains a *Takin* plugin module and its helper tools.
+The code contains a [*Takin*](https://doi.org/10.5281/zenodo.4117437) plugin module and its helper tools.
 The module calculates the dispersion and the dynamical structure factor for the helimagnetic, the field-polarised, and the skyrmion phase of MnSi.
 
 The development repository can be found here:
@@ -13,16 +13,19 @@ The development repository can be found here:
 
 
 ## Dependencies
-[*Takin*](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779) are needed for compilation.
+The [*Takin* software](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779) are needed for compilation.
 Their repositories are available here:
-- https://github.com/t-weber/takin2
-- https://code.ill.fr/scientific-software/takin
+- Stable releases: https://github.com/t-weber/takin2
+- Development versions: https://code.ill.fr/scientific-software/takin
+- Binary releases: https://wiki.mlz-garching.de/takin
 
 
 ## Setup
-- Download external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
-- The ext/ directory contains the source code of the external libraries.
+- Download the external dependencies: `cd ext && ./setup_externals.sh && cd ..`.
+- The ext/ directory should now contain the source code of the external libraries.
 - Build the module: `make -j4`.
+- Copy the built plugin modules to *Takin's* plugin directory: `mkdir -pv ~/.takin/plugins/ && cp -v lib/*.so ~/.takin/plugins/`
+- The helper tools can be found in the bin/ directory.
 
 
 ## Acknowledgements
