@@ -31,7 +31,7 @@ Their repositories are available here:
 - The helper tools can be found in the bin/ directory.
 
 
-## Acknowledgements
+## References and Acknowledgements
 This source code is based on theoretical magnon dispersion models and their *Mathematica* implementations by M. Garst and J. Waizner, see these references and our papers below:
 - M. Garst and J. Waizner, Skyrmion linear spin-wave theory and *Mathematica* implementation, personal communications (2017-2020).
 - M. Garst and J. Waizner, Helimagnon linear spin-wave model and *Mathematica* implementation, personal communications (2014-2019).
