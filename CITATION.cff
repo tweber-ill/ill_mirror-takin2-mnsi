@@ -1,0 +1,17 @@
+# see: https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md
+
+cff-version: 1.2.0
+title: Skyrmion and helical dynamics in MnSi
+authors:
+  - family-names: WEBER
+    given-names: Tobias
+    orcid: "https://orcid.org/0000-0002-7230-1932"
+    email: tweber@ill.fr
+    affiliation: "Institut Laue-Langevin (ILL), Grenoble, France"
+abstract: "Supplementary source code for the paper 'Topological magnon band structure of emergent
+  Landau levels in a skyrmion lattice.'"
+message: "Please cite using the DOI 10.5281/zenodo.TODO."
+#doi: 10.5281/zenodo.TODO
+type: software
+license: GPL-2.0-only
+repository-code: "https://code.ill.fr/scientific-software/takin/plugins/mnsi"
