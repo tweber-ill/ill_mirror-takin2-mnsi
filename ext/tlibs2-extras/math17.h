@@ -2,7 +2,7 @@
  * tlibs2 -- old math library (moved here from: https://code.ill.fr/scientific-software/takin/tlibs2)
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2013-2021
- * @license GPLv3, see 'LICENSE' file
+ * @license see 'LICENSE' file
  * @desc Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
  * @desc for the references, see the 'LITERATURE' file
  *
