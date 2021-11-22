@@ -8,12 +8,12 @@
  * @desc This file is based on the theoretical helimagnon and skyrmion models by M. Garst and J. Waizner, see:
  *	- https://doi.org/10.1088/1361-6463/aa7573
  *	- https://kups.ub.uni-koeln.de/7937/
- *	- personal communications with M. Garst
+ *	- personal communications with M. Garst, 2017-2020.
  *	- https://doi.org/10.1038/nmat4223
  *	- https://doi.org/10.1103/PhysRevLett.115.097203
  *
  * ----------------------------------------------------------------------------
- * tlibs
+ * tlibs (DOI: 10.5281/zenodo.5717779)
  * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
