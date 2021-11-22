@@ -6,9 +6,9 @@
  * @desc tlibs forked on 7-Nov-2018 from the privately developed "tlibs" project (https://github.com/t-weber/tlibs).
  *
  * @desc This file is based on the theoretical helimagnon and skyrmion models by M. Garst and J. Waizner, see:
+ *	- personal communications with M. Garst, 2017-2020.
  *	- https://doi.org/10.1088/1361-6463/aa7573
  *	- https://kups.ub.uni-koeln.de/7937/
- *	- personal communications with M. Garst, 2017-2020.
  *	- https://doi.org/10.1038/nmat4223
  *	- https://doi.org/10.1103/PhysRevLett.115.097203
  *
@@ -69,10 +69,11 @@ namespace tl2 {
 
 /**
  * Calculates energies and dynamical structure factors from Landau-Lifshitz (M x) and fluctuation matrices.
- * Uses the mathematical formalism by M. Garst, J. Waizner, et al., references:
- * - https://doi.org/10.1088/1361-6463/aa7573
- * - https://doi.org/10.1038/nmat4223 (supplement)
- * - https://kups.ub.uni-koeln.de/7937/
+ * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
+ *	- personal communications with M. Garst, 2017-2020.
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://doi.org/10.1038/nmat4223 (supplement)
+ *	- https://kups.ub.uni-koeln.de/7937/
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
@@ -190,6 +191,11 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 /**
  * Gets the dynamical structure factors from the eigenvectors calculated using calc_dynstrucfact_landau.
+ * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
+ *	- personal communications with M. Garst, 2017-2020.
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://doi.org/10.1038/nmat4223 (supplement)
+ *	- https://kups.ub.uni-koeln.de/7937/
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<t_real, std::vector<t_real>>
