@@ -41,7 +41,6 @@ tests/py/__pycache__/**
 # Temporary tex files
 *.log
 *.aux
-*.pdf
 *.synctex.*
 *.toc
 *.bbl
@@ -55,4 +54,3 @@ tests/py/__pycache__/**
 *.bc
 
 ext/**
-

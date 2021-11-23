@@ -40,6 +40,5 @@ ext/takin/**
 ext/takin2/**
 
 # Figures
-*.pdf
 *.jpg
 *.png
