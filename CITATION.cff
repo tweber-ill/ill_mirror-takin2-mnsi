@@ -8,8 +8,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-7230-1932"
     email: tweber@ill.fr
     affiliation: "Institut Laue-Langevin (ILL), Grenoble, France"
-#abstract: "Supplementary source code for the paper 'Topological magnon band structure of emergent
-#  Landau levels in a skyrmion lattice.'"
+abstract: "Supplementary source code for the paper 'Topological magnon band structure of emergent Landau levels in a skyrmion lattice.'"
 message: "Please cite using the DOI 10.5281/zenodo.5718363."
 doi: 10.5281/zenodo.5718363
 type: software
