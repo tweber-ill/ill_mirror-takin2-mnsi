@@ -10,6 +10,7 @@
  *   - https://www.cs.uaf.edu/~cs331/notes/FirstFollow.pdf
  *
  * ----------------------------------------------------------------------------
+ * This file is a (former) part of tlibs (DOI: 10.5281/zenodo.5717779).
  * tlibs
  * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).

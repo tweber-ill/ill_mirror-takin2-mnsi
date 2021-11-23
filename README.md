@@ -4,7 +4,7 @@
 
 
 ## Description
-This is the supplementary source code to the paper
+This is the supplementary source code for the paper
 *Topological magnon band structure of emergent Landau levels in a skyrmion lattice*.
 
 The code contains a [*Takin*](https://doi.org/10.5281/zenodo.4117437) plugin module and its helper tools.
