@@ -3,12 +3,11 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date 15/nov/2021
  * @license GPLv2 (see 'LICENSE' file)
- *
- * g++ -o tof tof.cpp -lboost_system -lboost_filesystem -lboost_iostreams -lpng
  */
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 
 #include <boost/filesystem/path.hpp>
@@ -31,8 +30,10 @@ namespace gil = boost::gil;
 
 bool convert_tof(const fs::path& tof_file, const fs::path& out_file)
 {
+	// tof file data type for counts
 	using t_data = std::uint32_t;
 
+	// total image, summing over all channels
 	gil::gray16_image_t total_png(PSD_WIDTH, PSD_HEIGHT);
 	auto total_view = gil::view(total_png);
 
@@ -51,6 +52,7 @@ bool convert_tof(const fs::path& tof_file, const fs::path& out_file)
 
 		const t_data* data = reinterpret_cast<const t_data*>(file.data());
 
+		// image of a tof channel
 		gil::gray16_image_t png(PSD_WIDTH, PSD_HEIGHT);
 		auto view = gil::view(png);
 
@@ -82,12 +84,35 @@ bool convert_tof(const fs::path& tof_file, const fs::path& out_file)
 		if(counts)
 		{
 			//std::cout << "Channel " << t << ": " << std::dec << counts << std::endl;
+			// write channel image
 			gil::write_view(png_file, view, gil::png_tag());
 		}
 	}
 
+	// write total image
 	std::string total_png_file = out_file.string() + ".png";
 	gil::write_view(total_png_file, total_view, gil::png_tag());
+
+	// meta information at the end of the file
+	std::size_t size = fs::file_size(tof_file);
+	std::ptrdiff_t size_rest = size - PSD_WIDTH*PSD_HEIGHT*TOF_COUNT*sizeof(t_data);
+	if(size_rest > 0)
+	{
+		ios::mapped_file_source file(tof_file,
+			size_rest,
+			PSD_WIDTH*PSD_HEIGHT*TOF_COUNT*sizeof(t_data));
+
+		if(file.is_open())
+		{
+			const char* data = reinterpret_cast<const char*>(file.data());
+
+			std::string txt_file = out_file.string() + ".txt";
+			std::ofstream ofstr_txt(txt_file);
+
+			ofstr_txt.write(data, size_rest);
+		}
+	}
+
 	return true;
 }
 
