@@ -1,17 +1,16 @@
 /**
  * @author Tobias Weber <tweber@ill.fr>
- * @date mid-2016 (from my phd thesis), oct-2018 (adapted for paper)
+ * @date mid-2016 (from my phd thesis), oct-2018 (adapted for the paper)
  * @license GPLv2 (see 'LICENSE' file)
  */
 
 #include <fstream>
-//#include "tlibs2/libs/math17.h"
 #include "tlibs2-extras/math17.h"
+
 
 using t_real = double;
 using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
-
 
 
 t_vec helix_vec(const t_vec& vecCoord)
@@ -37,7 +36,6 @@ t_vec helix_vec(const t_vec& vecCoord)
 	vecRet /= ublas::norm_2(vecRet);
 	return vecRet;
 }
-
 
 
 void calcskx(const char* pcFile)
@@ -69,7 +67,6 @@ void calcskx(const char* pcFile)
 		}
 	}
 }
-
 
 
 int main(int argc, char **argv)

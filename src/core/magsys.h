@@ -17,7 +17,6 @@
 #ifndef __MAGSYS_H__
 #define __MAGSYS_H__
 
-
 #include <vector>
 #include <complex>
 #include <memory>

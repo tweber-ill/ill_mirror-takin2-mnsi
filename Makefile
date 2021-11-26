@@ -29,7 +29,6 @@ ifneq ($(mingw_build), 1)
 	LIBBOOSTSYS = -lboost_system
 	LIBBOOSTFILESYS = -lboost_filesystem
 	LIBBOOSTIO = -lboost_iostreams
-	LIBPNG = -lpng
 
 	BIN_SUFFIX =
 else
@@ -43,7 +42,6 @@ else
 	LIBBOOSTSYS = -lboost_system-x64
 	LIBBOOSTFILESYS = -lboost_filesystem-x64
 	LIBBOOSTIO = -lboost_iostreams-x64
-	LIBPNG = -lpng
 
 	BIN_SUFFIX = .exe
 endif
@@ -142,7 +140,7 @@ bin/drawskx: src/calc/drawskx.o
 
 bin/tof: src/takin/tof.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
-		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) $(LIBPNG)
+		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
