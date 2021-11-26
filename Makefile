@@ -75,10 +75,11 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 # -----------------------------------------------------------------------------
 .PHONY: all clean
 
-all: prepare lib/skxmod.so lib/skxmod_grid.so \
+all: prepare \
 	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight bin/tof \
-	bin/heliphase bin/skx_gs bin/weight_sum
+	bin/heliphase bin/skx_gs bin/weight_sum \
+	lib/skxmod.so lib/skxmod_grid.so
 
 clean:
 	find . -name "*.o" -exec rm -fv {} \;
@@ -96,15 +97,19 @@ prepare:
 # -----------------------------------------------------------------------------
 lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/longfluct.o src/core/magsys.o \
-		ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
+		ext/takin/tools/monteconvo/sqwbase.o \
+		ext/tlibs2/libs/log.o ext/tlibs/log/log.o
 	@echo "Linking Takin module $@..."
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ -llapacke
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ \
+		-llapacke
 	$(STRIP) $@
 
 lib/skxmod_grid.so: src/takin/takin_grid.o \
-		ext/takin/tools/monteconvo/sqwbase.o ext/tlibs2/libs/log.o
+		ext/takin/tools/monteconvo/sqwbase.o \
+		ext/tlibs2/libs/log.o ext/tlibs/log/log.o
 	@echo "Linking Takin grid module $@..."
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ $(LIBBOOSTSYS) -lQt5Core
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ \
+		$(LIBBOOSTSYS) -lQt5Core
 	$(STRIP) $@
 # -----------------------------------------------------------------------------
 
