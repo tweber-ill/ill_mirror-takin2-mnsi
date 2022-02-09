@@ -3,11 +3,11 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date dec-16, sep-18
  * @desc This file implements the theoretical magnon model by M. Garst and J. Waizner, see:
- * 	- https://doi.org/10.1088/1361-6463/aa7573
- * 	- https://kups.ub.uni-koeln.de/7937/
+ *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
  *	- personal communications with M. Garst, 2016-2019.
  * @desc This file is based on:
- * 	- the descriptions and Mathematica implementations of the field-polarised magnon model by M. Garst, 2016.
+ *	- the descriptions and Mathematica implementations of the field-polarised magnon model by M. Garst, 2016.
  * @license GPLv2 (see 'LICENSE' file)
  */
 

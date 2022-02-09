@@ -3,8 +3,8 @@
  * @author tweber@ill.fr
  * @date jul-18
  * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:
- *	- https://doi.org/10.1088/1361-6463/aa7573
- *	- https://kups.ub.uni-koeln.de/7937/
+ *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
  *	- Personal communications with M. Garst, 2017-2020.
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,

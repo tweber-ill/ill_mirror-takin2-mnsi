@@ -3,9 +3,9 @@
  * @author tweber@ill.fr
  * @date mid-16, jul-18
  * @desc This file implements the theoretical helimagnon model by M. Garst and J. Waizner, references:
- *	- https://doi.org/10.1088/1361-6463/aa7573
- *	- https://kups.ub.uni-koeln.de/7937/
- *	- https://doi.org/10.1103/PhysRevLett.115.097203
+ *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
+ *	- M. Kugler, G. Brandl, et al., Phys. Rev. Lett. 115, 097203 (2015), https://doi.org/10.1103/PhysRevLett.115.097203
  *	- Personal communications with M. Garst, 2014-2019.
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
