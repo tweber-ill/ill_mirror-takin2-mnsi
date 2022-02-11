@@ -7,10 +7,10 @@
  *
  * @desc This file is based on the theoretical helimagnon and skyrmion models by M. Garst and J. Waizner, see:
  *	- personal communications with M. Garst, 2017-2020.
- *	- https://doi.org/10.1088/1361-6463/aa7573
- *	- https://kups.ub.uni-koeln.de/7937/
- *	- https://doi.org/10.1038/nmat4223
- *	- https://doi.org/10.1103/PhysRevLett.115.097203
+ *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
+ *	- M. Kugler, G. Brandl, et al., Phys. Rev. Lett. 115, 097203 (2015),https://doi.org/10.1103/PhysRevLett.115.097203
+ *	- T Schwarze, J. Waizner, et al., Nat. Mater. 14, pp. 478–483 (2015), https://doi.org/10.1038/nmat4223
  *
  * ----------------------------------------------------------------------------
  * This file is a (former) part of tlibs (DOI: 10.5281/zenodo.5717779).
@@ -19,8 +19,6 @@
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
- * "magtools", "geo", and "misc" projects
- * Copyright (C) 2017-2021  Tobias WEBER (privately developed).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
