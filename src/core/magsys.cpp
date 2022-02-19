@@ -106,7 +106,11 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 		for(std::size_t i=0; i<args.size(); i+=6)
 		{
 			auto m = tl2::make_vec<ublas::vector<t_cplx>>(
-				{ args[i]+imag*args[i+1], args[i+2]+imag*args[i+3], args[i+4]+imag*args[i+5] });
+			{
+				args[i] + imag*args[i+1],
+				args[i+2] + imag*args[i+3],
+				args[i+4] + imag*args[i+5]
+			});
 			_fourier.emplace_back(std::move(m));
 		}
 		return _fourier;

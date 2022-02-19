@@ -19,6 +19,10 @@ using t_cplx = std::complex<t_real>;
 // z values are the real components
 const std::vector<t_real> _allcomps =
 {{
+	// order 1
+	/*0., 0., 10.,
+	-5., 0., -5.,*/
+
 	// order 4
 	/*0, 0, 10.638285,
 	-5.8392782, 0, -5.4227098,
@@ -150,18 +154,24 @@ int main()
 	Skx<t_real, t_cplx, ORDER> skx;
 	skx.SetDebug(1);
 
-	std::vector<ublas::vector<t_cplx>> fourier{
-//		tl2::make_vec<ublas::vector<t_cplx>>({ 0., 0., 10. }),
-//		tl2::make_vec<ublas::vector<t_cplx>>({ -5., 0., -5. }),
-	};
+	// set initial fourier components
+	{
+		std::vector<ublas::vector<t_cplx>> fourier;
+		fourier.reserve(_allcomps.size()/3);
 
-	fourier.reserve(_allcomps.size()/3);
+		for(std::size_t comp=0; comp<_allcomps.size(); comp+=3)
+		{
+			fourier.push_back(tl2::make_vec<ublas::vector<t_cplx>>(
+			{
+				_allcomps[comp],
+				_allcomps[comp+1],
+				_allcomps[comp+2]
+			}));
+		}
 
-	for(std::size_t comp=0; comp<_allcomps.size(); comp+=3)
-		fourier.push_back(tl2::make_vec<ublas::vector<t_cplx>>({_allcomps[comp], _allcomps[comp+1], _allcomps[comp+2]}));
+		skx.SetFourier(fourier);
+	}
 
-
-	skx.SetFourier(fourier);
 	skx.SetT(-1000.);
 	skx.SetB(25.);
 

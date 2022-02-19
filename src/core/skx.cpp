@@ -211,7 +211,11 @@ Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 			fourier = tl2::prod_mv(rot, fourier);
 
 			get_comp(M, idx1, idx2) = tl2::make_vec<t_vec_cplx>
-				({ imag*fourier[0], imag*fourier[1], m_fourier[ihx+1][2] });
+				({
+					imag*fourier[0],
+					imag*fourier[1],
+					m_fourier[ihx+1][2]
+				});
 		}
 	}
 
@@ -250,7 +254,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		t_vec pos_lab = tl2::prod_mv(m_Bmat, pos_rlu);
 
 		const auto& m = get_comp(m_M, pair.first, pair.second);
-		const auto len = tl2::inner(m, m);
+		const auto len = tl2::inner_cplx(m, m);
 
 		// dmi
 		cF += 8. * m_pitch * imag*(pos_lab[0]*m[1]*m[2] - pos_lab[1]*m[2]*m[0]);
@@ -290,6 +294,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		// the x and y components are purely imaginary, z purely real
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
+
 	}
 
 

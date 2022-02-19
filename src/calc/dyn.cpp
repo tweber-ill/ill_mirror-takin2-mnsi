@@ -55,7 +55,15 @@ void calc_disp(char dyntype,
 		fourier_skx.reserve(_skxgs_allcomps.size()/3);
 
 		for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
-			fourier_skx.push_back(tl2::make_vec<ublas::vector<t_cplx>>({_skxgs_allcomps[comp], _skxgs_allcomps[comp+1], _skxgs_allcomps[comp+2]}));
+		{
+			fourier_skx.push_back(
+				tl2::make_vec<ublas::vector<t_cplx>>(
+				{
+					_skxgs_allcomps[comp],
+					_skxgs_allcomps[comp+1],
+					_skxgs_allcomps[comp+2]
+				}));
+		}
 
 		skx->SetFourier(fourier_skx);
 
@@ -64,6 +72,8 @@ void calc_disp(char dyntype,
 		skx->GenFullFourier();
 		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 		skx->SetG(G[0], G[1], G[2]);
+
+		std::cout << "Ground state F = " << skx->F() << "." << std::endl;
 
 		bc2 = skx->GetBC2();
 		dyn = skx;
