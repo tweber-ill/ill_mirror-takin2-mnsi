@@ -5,7 +5,7 @@
 
 ## Description
 This is the supplementary source code for the paper
-*Topological magnon band structure of emergent Landau levels in a skyrmion lattice*.
+[*Topological magnon band structure of emergent Landau levels in a skyrmion lattice*](https://doi.org/10.1126/science.abe4441).
 
 The code contains a [*Takin*](https://doi.org/10.5281/zenodo.4117437) plugin module and its helper tools.
 The module calculates the dispersion and the dynamical structure factor for the helimagnetic, the field-polarised, and the skyrmion phase of MnSi.
