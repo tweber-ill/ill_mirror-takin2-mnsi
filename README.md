@@ -55,4 +55,4 @@ The helimagnon and ferromagnetic parts of this code have been used in the follow
 - T. Weber, J. Waizner, G. S. Tucker, L. Beddrich, M. Skoulatos, R. Georgii, A. Bauer, C. Pfleiderer, M. Garst, and P. Böni, AIP Advances **8**, 101328, https://doi.org/10.1063/1.5041036 (2018).
 
 The skyrmion part of this code has been used in the following paper:
-- T. Weber, D. M. Fobes, J. Waizner, P. Steffens, G. S. Tucker, M. B\"ohm, L. Beddrich, C. Franz, H. Gabold, R. Bewley, D. Voneshen, M. Skoulatos, R. Georgii, G. Ehlers, A. Bauer, C. Pfleiderer, P. B\"oni, M. Janoschek, and M. Garst, Science **375**(6584), pp. 1025-1030, https://doi.org/10.1126/science.abe4441 (2022).
+- T. Weber, D. M. Fobes, J. Waizner, P. Steffens, G. S. Tucker, M. Böhm, L. Beddrich, C. Franz, H. Gabold, R. Bewley, D. Voneshen, M. Skoulatos, R. Georgii, G. Ehlers, A. Bauer, C. Pfleiderer, P. Böni, M. Janoschek, and M. Garst, Science **375**(6584), pp. 1025-1030, https://doi.org/10.1126/science.abe4441 (2022).
