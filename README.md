@@ -36,7 +36,7 @@ Furthermore, their repositories are available here:
 This source code is based on theoretical magnon dispersion models and their *Mathematica* implementations by M. Garst and J. Waizner, see these references and our papers below:
 - M. Garst and J. Waizner, Skyrmion linear spin-wave theory and *Mathematica* implementation, personal communications (2017-2020).
 - M. Garst and J. Waizner, Helimagnon linear spin-wave model and *Mathematica* implementation, personal communications (2014-2019).
-- M. Garst and J. Waizner, Field-polarised linear spin-wave model and *Mathematica*, personal communications (2016-2019).
+- M. Garst and J. Waizner, Field-polarised linear spin-wave model and *Mathematica* implementation, personal communications (2016-2019).
 - M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. **50** 293002, https://doi.org/10.1088/1361-6463/aa7573 (2017).
 - J. Waizner, PhD thesis, Universität zu Köln, https://kups.ub.uni-koeln.de/7937/ (2017).
 
