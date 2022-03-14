@@ -211,11 +211,11 @@ Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 			fourier = tl2::prod_mv(rot, fourier);
 
 			get_comp(M, idx1, idx2) = tl2::make_vec<t_vec_cplx>
-				({
-					imag*fourier[0],
-					imag*fourier[1],
-					m_fourier[ihx+1][2]
-				});
+			({
+				imag*fourier[0],
+				imag*fourier[1],
+				m_fourier[ihx+1][2]
+			});
 		}
 	}
 
@@ -478,8 +478,12 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 		int idx1 = int(std::round(pk_rlu[0]));
 		int idx2 = int(std::round(pk_rlu[1]));
+
 		auto& oldmat = get_comp(*Fluc, SIZE, idx1, idx2, idx1, idx2);
-		if(!oldmat.size1()) oldmat = 2.*mat; else oldmat += 2.*mat;
+		if(!oldmat.size1())
+			oldmat = 2.*mat;
+		else
+			oldmat += 2.*mat;
 	}
 	// ------------------------------------------------------------------------
 
