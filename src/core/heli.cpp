@@ -9,10 +9,10 @@
  *	- Personal communications with M. Garst, 2014-2019.
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
- *	- The 2015 and 2016 Python implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
+ *	- The 2015 and 2016 Python optimised implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
  *	  This present version started as a C++ port of that Python implementation by G. Brandl and M. Kugler,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
- *	- The 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model,
+ *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model,
  *	  that also included improvements to the helimagnon code, which we ported to C++ in the present version.
  * @license GPLv2 (see 'LICENSE' file)
  */
@@ -74,7 +74,9 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	{
 		int val = -m_idx2[0][i] - m_idx2[1][i];
 		if(std::abs(val) > ORDER)
-		{ continue; }
+		{
+			continue;
+		}
 		else
 		{
 			idx2[0].push_back(m_idx2[0][i]);
@@ -91,7 +93,9 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	{
 		int val = -m_idx3[0][i] - m_idx3[1][i] - m_idx3[2][i];
 		if(std::abs(val) > ORDER)
-		{ continue; }
+		{
+			continue;
+		}
 		else
 		{
 			idx3[0].push_back(m_idx3[0][i]);
@@ -237,7 +241,6 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<ublas::vector<t_c
 }
 
 
-
 /**
  * energies and spectral weights
  */
@@ -268,14 +271,17 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	constexpr t_real A = g_hoc<t_real>;
 	constexpr t_real A2 = A*A;
 	constexpr t_real A3 = A2*A;
+
 	static const/*expr*/ t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) /
 		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
+
 	static const/*expr*/ t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A -
 		imag*std::pow(3.,1./6.)*(std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.), 2.) /
 		(24.*std::pow(2., 1./3.) * A*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
+
 	static const/*expr*/ t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) +
 		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) -
 		A*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.) +
@@ -283,6 +289,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.) *
 		(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A - imag*std::pow(3., 1./6) *
 		(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.)))).real();
+
 	const t_real _c4 = _c3 + 88./3. * Brel2*Brel2;
 	const t_real _c5 = _c3 + 88./3. * Brel*Brel;
 

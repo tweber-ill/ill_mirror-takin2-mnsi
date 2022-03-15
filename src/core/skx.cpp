@@ -8,7 +8,7 @@
  *	- Personal communications with M. Garst, 2017-2020.
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
- *	- The 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
+ *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
  *	  This present version started as a C++ port of that Python implementation by M. Kugler and G. Brandl,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
  * @license GPLv2 (see 'LICENSE' file)
@@ -71,8 +71,10 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 				m_allpeaks.emplace_back(tl2::make_vec<t_vec>({h,k}));
 
 	for(t_real h=0; h<ORDER+1; ++h)
+	{
 		for(t_real k=0; k<ORDER; ++k)
-			if(h>k)
+		{
+			if(h > k)
 			{
 				t_vec vec_rlu = tl2::make_vec<t_vec>({h,k});
 				t_vec vec_lab = tl2::prod_mv(m_Bmat, vec_rlu);
@@ -81,6 +83,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 				m_peaks_60.emplace_back(std::move(vec_rlu));
 				m_peaks_60_lab.emplace_back(std::move(vec_lab));
 			}
+		}
+	}
 
 
 	// the top and bottom 180 degrees
@@ -151,7 +155,9 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		auto val1 = -m_idx2[0][i].first - m_idx2[1][i].first;
 		auto val2 = -m_idx2[0][i].second - m_idx2[1][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{ continue; }
+		{
+			continue;
+		}
 		else
 		{
 			idx2[0].push_back(m_idx2[0][i]);
@@ -169,7 +175,9 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		auto val1 = -m_idx3[0][i].first - m_idx3[1][i].first - m_idx3[2][i].first;
 		auto val2 = -m_idx3[0][i].second - m_idx3[1][i].second - m_idx3[2][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{ continue; }
+		{
+			continue;
+		}
 		else
 		{
 			idx3[0].push_back(m_idx3[0][i]);
@@ -365,10 +373,14 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		std::copy(idx2[1].begin(), idx2[1].end(), std::back_inserter(idx3[1]));
 
 		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		{
 			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+			{
 				idx3[2].emplace_back(std::make_pair(
 					int(std::round(m_allpeaks[i][0])),
 					int(std::round(m_allpeaks[i][1]))));
+			}
+		}
 	}
 
 
@@ -451,7 +463,10 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			mat(d,d) += 2.*tl2::inner(vecM1, vecM2);
 
 		auto& oldmat = get_comp(*Fluc, SIZE, idx3[0][i].first, idx3[0][i].second, idx3[1][i].first, idx3[1][i].second);
-		if(!oldmat.size1()) oldmat = 2.*mat; else oldmat += 2.*mat;
+		if(!oldmat.size1())
+			oldmat = 2.*mat;
+		else
+			oldmat += 2.*mat;
 	}
 
 
@@ -543,7 +558,11 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	if(tl2::float_equal<t_real>(qh, 0., epshkl) &&
 		tl2::float_equal<t_real>(qk, 0., epshkl) &&
 		tl2::float_equal<t_real>(ql, 0., epshkl))
-	{ qh += epshkl; qk += epshkl; ql += epshkl; }
+	{
+		qh += epshkl;
+		qk += epshkl;
+		ql += epshkl;
+	}
 
 	ql = -ql;
 
