@@ -98,7 +98,6 @@ public:
 
 
 private:
-	t_real m_pitch = 1;
 	t_real m_B = 0, m_T = -100;
 
 	std::vector<ublas::vector<t_cplx>> m_fourier{};

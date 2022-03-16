@@ -74,15 +74,11 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	{
 		int val = -m_idx2[0][i] - m_idx2[1][i];
 		if(std::abs(val) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			idx2[0].push_back(m_idx2[0][i]);
-			idx2[1].push_back(m_idx2[1][i]);
-			idx2[2].push_back(val);
-		}
+
+		idx2[0].push_back(m_idx2[0][i]);
+		idx2[1].push_back(m_idx2[1][i]);
+		idx2[2].push_back(val);
 	}
 	for(int i=0; i<3; ++i)
 		m_idx2[i] = std::move(idx2[i]);
@@ -93,16 +89,12 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	{
 		int val = -m_idx3[0][i] - m_idx3[1][i] - m_idx3[2][i];
 		if(std::abs(val) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			idx3[0].push_back(m_idx3[0][i]);
-			idx3[1].push_back(m_idx3[1][i]);
-			idx3[2].push_back(m_idx3[2][i]);
-			idx3[3].push_back(val);
-		}
+
+		idx3[0].push_back(m_idx3[0][i]);
+		idx3[1].push_back(m_idx3[1][i]);
+		idx3[2].push_back(m_idx3[2][i]);
+		idx3[3].push_back(val);
 	}
 	for(int i=0; i<4; ++i)
 		m_idx3[i] = std::move(idx3[i]);
@@ -111,24 +103,13 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 
 /**
  * free energy
- * e.g.: M = (1+i, 1-i, 0), prop_1 = (0, 0, kh), prop_2 = (0, 0, -i*kh)
- *
- * Heisenberg term:
- *	- discrete, real: -J_ij S_i * S_j
- *	- continuous, real: J (del M(r))^2, Fourier: J k^2 |M(k)|^2
- *
- * DM term:
- *	- discrete, real: D_ij * (S_i cross S_j)
- *	- continuous, real: D M(r) (del cross M(r))
  */
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
 {
 	// only z component used
-	auto fourier0 = m_fourier[0][2];
-
-	auto fourier_no0 = m_fourier;
-	fourier_no0.erase(fourier_no0.begin());
+	auto m0 = m_fourier[0][2];
+	const auto& m = m_fourier;
 
 	// add complex conjugate
 	auto fourier_full = m_fourier;
@@ -145,60 +126,50 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		fourier_full_comp[2].push_back(std::get<2>(tup));
 	}
 
-	// lengths
-	std::vector<t_real> lens;
-	for(std::size_t i=0; i<fourier_no0.size(); ++i)
-	{
-		const auto [fourier_real, fourier_imag] = tl2::split_cplx_vec<
-			ublas::vector<std::complex<t_real>>, ublas::vector<t_real>>(fourier_no0[i]);
-
-		t_real len = ublas::inner_prod(fourier_real, fourier_real) +
-			ublas::inner_prod(fourier_imag, fourier_imag);
-		lens.push_back(2. * len);
-	}
-
 
 	// free energy
 	t_cplx cF = 0;
 
 	// dip
-	cF += g_chi<t_real>/3. * fourier0*fourier0;
-	for(std::size_t i=0; i<fourier_no0.size(); ++i)
-		cF += 2. * g_chi<t_real> * std::norm(fourier_no0[i][2]);
+	cF += g_chi<t_real>/3. * m0*m0;
+	for(std::size_t i=1; i<m.size(); ++i)
+		cF += 2. * g_chi<t_real> * std::norm(m[i][2]);
 
 	// dmi
-	for(std::size_t i=0; i<ORDER; ++i)
+	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
-		t_real k = t_real(i+1);
+		const t_real q = t_real(i);
+		const auto& them = m[i];
 
-		cF += 8. * m_pitch * k *
-			( fourier_no0[i][0].real() * fourier_no0[i][1].imag() -
-			fourier_no0[i][1].real() * fourier_no0[i][0].imag() );
+		cF += 8. * q *
+			( them[0].real() * them[1].imag() -
+			  them[1].real() * them[0].imag() );
 	}
 
 	// hoc
-	for(std::size_t i=0; i<ORDER; ++i)
+	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
-		t_real k = t_real(i+1);
+		const t_real q = t_real(i);
+		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
-		cF += g_hoc<t_real> * m_pitch*m_pitch * k*k*k*k * lens[i];
+		cF += g_hoc<t_real> * q*q*q*q * 2.*m_sq;
 	}
 
 	// phi^2 & phi^4
-	cF += (m_T + 1.) * fourier0*fourier0  +  fourier0*fourier0*fourier0*fourier0;
-	for(std::size_t i=0; i<ORDER; ++i)
+	cF += (m_T + 1.) * m0*m0  +  m0*m0*m0*m0;
+	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
-		t_real k = t_real(i+1);
+		const t_real q = t_real(i);
+		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
 		// Heisenberg
-		cF += m_pitch*m_pitch * k*k * lens[i];
-
-		cF += (m_T + 1. + fourier0*fourier0) * lens[i];
+		cF += q*q * 2.*m_sq;
+		cF += (m_T + 1. + m0*m0) * 2.*m_sq;
 	}
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		cF += 2. * fourier0 * get_comp(fourier_full_comp[2], m_idx2[0][i]) *
+		cF += 2. * m0 * get_comp(fourier_full_comp[2], m_idx2[0][i]) *
 		(
 			get_comp(fourier_full_comp[0], m_idx2[1][i]) * get_comp(fourier_full_comp[0], m_idx2[2][i]) +
 			get_comp(fourier_full_comp[1], m_idx2[1][i]) * get_comp(fourier_full_comp[1], m_idx2[2][i]) +
@@ -224,7 +195,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 
 	// zee
-	cF += -m_B*fourier0;
+	cF += -m_B*m0;
 	return cF.real();
 }
 

@@ -40,7 +40,7 @@ void calc_disp(
 	skx.SetFourier(fourier_skx);
 	skx.SetProjNeutron(false);
 	skx.SetT(-1000.);
-	skx.SetB(25.);	// BC2 = 40.3425
+	skx.SetB(25.);
 	skx.GenFullFourier();
 	skx.SetFilterZeroWeight(true);
 

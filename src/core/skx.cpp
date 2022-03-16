@@ -49,7 +49,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	t_mat curRot = tl2::unit_m<t_mat>(2);
 	const auto rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
 
-	//m_rot.push_back(curRot);
+	m_rot.reserve(6);
 	for(int i=0; i<6; ++i)
 	{
 		curRot = tl2::prod_mm(curRot, rot60);
@@ -57,6 +57,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 	// rotation in rlu
+	m_rotRlu.reserve(m_rot.size());
 	for(const auto& rot : m_rot)
 	{
 		auto M = tl2::transform<t_mat>(rot, m_Bmat, 0);
@@ -65,11 +66,18 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 
 	// all peaks
+	m_allpeaks.reserve((2*ORDER+1) * (2*ORDER+1));
 	for(t_real h=-ORDER; h<ORDER+1; ++h)
+	{
 		for(t_real k=-ORDER; k<ORDER+1; ++k)
+		{
 			if(std::abs(h-k) <= t_real(ORDER))
 				m_allpeaks.emplace_back(tl2::make_vec<t_vec>({h,k}));
+		}
+	}
 
+	m_peaks_60.reserve((ORDER+1) * ORDER);
+	m_peaks_60_lab.reserve((ORDER+1) * ORDER);
 	for(t_real h=0; h<ORDER+1; ++h)
 	{
 		for(t_real k=0; k<ORDER; ++k)
@@ -87,12 +95,16 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 
-	// the top and bottom 180 degrees
-	std::vector<t_vec> peaks_180_t, peaks_180_b;
+	// the top 180 degrees
+	std::vector<t_vec> peaks_180_t;
+	peaks_180_t.reserve(m_rotRlu.size() * m_peaks_60.size());
 
+	m_peaks_360.reserve(m_rotRlu.size());
 	for(const auto& rot : m_rotRlu)
 	{
 		std::vector<t_vec> _peaks;
+		_peaks.reserve(m_peaks_60.size());
+
 		for(const auto &vec : m_peaks_60)
 		{
 			t_vec pk_rlu = tl2::prod_mv(rot, vec);
@@ -100,16 +112,12 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 			if(tl2::float_equal<t_real>(pk[1], 0.))
 			{
-				if(pk[0] < 0.)
-					peaks_180_b.push_back(pk_rlu);
-				else
+				if(pk[0] >= 0.)
 					peaks_180_t.push_back(pk_rlu);
 			}
 			else
 			{
-				if(pk[1] < 0.)
-					peaks_180_b.push_back(pk_rlu);
-				else
+				if(pk[1] >= 0.)
 					peaks_180_t.push_back(pk_rlu);
 			}
 
@@ -120,71 +128,81 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 
 	// #1
+	m_idx1.reserve(peaks_180_t.size());
 	for(const auto& vec : peaks_180_t)
+	{
 		m_idx1.emplace_back(std::make_pair(
 			int(std::round(vec[0])), int(std::round(vec[1]))));
+	}
 
 	// #2
+	m_idx2[0].reserve(m_allpeaks.size() * m_idx1.size());
+	m_idx2[1].reserve(m_allpeaks.size() * peaks_180_t.size());
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
 		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
 		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
+		{
 			m_idx2[1].emplace_back(std::make_pair(
 				int(std::round(m_allpeaks[i][0])),
 				int(std::round(m_allpeaks[i][1]))));
+		}
 	}
 
 	// #3
+	m_idx3[0].reserve(m_allpeaks.size() * m_idx2[0].size());
+	m_idx3[1].reserve(m_allpeaks.size() * m_idx2[1].size());
+	m_idx3[2].reserve(m_allpeaks.size() * m_allpeaks.size() * peaks_180_t.size());
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
 		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
 		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
 
 		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
+		{
 			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+			{
 				m_idx3[2].emplace_back(std::make_pair(
 					int(std::round(m_allpeaks[i][0])),
 					int(std::round(m_allpeaks[i][1]))));
+			}
+		}
 	}
 
 
 	// reduce #2
 	decltype(m_idx2) idx2;
+	for(int i=0; i<3; ++i)
+		idx2[i].reserve(m_idx2[0].size());
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
 		auto val1 = -m_idx2[0][i].first - m_idx2[1][i].first;
 		auto val2 = -m_idx2[0][i].second - m_idx2[1][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			idx2[0].push_back(m_idx2[0][i]);
-			idx2[1].push_back(m_idx2[1][i]);
-			idx2[2].emplace_back(std::make_pair(val1, val2));
-		}
+
+		idx2[0].push_back(m_idx2[0][i]);
+		idx2[1].push_back(m_idx2[1][i]);
+		idx2[2].emplace_back(std::make_pair(val1, val2));
 	}
 	for(int i=0; i<3; ++i)
 		m_idx2[i] = std::move(idx2[i]);
 
 	// reduce #3
 	decltype(m_idx3) idx3;
+	for(int i=0; i<4; ++i)
+		idx3[i].reserve(m_idx3[0].size());
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		auto val1 = -m_idx3[0][i].first - m_idx3[1][i].first - m_idx3[2][i].first;
 		auto val2 = -m_idx3[0][i].second - m_idx3[1][i].second - m_idx3[2][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			idx3[0].push_back(m_idx3[0][i]);
-			idx3[1].push_back(m_idx3[1][i]);
-			idx3[2].push_back(m_idx3[2][i]);
-			idx3[3].emplace_back(std::make_pair(val1, val2));
-		}
+
+		idx3[0].push_back(m_idx3[0][i]);
+		idx3[1].push_back(m_idx3[1][i]);
+		idx3[2].push_back(m_idx3[2][i]);
+		idx3[3].emplace_back(std::make_pair(val1, val2));
 	}
 	for(int i=0; i<4; ++i)
 		m_idx3[i] = std::move(idx3[i]);
@@ -250,36 +268,38 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 	// free energy
 	t_cplx cF = 0;
-	auto fourier0 = tl2::veclen(m_M(0,0));
+	auto m0 = tl2::veclen(m_M(0,0));
 
 	// dip
-	cF += g_chi<t_real>/3. * fourier0*fourier0;
+	cF += g_chi<t_real>/3. * m0*m0;
 
 
 	for(const auto& pair : m_idx1)
 	{
-		t_vec pos_rlu = tl2::make_vec<t_vec>({t_real(pair.first), t_real(pair.second)});
-		t_vec pos_lab = tl2::prod_mv(m_Bmat, pos_rlu);
+		t_vec q_rlu = tl2::make_vec<t_vec>({t_real(pair.first), t_real(pair.second)});
+		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
 
 		const auto& m = get_comp(m_M, pair.first, pair.second);
-		const auto len = tl2::inner_cplx(m, m);
+		const auto m_sq = tl2::inner_cplx(m, m);
+		const auto q_sq = tl2::inner(q, q);
+
+		// dip
+		cF += 2. * g_chi<t_real> * std::pow(q[0]*m[0] + q[1]*m[1], 2.) / q_sq;
 
 		// dmi
-		cF += 8. * m_pitch * imag*(pos_lab[0]*m[1]*m[2] - pos_lab[1]*m[2]*m[0]);
+		cF += 8.*imag * m[2] * (q[0]*m[1] - q[1]*m[0]);
 
 		// hoc
-		cF += 2. * g_hoc<t_real> * m_pitch*m_pitch * len
-			* std::pow(pos_rlu[0]*pos_rlu[0] + pos_rlu[1]*pos_rlu[1] - pos_rlu[0]*pos_rlu[1], 2.);
+		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
 		// phi^2 & phi^4
-		cF += 2. * m_pitch*m_pitch * len
-			* (pos_rlu[0]*pos_rlu[0] + pos_rlu[1]*pos_rlu[1] - pos_rlu[0]*pos_rlu[1]);
-		cF += (m_T + 1. + fourier0*fourier0) * 2.*len;
+		cF += 2. * m_sq * q_sq;
+		cF += (m_T + 1. + m0*m0) * 2.*m_sq;
 	}
 
 
 	// phi^2 & phi^4
-	cF += (m_T + 1.) * fourier0*fourier0  +  fourier0*fourier0*fourier0*fourier0;
+	cF += (m_T + 1.) * m0*m0 + m0*m0*m0*m0;
 
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
@@ -289,7 +309,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const auto& m3 = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
 
 		// the x and y components are purely imaginary, z purely real
-		cF += 2. * fourier0 * m1[2] * tl2::inner(m2, m3);
+		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
 	}
 
 
@@ -302,12 +322,11 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		// the x and y components are purely imaginary, z purely real
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
-
 	}
 
 
 	// zee
-	cF += -m_B*fourier0;
+	cF += -m_B*m0;
 
 	return cF.real();
 }
@@ -391,15 +410,11 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		auto val1 = idx2[0][i].first - idx2[1][i].first;
 		auto val2 = idx2[0][i].second - idx2[1][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			_idx2[0].push_back(idx2[0][i]);
-			_idx2[1].push_back(idx2[1][i]);
-			_idx2[2].emplace_back(std::make_pair(val1, val2));
-		}
+
+		_idx2[0].push_back(idx2[0][i]);
+		_idx2[1].push_back(idx2[1][i]);
+		_idx2[2].emplace_back(std::make_pair(val1, val2));
 	}
 	for(int i=0; i<3; ++i)
 		idx2[i] = std::move(_idx2[i]);
@@ -411,16 +426,12 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		auto val1 = idx3[0][i].first - idx3[1][i].first - idx3[2][i].first;
 		auto val2 = idx3[0][i].second - idx3[1][i].second - idx3[2][i].second;
 		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-		{
 			continue;
-		}
-		else
-		{
-			_idx3[0].push_back(idx3[0][i]);
-			_idx3[1].push_back(idx3[1][i]);
-			_idx3[2].push_back(idx3[2][i]);
-			_idx3[3].emplace_back(std::make_pair(val1, val2));
-		}
+
+		_idx3[0].push_back(idx3[0][i]);
+		_idx3[1].push_back(idx3[1][i]);
+		_idx3[2].push_back(idx3[2][i]);
+		_idx3[3].emplace_back(std::make_pair(val1, val2));
 	}
 	for(int i=0; i<4; ++i)
 		idx3[i] = std::move(_idx3[i]);

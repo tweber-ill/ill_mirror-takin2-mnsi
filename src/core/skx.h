@@ -112,7 +112,6 @@ private:
 
 	std::vector<t_mat> m_rot{}, m_rotRlu{};
 
-	t_real m_pitch = 1;
 	t_real m_B = 0;
 	t_real m_T = -100;
 	t_real m_Bc2 = 0;

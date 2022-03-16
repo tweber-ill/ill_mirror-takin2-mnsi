@@ -41,7 +41,7 @@ void calc_disp(char dyntype,
 		skx->SetFourier(fourier_skx);
 		skx->SetProjNeutron(iProj!=0);
 		skx->SetT(-1000.);
-		skx->SetB(25.);	// BC2 = 40.3425
+		skx->SetB(25.);
 		skx->GenFullFourier();
 		skx->SetFilterZeroWeight(1);
 		skx->SetCoords(Bx,By,Bz, Px,Py,Pz);

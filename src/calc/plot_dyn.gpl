@@ -147,11 +147,11 @@ E_sign = 1.
 
 # polarised results
 plot \
-	file_dyn using ($11):($4)                                        with points pt 0        lc rgb col_full notitle, \
-	file_dyn using ($11):($4):(E_sign*weight($7)*scale_weight)              with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
-	file_dyn using ($11):($4):(E_sign*weight($6)*scale_weight)              with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
-	file_dyn using ($11):($4):(E_sign*weight_ifminusE($7, $4)*scale_weight) with points pt 7 ps var lc rgb col_pol2 notitle, \
-	file_dyn using ($11):($4):(E_sign*weight($8)*scale_weight)              with points pt 7 ps var lc rgb col_pol3 title "NSF"
+	file_dyn using ($11):(E_sign*$4)                                        with points pt 0        lc rgb col_full notitle, \
+	file_dyn using ($11):(E_sign*$4):(weight($7)*scale_weight)              with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
+	file_dyn using ($11):(E_sign*$4):(weight($6)*scale_weight)              with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
+	file_dyn using ($11):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) with points pt 7 ps var lc rgb col_pol2 notitle, \
+	file_dyn using ($11):(E_sign*$4):(weight($8)*scale_weight)              with points pt 7 ps var lc rgb col_pol3 title "NSF"
 
 
 # unpolarised results

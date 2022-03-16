@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------
+Compilation
+--------------------------------------------------------------------------------
+
 Manual compilation of takin external plugins:
 
 	x86_64-w64-mingw32-g++ -std=c++17 -O2 -Isrc -Iext -Iext/takin -I/usr/x86_64-w64-mingw32/sys-root/mingw/include -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/qt5 -L/usr/x86_64-w64-mingw32/sys-root/mingw/bin/ -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 -DNO_MINIMISATION -DNO_REDEFINITIONS -D__HACK_FULL_INST__ -DPLUGIN_APPLI -o takinmod_skx.exe src/takin/takin.cpp src/core/skx.cpp src/core/heli.cpp src/core/fp.cpp src/core/magsys.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp ext/tlibs/log/log.cpp ext/tlibs/math/rand.cpp -llapacke -lboost_system-x64 -lboost_filesystem-x64
@@ -14,3 +18,45 @@ Manual compilation of Takin plugins:
 
 Grid test:
 	g++ -std=c++17 -DDO_TEST -fPIC -o grid_tst -Isrc -Iext -Iext/takin -I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ -DNO_REDEFINITIONS src/takin/takin_grid.cpp ext/takin/tools/monteconvo/sqwbase.cpp ext/tlibs2/libs/log.cpp -lboost_system -lQt5Core
+
+
+
+
+
+--------------------------------------------------------------------------------
+Reproduction of the spectra in Johannes' PhD thesis,
+(https://kups.ub.uni-koeln.de/7937/1/DoktorarbeitJohannesWaizner_online.pdf):
+--------------------------------------------------------------------------------
+
+p. 138
+------
+
+a)
+G = 1 1 0
+q_range = 0.2
+q_delta = 0.001
+B = 0 0 1
+pinning = 1 1 0
+Query dispersion along q_para || B? [1/0]: 0
+q_perp = 1 1 0
+|q_perp| = 0
+
+c)
+G = 1 1 0
+q_range = 0.1
+q_delta = 0.001
+B = 0 0 1
+pinning = 1 -1 0
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0
+
+d)
+G = 1 1 0
+q_range = 0.1
+q_delta = 0.001
+B = 1 1 0
+pinning = 1 -1 0
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0
