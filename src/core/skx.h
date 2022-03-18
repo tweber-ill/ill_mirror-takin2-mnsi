@@ -139,6 +139,7 @@ private:
 	bool m_bProjNeutron = true;
 
 	std::vector<std::pair<int, int>> m_idx1{}, m_idx2[3], m_idx3[4];
+	std::vector<std::pair<int, int>> m_idx2_dyn[3], m_idx3_dyn[4];
 };
 
 

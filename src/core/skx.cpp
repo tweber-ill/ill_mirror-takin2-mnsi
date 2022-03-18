@@ -80,17 +80,14 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	m_peaks_60_lab.reserve((ORDER+1) * ORDER);
 	for(t_real h=0; h<ORDER+1; ++h)
 	{
-		for(t_real k=0; k<ORDER; ++k)
+		for(t_real k=0; k<h; ++k)
 		{
-			if(h > k)
-			{
-				t_vec vec_rlu = tl2::make_vec<t_vec>({h,k});
-				t_vec vec_lab = tl2::prod_mv(m_Bmat, vec_rlu);
-				vec_lab /= tl2::veclen(vec_lab);
+			t_vec vec_rlu = tl2::make_vec<t_vec>({h, k});
+			t_vec vec_lab = tl2::prod_mv(m_Bmat, vec_rlu);
+			vec_lab /= tl2::veclen(vec_lab);
 
-				m_peaks_60.emplace_back(std::move(vec_rlu));
-				m_peaks_60_lab.emplace_back(std::move(vec_lab));
-			}
+			m_peaks_60.emplace_back(std::move(vec_rlu));
+			m_peaks_60_lab.emplace_back(std::move(vec_lab));
 		}
 	}
 
@@ -170,42 +167,94 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 
-	// reduce #2
-	decltype(m_idx2) idx2;
-	for(int i=0; i<3; ++i)
-		idx2[i].reserve(m_idx2[0].size());
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
+	auto reduce_2 = [](decltype(m_idx2)& _idx2, int sign)
 	{
-		auto val1 = -m_idx2[0][i].first - m_idx2[1][i].first;
-		auto val2 = -m_idx2[0][i].second - m_idx2[1][i].second;
-		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-			continue;
+		decltype(m_idx2) idx2;
+		for(int i=0; i<3; ++i)
+			idx2[i].reserve(_idx2[0].size());
+		for(std::size_t i=0; i<_idx2[0].size(); ++i)
+		{
+			auto val1 = sign*_idx2[0][i].first - _idx2[1][i].first;
+			auto val2 = sign*_idx2[0][i].second - _idx2[1][i].second;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
+				continue;
 
-		idx2[0].push_back(m_idx2[0][i]);
-		idx2[1].push_back(m_idx2[1][i]);
-		idx2[2].emplace_back(std::make_pair(val1, val2));
-	}
-	for(int i=0; i<3; ++i)
-		m_idx2[i] = std::move(idx2[i]);
+			idx2[0].push_back(_idx2[0][i]);
+			idx2[1].push_back(_idx2[1][i]);
+			idx2[2].emplace_back(std::make_pair(val1, val2));
+		}
+		for(int i=0; i<3; ++i)
+			_idx2[i] = std::move(idx2[i]);
+	};
 
-	// reduce #3
-	decltype(m_idx3) idx3;
-	for(int i=0; i<4; ++i)
-		idx3[i].reserve(m_idx3[0].size());
-	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
+
+	auto reduce_3 = [](decltype(m_idx3)& _idx3, int sign)
 	{
-		auto val1 = -m_idx3[0][i].first - m_idx3[1][i].first - m_idx3[2][i].first;
-		auto val2 = -m_idx3[0][i].second - m_idx3[1][i].second - m_idx3[2][i].second;
-		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-			continue;
+		decltype(m_idx3) idx3;
+		for(int i=0; i<4; ++i)
+			idx3[i].reserve(_idx3[0].size());
+		for(std::size_t i=0; i<_idx3[0].size(); ++i)
+		{
+			auto val1 = sign*_idx3[0][i].first - _idx3[1][i].first - _idx3[2][i].first;
+			auto val2 = sign*_idx3[0][i].second - _idx3[1][i].second - _idx3[2][i].second;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
+				continue;
 
-		idx3[0].push_back(m_idx3[0][i]);
-		idx3[1].push_back(m_idx3[1][i]);
-		idx3[2].push_back(m_idx3[2][i]);
-		idx3[3].emplace_back(std::make_pair(val1, val2));
+			idx3[0].push_back(_idx3[0][i]);
+			idx3[1].push_back(_idx3[1][i]);
+			idx3[2].push_back(_idx3[2][i]);
+			idx3[3].emplace_back(std::make_pair(val1, val2));
+		}
+		for(int i=0; i<4; ++i)
+			_idx3[i] = std::move(idx3[i]);
+	};
+
+
+	reduce_2(m_idx2, -1);
+	reduce_3(m_idx3, -1);
+
+
+	// ------------------------------------------------------------------------
+
+
+	// #2
+	for(int i=0; i<2; ++i)
+		m_idx2_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size());
+	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+	{
+		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		{
+			m_idx2_dyn[0].emplace_back(std::make_pair(
+				int(std::round(m_allpeaks[j][0])),
+				int(std::round(m_allpeaks[j][1]))));
+			m_idx2_dyn[1].emplace_back(std::make_pair(
+				int(std::round(m_allpeaks[i][0])),
+				int(std::round(m_allpeaks[i][1]))));
+		}
 	}
-	for(int i=0; i<4; ++i)
-		m_idx3[i] = std::move(idx3[i]);
+
+	// #3
+	for(int i=0; i<3; ++i)
+		m_idx3_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_allpeaks.size());
+	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+	{
+		std::copy(m_idx2_dyn[0].begin(), m_idx2_dyn[0].end(), std::back_inserter(m_idx3_dyn[0]));
+		std::copy(m_idx2_dyn[1].begin(), m_idx2_dyn[1].end(), std::back_inserter(m_idx3_dyn[1]));
+
+		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		{
+			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+			{
+				m_idx3_dyn[2].emplace_back(std::make_pair(
+					int(std::round(m_allpeaks[i][0])),
+					int(std::round(m_allpeaks[i][1]))));
+			}
+		}
+	}
+
+
+	reduce_2(m_idx2_dyn, 1);
+	reduce_3(m_idx3_dyn, 1);
 }
 
 
@@ -237,11 +286,9 @@ Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 			fourier = tl2::prod_mv(rot, fourier);
 
 			get_comp(M, idx1, idx2) = tl2::make_vec<t_vec_cplx>
-			({
-				imag*fourier[0],
-				imag*fourier[1],
-				m_fourier[ihx+1][2]
-			});
+				({ imag*fourier[0],
+				   imag*fourier[1],
+				   m_fourier[ihx+1][2] });
 		}
 	}
 
@@ -364,79 +411,9 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 	t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
 
-
-
-	// ------------------------------------------------------------------------
 	// indices
-
-	// 2
-	std::vector<std::pair<int, int>> idx2[3];
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
-	{
-		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
-		{
-			idx2[0].emplace_back(std::make_pair(
-				int(std::round(m_allpeaks[j][0])),
-				int(std::round(m_allpeaks[j][1]))));
-			idx2[1].emplace_back(std::make_pair(
-				int(std::round(m_allpeaks[i][0])),
-				int(std::round(m_allpeaks[i][1]))));
-		}
-	}
-
-	// 3
-	std::vector<std::pair<int, int>> idx3[4];
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
-	{
-		std::copy(idx2[0].begin(), idx2[0].end(), std::back_inserter(idx3[0]));
-		std::copy(idx2[1].begin(), idx2[1].end(), std::back_inserter(idx3[1]));
-
-		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
-		{
-			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-			{
-				idx3[2].emplace_back(std::make_pair(
-					int(std::round(m_allpeaks[i][0])),
-					int(std::round(m_allpeaks[i][1]))));
-			}
-		}
-	}
-
-
-	// reduce 2
-	decltype(idx2) _idx2;
-	for(std::size_t i=0; i<idx2[0].size(); ++i)
-	{
-		auto val1 = idx2[0][i].first - idx2[1][i].first;
-		auto val2 = idx2[0][i].second - idx2[1][i].second;
-		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-			continue;
-
-		_idx2[0].push_back(idx2[0][i]);
-		_idx2[1].push_back(idx2[1][i]);
-		_idx2[2].emplace_back(std::make_pair(val1, val2));
-	}
-	for(int i=0; i<3; ++i)
-		idx2[i] = std::move(_idx2[i]);
-
-	// reduce 3
-	decltype(idx3) _idx3;
-	for(std::size_t i=0; i<idx3[0].size(); ++i)
-	{
-		auto val1 = idx3[0][i].first - idx3[1][i].first - idx3[2][i].first;
-		auto val2 = idx3[0][i].second - idx3[1][i].second - idx3[2][i].second;
-		if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-			continue;
-
-		_idx3[0].push_back(idx3[0][i]);
-		_idx3[1].push_back(idx3[1][i]);
-		_idx3[2].push_back(idx3[2][i]);
-		_idx3[3].emplace_back(std::make_pair(val1, val2));
-	}
-	for(int i=0; i<4; ++i)
-		idx3[i] = std::move(_idx3[i]);
-	// ------------------------------------------------------------------------
-
+	const auto& idx2 = m_idx2_dyn;
+	const auto& idx3 = m_idx3_dyn;
 
 
 	// ------------------------------------------------------------------------
@@ -453,7 +430,6 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	// ------------------------------------------------------------------------
 
 
-
 	// ------------------------------------------------------------------------
 	// fluct. F_q1q2_ij = 0.5 * d^2F/(dM_-q_1_q dM_q2_j)
 	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
@@ -463,15 +439,12 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		const auto& vecM1 = get_comp(m_M, idx3[2][i].first, idx3[2][i].second);
 		const auto& vecM2 = get_comp(m_M, idx3[3][i].first, idx3[3][i].second);
 
-		t_mat_cplx mat(3,3);
-		for(int _midx1=0; _midx1<3; ++_midx1)
-			for(int _midx2=0; _midx2<3; ++_midx2)
-				mat(_midx1,_midx2) = vecM1[_midx1]*vecM2[_midx2];
-		mat *= 4.;
+		t_mat_cplx mat = 4. * tl2::outer(vecM1, vecM2);
 
 		// delta term
+		t_cplx m1m2 = tl2::inner(vecM1, vecM2);
 		for(int d=0; d<3; ++d)
-			mat(d,d) += 2.*tl2::inner(vecM1, vecM2);
+			mat(d,d) += 2.*m1m2;
 
 		auto& oldmat = get_comp(*Fluc, SIZE, idx3[0][i].first, idx3[0][i].second, idx3[1][i].first, idx3[1][i].second);
 		if(!oldmat.size1())
@@ -514,7 +487,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	// ------------------------------------------------------------------------
 
 
-	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](const /*auto&*/ decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(VIRTSIZE);
 		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);
@@ -523,9 +496,14 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		std::vector<std::pair<int, int>> pks2;
 		pks2.reserve(VIRTSIZE*VIRTSIZE);
 		for(int k : pks1)
+		{
 			for(int h : pks1)
-				if(std::abs(h-k) <= CRYSSIZE)
-					pks2.emplace_back(std::make_pair(h, k));
+			{
+				if(std::abs(h-k) > CRYSSIZE)
+					continue;
+				pks2.emplace_back(std::make_pair(h, k));
+			}
+		}
 
 		auto mat = tl2::zero_matrix<t_mat_cplx>(3*pks2.size(), 3*pks2.size());
 		for(std::size_t idx1=0; idx1<pks2.size(); ++idx1)
@@ -534,16 +512,10 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			for(std::size_t idx2=0; idx2<pks2.size(); ++idx2)
 			{
 				const auto& hk2 = pks2[idx2];
-
 				const auto& comp = get_virt_comp(arr, SIZE, VIRTSIZE, ORDER,
 					hk1.first+iGh, hk1.second+iGk, hk2.first+iGh, hk2.second+iGk);
 
-				if(comp.size1() && comp.size2())
-				{
-					for(std::size_t x1=0; x1<3; ++x1)
-						for(std::size_t x2=0; x2<3; ++x2)
-							mat(idx1*3+x1, idx2*3+x2) = comp(x1,x2);
-				}
+				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
 		}
 		return mat;
