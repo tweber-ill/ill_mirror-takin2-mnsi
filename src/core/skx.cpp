@@ -42,7 +42,7 @@
 template<class t_real, class t_cplx, int ORDER>
 Skx<t_real, t_cplx, ORDER>::Skx()
 {
-	// B matrix
+	// xtal B matrix
 	tl2::inverse(m_Bmat, m_Binv);
 
 	// rotation in lab
@@ -120,24 +120,67 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 			_peaks.emplace_back(pk_rlu);
 		}
+
 		m_peaks_360.emplace_back(_peaks);
 	}
 
 
-	// #1
-	m_idx1.reserve(peaks_180_t.size());
+	auto reduce_2 = [](decltype(m_idx2)& _idx2, int sign)
+	{
+		decltype(m_idx2) idx2;
+		for(int i=0; i<3; ++i)
+			idx2[i].reserve(_idx2[0].size());
+		for(std::size_t i=0; i<_idx2[0].size(); ++i)
+		{
+			auto val1 = sign*_idx2[0][i].first - _idx2[1][i].first;
+			auto val2 = sign*_idx2[0][i].second - _idx2[1][i].second;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
+				continue;
+
+			idx2[0].push_back(_idx2[0][i]);
+			idx2[1].push_back(_idx2[1][i]);
+			idx2[2].emplace_back(std::make_pair(val1, val2));
+		}
+		for(int i=0; i<3; ++i)
+			_idx2[i] = std::move(idx2[i]);
+	};
+
+	auto reduce_3 = [](decltype(m_idx3)& _idx3, int sign)
+	{
+		decltype(m_idx3) idx3;
+		for(int i=0; i<4; ++i)
+			idx3[i].reserve(_idx3[0].size());
+		for(std::size_t i=0; i<_idx3[0].size(); ++i)
+		{
+			auto val1 = sign*_idx3[0][i].first - _idx3[1][i].first - _idx3[2][i].first;
+			auto val2 = sign*_idx3[0][i].second - _idx3[1][i].second - _idx3[2][i].second;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
+				continue;
+
+			idx3[0].push_back(_idx3[0][i]);
+			idx3[1].push_back(_idx3[1][i]);
+			idx3[2].push_back(_idx3[2][i]);
+			idx3[3].emplace_back(std::make_pair(val1, val2));
+		}
+		for(int i=0; i<4; ++i)
+			_idx3[i] = std::move(idx3[i]);
+	};
+
+
+	// top indices
+	m_idx_top.reserve(peaks_180_t.size());
 	for(const auto& vec : peaks_180_t)
 	{
-		m_idx1.emplace_back(std::make_pair(
+		m_idx_top.emplace_back(std::make_pair(
 			int(std::round(vec[0])), int(std::round(vec[1]))));
 	}
 
 	// #2
-	m_idx2[0].reserve(m_allpeaks.size() * m_idx1.size());
+	m_idx2[0].reserve(m_allpeaks.size() * m_idx_top.size());
 	m_idx2[1].reserve(m_allpeaks.size() * peaks_180_t.size());
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
-		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
+		std::copy(m_idx_top.begin(), m_idx_top.end(), std::back_inserter(m_idx2[0]));
 		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
 		{
 			m_idx2[1].emplace_back(std::make_pair(
@@ -166,55 +209,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		}
 	}
 
-
-	auto reduce_2 = [](decltype(m_idx2)& _idx2, int sign)
-	{
-		decltype(m_idx2) idx2;
-		for(int i=0; i<3; ++i)
-			idx2[i].reserve(_idx2[0].size());
-		for(std::size_t i=0; i<_idx2[0].size(); ++i)
-		{
-			auto val1 = sign*_idx2[0][i].first - _idx2[1][i].first;
-			auto val2 = sign*_idx2[0][i].second - _idx2[1][i].second;
-			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-				continue;
-
-			idx2[0].push_back(_idx2[0][i]);
-			idx2[1].push_back(_idx2[1][i]);
-			idx2[2].emplace_back(std::make_pair(val1, val2));
-		}
-		for(int i=0; i<3; ++i)
-			_idx2[i] = std::move(idx2[i]);
-	};
-
-
-	auto reduce_3 = [](decltype(m_idx3)& _idx3, int sign)
-	{
-		decltype(m_idx3) idx3;
-		for(int i=0; i<4; ++i)
-			idx3[i].reserve(_idx3[0].size());
-		for(std::size_t i=0; i<_idx3[0].size(); ++i)
-		{
-			auto val1 = sign*_idx3[0][i].first - _idx3[1][i].first - _idx3[2][i].first;
-			auto val2 = sign*_idx3[0][i].second - _idx3[1][i].second - _idx3[2][i].second;
-			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-				continue;
-
-			idx3[0].push_back(_idx3[0][i]);
-			idx3[1].push_back(_idx3[1][i]);
-			idx3[2].push_back(_idx3[2][i]);
-			idx3[3].emplace_back(std::make_pair(val1, val2));
-		}
-		for(int i=0; i<4; ++i)
-			_idx3[i] = std::move(idx3[i]);
-	};
-
-
 	reduce_2(m_idx2, -1);
 	reduce_3(m_idx3, -1);
-
-
-	// ------------------------------------------------------------------------
 
 
 	// #2
@@ -252,9 +248,16 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		}
 	}
 
-
 	reduce_2(m_idx2_dyn, 1);
 	reduce_3(m_idx3_dyn, 1);
+
+
+	/*std::ofstream ofstrq("q.dat");
+	for(const auto &q_rlu : m_allpeaks)
+	{
+		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
+		ofstrq << q[0] << " " << q[1] << std::endl;
+	}*/
 }
 
 
@@ -262,7 +265,7 @@ template<class t_real, class t_cplx, int ORDER>
 ublas::matrix<typename Skx<t_real, t_cplx, ORDER>::t_vec_cplx>
 Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 {
-	constexpr auto imag = t_cplx(0,1);
+	constexpr auto imag = t_cplx(0, 1);
 
 	ublas::matrix<t_vec_cplx> M(2*ORDER+1, 2*ORDER+1);
 	for(std::size_t i=0; i<M.size1(); ++i)
@@ -281,13 +284,13 @@ Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 
 			const auto& vecPk = m_peaks_60_lab[ihx];
 			auto fourier = tl2::make_vec<t_vec_cplx>
-				({ -vecPk[1]*m_fourier[ihx+1][0],
-				   +vecPk[0]*m_fourier[ihx+1][0] });
+				({ -vecPk[1] * m_fourier[ihx+1][0],
+				   +vecPk[0] * m_fourier[ihx+1][0] });
 			fourier = tl2::prod_mv(rot, fourier);
 
 			get_comp(M, idx1, idx2) = tl2::make_vec<t_vec_cplx>
-				({ imag*fourier[0],
-				   imag*fourier[1],
+				({ imag * fourier[0],
+				   imag * fourier[1],
 				   m_fourier[ihx+1][2] });
 		}
 	}
@@ -321,7 +324,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	cF += g_chi<t_real>/3. * m0*m0;
 
 
-	for(const auto& pair : m_idx1)
+	for(const auto& pair : m_idx_top)
 	{
 		t_vec q_rlu = tl2::make_vec<t_vec>({t_real(pair.first), t_real(pair.second)});
 		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
@@ -425,7 +428,9 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		const auto& vecM = get_comp(m_M, idx2[2][i].first, idx2[2][i].second);
 		auto skew = tl2::skew<t_mat_cplx>(vecM);
 
-		get_comp(*Mx, SIZE, idx2[0][i].first, idx2[0][i].second, idx2[1][i].first, idx2[1][i].second) = skew;
+		get_comp(*Mx, SIZE,
+			idx2[0][i].first, idx2[0][i].second,
+			idx2[1][i].first, idx2[1][i].second) = skew;
 	}
 	// ------------------------------------------------------------------------
 
@@ -446,7 +451,9 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		for(int d=0; d<3; ++d)
 			mat(d,d) += 2.*m1m2;
 
-		auto& oldmat = get_comp(*Fluc, SIZE, idx3[0][i].first, idx3[0][i].second, idx3[1][i].first, idx3[1][i].second);
+		auto& oldmat = get_comp(*Fluc, SIZE,
+			idx3[0][i].first, idx3[0][i].second,
+			idx3[1][i].first, idx3[1][i].second);
 		if(!oldmat.size1())
 			oldmat = 2.*mat;
 		else
@@ -458,22 +465,23 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	{
 		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
 
-		t_vec pos = pk_lab + q_lab;
-		pos.resize(3, true);
-		pos[2] = ql;
+		t_vec Q = pk_lab + q_lab;
+		Q.resize(3, true);
+		Q[2] = ql;
 
-		t_real dipole = g_chi<t_real> / tl2::inner(pos, pos);
+		t_real Q_sq = tl2::inner(Q, Q);
+		t_real dipole = g_chi<t_real> / Q_sq;
 
 		t_mat_cplx mat(3,3);
-		mat(0,0) = dipole * pos[0]*pos[0] + (1. + m_T) + tl2::inner(pos, pos);
-		mat(0,1) = dipole * pos[0]*pos[1] - 2.*imag*pos[2];
-		mat(0,2) = dipole * pos[0]*pos[2] + 2.*imag*pos[1];
-		mat(1,0) = dipole * pos[1]*pos[0] + 2.*imag*pos[2];
-		mat(1,1) = dipole * pos[1]*pos[1] + (1. + m_T) + tl2::inner(pos, pos);
-		mat(1,2) = dipole * pos[1]*pos[2] - 2.*imag*pos[0];
-		mat(2,0) = dipole * pos[2]*pos[0] - 2.*imag*pos[1];
-		mat(2,1) = dipole * pos[2]*pos[1] + 2.*imag*pos[0];
-		mat(2,2) = dipole * pos[2]*pos[2] + (1. + m_T) + tl2::inner(pos, pos);
+		mat(0,0) = dipole * Q[0]*Q[0] + (1. + m_T) + Q_sq;
+		mat(0,1) = dipole * Q[0]*Q[1] - 2.*imag*Q[2];
+		mat(0,2) = dipole * Q[0]*Q[2] + 2.*imag*Q[1];
+		mat(1,0) = dipole * Q[1]*Q[0] + 2.*imag*Q[2];
+		mat(1,1) = dipole * Q[1]*Q[1] + (1. + m_T) + Q_sq;
+		mat(1,2) = dipole * Q[1]*Q[2] - 2.*imag*Q[0];
+		mat(2,0) = dipole * Q[2]*Q[0] - 2.*imag*Q[1];
+		mat(2,1) = dipole * Q[2]*Q[1] + 2.*imag*Q[0];
+		mat(2,2) = dipole * Q[2]*Q[2] + (1. + m_T) + Q_sq;
 
 		int idx1 = int(std::round(pk_rlu[0]));
 		int idx2 = int(std::round(pk_rlu[1]));
@@ -645,5 +653,6 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	Gmagrlu += *iterClosest;
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 
-	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]), qmagrlu[0], qmagrlu[1], _l, minE, maxE);
+	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]),
+		qmagrlu[0], qmagrlu[1], _l, minE, maxE);
 }
