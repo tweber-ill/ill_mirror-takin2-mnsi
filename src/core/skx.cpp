@@ -92,9 +92,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 
-	// the top 180 degrees
-	std::vector<t_vec> peaks_180_t;
-	peaks_180_t.reserve(m_rotRlu.size() * m_peaks_60.size());
+	// indices for the top 180 degrees
+	m_idx_top.reserve(m_rotRlu.size() * m_peaks_60.size());
 
 	m_peaks_360.reserve(m_rotRlu.size());
 	for(const auto& rot : m_rotRlu)
@@ -107,15 +106,12 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			t_vec pk_rlu = tl2::prod_mv(rot, vec);
 			t_vec pk = tl2::prod_mv(m_Bmat, pk_rlu);
 
-			if(tl2::float_equal<t_real>(pk[1], 0.))
+			if((tl2::float_equal<t_real>(pk[1], 0.) && pk[0] >= 0.)
+				|| pk[1] > 0.)
 			{
-				if(pk[0] >= 0.)
-					peaks_180_t.push_back(pk_rlu);
-			}
-			else
-			{
-				if(pk[1] >= 0.)
-					peaks_180_t.push_back(pk_rlu);
+				m_idx_top.emplace_back(std::make_pair(
+					int(std::round(pk_rlu[0])),
+					int(std::round(pk_rlu[1]))));
 			}
 
 			_peaks.emplace_back(pk_rlu);
@@ -167,57 +163,23 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	};
 
 
-	// top indices
-	m_idx_top.reserve(peaks_180_t.size());
-	for(const auto& vec : peaks_180_t)
+	// #2
+	for(int i=0; i<2; ++i)
 	{
-		m_idx_top.emplace_back(std::make_pair(
-			int(std::round(vec[0])), int(std::round(vec[1]))));
+		m_idx2[i].reserve(m_allpeaks.size() * m_idx_top.size());
+		m_idx2_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size());
 	}
 
-	// #2
-	m_idx2[0].reserve(m_allpeaks.size() * m_idx_top.size());
-	m_idx2[1].reserve(m_allpeaks.size() * peaks_180_t.size());
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
 		std::copy(m_idx_top.begin(), m_idx_top.end(), std::back_inserter(m_idx2[0]));
-		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
+		for(std::size_t j=0; j<m_idx_top.size(); ++j)
 		{
 			m_idx2[1].emplace_back(std::make_pair(
 				int(std::round(m_allpeaks[i][0])),
 				int(std::round(m_allpeaks[i][1]))));
 		}
-	}
 
-	// #3
-	m_idx3[0].reserve(m_allpeaks.size() * m_idx2[0].size());
-	m_idx3[1].reserve(m_allpeaks.size() * m_idx2[1].size());
-	m_idx3[2].reserve(m_allpeaks.size() * m_allpeaks.size() * peaks_180_t.size());
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
-	{
-		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
-		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
-
-		for(std::size_t j=0; j<peaks_180_t.size(); ++j)
-		{
-			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-			{
-				m_idx3[2].emplace_back(std::make_pair(
-					int(std::round(m_allpeaks[i][0])),
-					int(std::round(m_allpeaks[i][1]))));
-			}
-		}
-	}
-
-	reduce_2(m_idx2, -1);
-	reduce_3(m_idx3, -1);
-
-
-	// #2
-	for(int i=0; i<2; ++i)
-		m_idx2_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size());
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
-	{
 		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 		{
 			m_idx2_dyn[0].emplace_back(std::make_pair(
@@ -231,11 +193,28 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 	// #3
 	for(int i=0; i<3; ++i)
+	{
+		m_idx3[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_idx_top.size());
 		m_idx3_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_allpeaks.size());
+	}
+
 	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 	{
+		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
+		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
+
 		std::copy(m_idx2_dyn[0].begin(), m_idx2_dyn[0].end(), std::back_inserter(m_idx3_dyn[0]));
 		std::copy(m_idx2_dyn[1].begin(), m_idx2_dyn[1].end(), std::back_inserter(m_idx3_dyn[1]));
+
+		for(std::size_t j=0; j<m_idx_top.size(); ++j)
+		{
+			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+			{
+				m_idx3[2].emplace_back(std::make_pair(
+					int(std::round(m_allpeaks[i][0])),
+					int(std::round(m_allpeaks[i][1]))));
+			}
+		}
 
 		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 		{
@@ -248,16 +227,11 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		}
 	}
 
+	reduce_2(m_idx2, -1);
+	reduce_3(m_idx3, -1);
+
 	reduce_2(m_idx2_dyn, 1);
 	reduce_3(m_idx3_dyn, 1);
-
-
-	/*std::ofstream ofstrq("q.dat");
-	for(const auto &q_rlu : m_allpeaks)
-	{
-		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
-		ofstrq << q[0] << " " << q[1] << std::endl;
-	}*/
 }
 
 
@@ -382,7 +356,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 }
 
 
-
 /**
  * set fourier components
  */
@@ -395,7 +368,6 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	while(m_fourier.size() > ORDER_FOURIER+1)
 		m_fourier.pop_back();
 }
-
 
 
 /**
@@ -495,7 +467,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	// ------------------------------------------------------------------------
 
 
-	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](const decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](
+		const decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(VIRTSIZE);
 		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);
@@ -520,12 +493,15 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			for(std::size_t idx2=0; idx2<pks2.size(); ++idx2)
 			{
 				const auto& hk2 = pks2[idx2];
-				const auto& comp = get_virt_comp(arr, SIZE, VIRTSIZE, ORDER,
-					hk1.first+iGh, hk1.second+iGk, hk2.first+iGh, hk2.second+iGk);
+				const auto& comp = get_virt_comp(
+					arr, SIZE, VIRTSIZE, ORDER,
+					hk1.first+iGh, hk1.second+iGk,
+					hk2.first+iGh, hk2.second+iGk);
 
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
 		}
+
 		return mat;
 	};
 
@@ -618,7 +594,6 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 {
 	t_vec Qrlu = tl2::make_vec<t_vec>( {h, k, l} );
 	t_vec qrlu = Qrlu - m_Grlu;
-
 	t_vec qkh = qrlu / G_KH_RLU_29K;
 
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);

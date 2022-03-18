@@ -24,7 +24,6 @@ std::tuple<T, T, T> split_vec3d(const ublas::vector<T>& vec)
 }
 
 
-
 /**
  * array indexing including negative values
  */
@@ -35,7 +34,6 @@ typename t_arr::value_type& get_comp(t_arr &arr, int idx)
 
 	return arr[arr.size() + idx];
 }
-
 
 
 /**
@@ -68,7 +66,8 @@ const typename t_mat::value_type& get_comp(const t_mat &mat, int idx1, int idx2)
  * 4-dim tensor indexing including negative values
  */
 template<class t_arr>
-typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, int idx3, int idx4)
+typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
+	int idx1, int idx2, int idx3, int idx4)
 {
 	if(idx1 < 0) idx1 = SIZE + idx1;
 	if(idx2 < 0) idx2 = SIZE + idx2;
@@ -86,7 +85,8 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, i
  * 5-dim tensor indexing including negative values
  */
 template<class t_arr>
-typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, int idx3, int idx4, int idx5)
+typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
+	int idx1, int idx2, int idx3, int idx4, int idx5)
 {
 	if(idx1 < 0) idx1 = SIZE + idx1;
 	if(idx2 < 0) idx2 = SIZE + idx2;
@@ -106,7 +106,8 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, i
  * 6-dim tensor indexing including negative values
  */
 template<class t_arr>
-typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, int idx3, int idx4, int idx5, int idx6)
+typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
+	int idx1, int idx2, int idx3, int idx4, int idx5, int idx6)
 {
 	if(idx1 < 0) idx1 = SIZE + idx1;
 	if(idx2 < 0) idx2 = SIZE + idx2;
@@ -125,50 +126,42 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE, int idx1, int idx2, i
 
 
 template<class t_arr>
-const typename t_arr::value_type& get_virt_comp(const t_arr& arr, int ORGSIZE, int VIRTSIZE, int ORDER, int idx1, int idx2, int idx3, int idx4)
+const typename t_arr::value_type& get_virt_comp(
+	const t_arr& arr, int ORGSIZE, int VIRTSIZE, int ORDER,
+	int idx1, int idx2, int idx3, int idx4)
 {
+	// negative indices
 	if(idx1 < 0) idx1 = VIRTSIZE + idx1;
 	if(idx2 < 0) idx2 = VIRTSIZE + idx2;
 	if(idx3 < 0) idx3 = VIRTSIZE + idx3;
 	if(idx4 < 0) idx4 = VIRTSIZE + idx4;
 
 	static const typename t_arr::value_type zero{};
-	if((idx1>=ORDER && idx1<VIRTSIZE-ORDER-1) || (idx2>=ORDER && idx2<VIRTSIZE-ORDER-1) 
-		|| (idx3>=ORDER && idx3<VIRTSIZE-ORDER-1) || (idx4>=ORDER && idx4<VIRTSIZE-ORDER-1))
-		return zero;
 
-	bool bLower1 = (idx1<ORDER);
-	bool bLower2 = (idx2<ORDER);
-	bool bLower3 = (idx3<ORDER);
-	bool bLower4 = (idx4<ORDER);
+	if(idx1 >= ORDER && idx1 < VIRTSIZE-ORDER-1) return zero;
+	if(idx2 >= ORDER && idx2 < VIRTSIZE-ORDER-1) return zero;
+	if(idx3 >= ORDER && idx3 < VIRTSIZE-ORDER-1) return zero;
+	if(idx4 >= ORDER && idx4 < VIRTSIZE-ORDER-1) return zero;
 
-	if(bLower1 && idx1 >= ORGSIZE) return zero;
-	if(bLower2 && idx2 >= ORGSIZE) return zero;
-	if(bLower3 && idx3 >= ORGSIZE) return zero;
-	if(bLower4 && idx4 >= ORGSIZE) return zero;
+	if(idx1 < ORDER && idx1 >= ORGSIZE) return zero;
+	if(idx2 < ORDER && idx2 >= ORGSIZE) return zero;
+	if(idx3 < ORDER && idx3 >= ORGSIZE) return zero;
+	if(idx4 < ORDER && idx4 >= ORGSIZE) return zero;
 
-	if(!bLower1)
-	{
-		idx1 -= VIRTSIZE-ORGSIZE;
-		if(idx1 < 0) return zero;
-	}
-	if(!bLower2)
-	{
-		idx2 -= VIRTSIZE-ORGSIZE;
-		if(idx2 < 0) return zero;
-	}
-	if(!bLower3)
-	{
-		idx3 -= VIRTSIZE-ORGSIZE;
-		if(idx3 < 0) return zero;
-	}
-	if(!bLower4)
-	{
-		idx4 -= VIRTSIZE-ORGSIZE;
-		if(idx4 < 0) return zero;
-	}
+	if(idx1 >= ORDER && idx1 < VIRTSIZE-ORGSIZE) return zero;
+	if(idx2 >= ORDER && idx2 < VIRTSIZE-ORGSIZE) return zero;
+	if(idx3 >= ORDER && idx3 < VIRTSIZE-ORGSIZE) return zero;
+	if(idx4 >= ORDER && idx4 < VIRTSIZE-ORGSIZE) return zero;
 
-	return arr[idx1*ORGSIZE*ORGSIZE*ORGSIZE + idx2*ORGSIZE*ORGSIZE + idx3*ORGSIZE + idx4];
+	if(idx1 >= ORDER) idx1 -= VIRTSIZE-ORGSIZE;
+	if(idx2 >= ORDER) idx2 -= VIRTSIZE-ORGSIZE;
+	if(idx3 >= ORDER) idx3 -= VIRTSIZE-ORGSIZE;
+	if(idx4 >= ORDER) idx4 -= VIRTSIZE-ORGSIZE;
+
+	return arr[idx1*ORGSIZE*ORGSIZE*ORGSIZE +
+		idx2*ORGSIZE*ORGSIZE +
+		idx3*ORGSIZE +
+		idx4];
 }
 
 
