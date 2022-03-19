@@ -286,11 +286,11 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 			// filter energies if requested
 			t_real E_meV = std::get<0>(E_weight) * E_scale_fac;
 			if(maxE >= minE && (E_meV < minE || E_meV > maxE))
-					continue;
+				continue;
 
 			// only consider one of the modes, if desired
 			if(onlymode >=0 && onlymode != iCurMode++)
-					continue;
+				continue;
 
 
 			EW ew;

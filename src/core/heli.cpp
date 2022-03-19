@@ -50,26 +50,30 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	std::iota(m_idx1.begin(), m_idx1.end(), 1);
 
 	// #2
-	for(int i=0; i<ORDER*2+1; ++i)
-		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
-
+	for(int i=0; i<2; ++i)
+		m_idx2[i].reserve(ORDER * (ORDER*2+1));
 	for(int i=-ORDER; i<=ORDER; ++i)
+	{
+		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
 		for(int j=0; j<ORDER; ++j)
 			m_idx2[1].push_back(i);
+	}
 
 	// #3
-	for(int i=0; i<ORDER*2+1; ++i)
+	for(int i=0; i<3; ++i)
+		m_idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
+	for(int i=-ORDER; i<=ORDER; ++i)
 	{
 		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
 		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
-	}
-
-	for(int i=-ORDER; i<=ORDER; ++i)
 		for(int j=0; j<(2*ORDER+1)*ORDER; ++j)
 			m_idx3[2].push_back(i);
+	}
 
 	// reduce #2
 	decltype(m_idx2) idx2;
+	for(int i=0; i<3; ++i)
+		idx2[i].reserve(ORDER * (ORDER*2+1));
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
 		int val = -m_idx2[0][i] - m_idx2[1][i];
@@ -85,6 +89,8 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 
 	// reduce #3
 	decltype(m_idx3) idx3;
+	for(int i=0; i<4; ++i)
+		idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		int val = -m_idx3[0][i] - m_idx3[1][i] - m_idx3[2][i];
@@ -117,16 +123,6 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		fourier_full.push_back(tl2::conjugate_vec(m_fourier[i]));
 
 
-	std::vector<t_cplx> fourier_full_comp[3];
-	for(const auto &vecC : fourier_full)
-	{
-		auto tup = split_vec3d(vecC);
-		fourier_full_comp[0].push_back(std::get<0>(tup));
-		fourier_full_comp[1].push_back(std::get<1>(tup));
-		fourier_full_comp[2].push_back(std::get<2>(tup));
-	}
-
-
 	// free energy
 	t_cplx cF = 0;
 
@@ -141,9 +137,9 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		const t_real q = t_real(i);
 		const auto& them = m[i];
 
-		cF += 8. * q *
-			( them[0].real() * them[1].imag() -
-			  them[1].real() * them[0].imag() );
+		cF += 8. * q * (
+			them[0].real() * them[1].imag() -
+			them[1].real() * them[0].imag() );
 	}
 
 	// hoc
@@ -156,43 +152,36 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	}
 
 	// phi^2 & phi^4
-	cF += (m_T + 1.) * m0*m0  +  m0*m0*m0*m0;
+	cF += (m_T + 1.) * m0*m0 + m0*m0*m0*m0;
 	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
 		const t_real q = t_real(i);
 		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
-		// Heisenberg
+		// phi^2 & phi^4
 		cF += q*q * 2.*m_sq;
 		cF += (m_T + 1. + m0*m0) * 2.*m_sq;
 	}
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		cF += 2. * m0 * get_comp(fourier_full_comp[2], m_idx2[0][i]) *
-		(
-			get_comp(fourier_full_comp[0], m_idx2[1][i]) * get_comp(fourier_full_comp[0], m_idx2[2][i]) +
-			get_comp(fourier_full_comp[1], m_idx2[1][i]) * get_comp(fourier_full_comp[1], m_idx2[2][i]) +
-			get_comp(fourier_full_comp[2], m_idx2[1][i]) * get_comp(fourier_full_comp[2], m_idx2[2][i])
-		);
+		const auto& m1 = get_comp(fourier_full, m_idx2[0][i]);
+		const auto& m2 = get_comp(fourier_full, m_idx2[1][i]);
+		const auto& m3 = get_comp(fourier_full, m_idx2[2][i]);
+
+		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
 	}
 
 	// phi^4
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
-		cF += 2. *
-		(
-			get_comp(fourier_full_comp[0], m_idx3[0][i]) * get_comp(fourier_full_comp[0], m_idx3[1][i]) +
-			get_comp(fourier_full_comp[1], m_idx3[0][i]) * get_comp(fourier_full_comp[1], m_idx3[1][i]) +
-			get_comp(fourier_full_comp[2], m_idx3[0][i]) * get_comp(fourier_full_comp[2], m_idx3[1][i])
-		) *
-		(
-			get_comp(fourier_full_comp[0], m_idx3[2][i]) * get_comp(fourier_full_comp[0], m_idx3[3][i]) +
-			get_comp(fourier_full_comp[1], m_idx3[2][i]) * get_comp(fourier_full_comp[1], m_idx3[3][i]) +
-			get_comp(fourier_full_comp[2], m_idx3[2][i]) * get_comp(fourier_full_comp[2], m_idx3[3][i])
-		);
-	}
+		const auto& m1 = get_comp(fourier_full, m_idx3[0][i]);
+		const auto& m2 = get_comp(fourier_full, m_idx3[1][i]);
+		const auto& m3 = get_comp(fourier_full, m_idx3[2][i]);
+		const auto& m4 = get_comp(fourier_full, m_idx3[3][i]);
 
+		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
+	}
 
 	// zee
 	cF += -m_B*m0;

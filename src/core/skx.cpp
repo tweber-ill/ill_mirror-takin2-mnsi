@@ -351,7 +351,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 	// zee
 	cF += -m_B*m0;
-
 	return cF.real();
 }
 
@@ -535,7 +534,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 
 	t_real sqrtfac = std::sqrt(t_real(-0.5 - m_T*0.5));
 	// energy scaling depends on Hc2_int (and the sample's demagnetisation factor)
-	// Hc2_int changes rapidly vs. T here at the border to the paramegnetic phase
+	// Hc2_int changes rapidly vs. T here at the border to the paramagnetic phase
 	const t_real E_scale_fac_heli = 0.0387;		// calculated with heli.cpp
 	t_real E_scale_fac = E_scale_fac_heli / (sqrtfac/10.);
 
