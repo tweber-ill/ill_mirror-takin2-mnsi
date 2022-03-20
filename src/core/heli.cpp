@@ -222,7 +222,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	const t_real Brel = m_B / m_Bc2;
 	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
 	const t_real sqrtfac = std::sqrt(Brel*Brel + 2.*Brel2*Brel2);
-	const t_real E_scale_fac = (Brel*Brel + 2.*Brel2*Brel2) / std::sqrt(Brel2*Brel2) * g_g<t_real>*g_muB<t_real>*m_Bc2 * Brel2;
+	const t_real E_scale_fac = (Brel*Brel + 2.*Brel2*Brel2) / std::sqrt(Brel2*Brel2) *
+		g_g<t_real>*g_muB<t_real>*m_Bc2 * Brel2;
 
 
 	// static susceptibility

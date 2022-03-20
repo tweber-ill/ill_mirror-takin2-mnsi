@@ -538,6 +538,10 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	const t_real E_scale_fac_heli = 0.0387;		// calculated with heli.cpp
 	t_real E_scale_fac = E_scale_fac_heli / (sqrtfac/10.);
 
+	// set experimental value for Hc2_int if given
+	if(m_Bc2_exp >= 0.)
+		E_scale_fac = g_muB<t_real> * m_Bc2_exp;
+
 	t_mat_cplx Mx2d, Fluc2d;
 	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(iGhmag, iGkmag, qh, qk, ql);
 

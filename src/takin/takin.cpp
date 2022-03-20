@@ -100,6 +100,7 @@ SqwMod::SqwMod()
 
 	m_skx.SetT(-1000.);
 	m_skx.SetB(25.);
+	//m_skx.SetTExp(29.);
 	m_fp.SetT(29.);
 	m_fp.SetB(0.35);
 	m_heli.SetT(29.);
@@ -254,6 +255,7 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 
 			m_fp.SetT(m_dT);
 			m_heli.SetT(m_dT);
+			//m_skx.SetTExp(m_dT);
 			// fixed (and theo units) for skx!
 
 			m_lf.SetT(m_dT);

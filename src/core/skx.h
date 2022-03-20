@@ -56,6 +56,10 @@ public:
 	virtual void SetT(t_real T) override { m_T = T; m_Bc2 = get_bc2(m_T); }
 	t_real GetBC2() const { return m_Bc2; }
 
+	void SetTExp(t_real T) { m_Bc2_exp = get_bc2(T, false); }
+	void SetBC2Exp(t_real bc2) { m_Bc2_exp = bc2; }
+	t_real GetBC2Exp() const { return m_Bc2_exp; }
+
 	using MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise;
 
 
@@ -115,6 +119,7 @@ private:
 	t_real m_B = 0;
 	t_real m_T = -100;
 	t_real m_Bc2 = 0;
+	t_real m_Bc2_exp = 0.3;
 
 	std::vector<t_vec_cplx> m_fourier{};
 
