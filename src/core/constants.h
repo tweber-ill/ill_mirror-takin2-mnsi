@@ -73,8 +73,10 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 {
 	if(use_theo_units)
 	{
-		const t_real amp = 1.62567;		// scaling
-		const t_real ex = 0.46491;		// critical exponent
+		//const t_real amp = 1.62567;		// scaling
+		//const t_real ex = 0.46491;		// critical exponent
+		const t_real amp = 1.42925;		// scaling
+		const t_real ex = 0.499501;		// critical exponent
 
 		if(T >= 0.) return 0.;
 		return amp * std::pow(-T, ex);

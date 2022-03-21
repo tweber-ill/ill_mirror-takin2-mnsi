@@ -78,7 +78,7 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 all: prepare \
 	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight bin/tof \
-	bin/heliphase bin/skx_gs bin/weight_sum \
+	bin/heliphase bin/heli_gs bin/skx_gs bin/weight_sum \
 	lib/skxmod.so lib/skxmod_grid.so
 
 clean:
@@ -171,6 +171,13 @@ bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli
 bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp \
 		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 \
+		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
+		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
+	$(STRIP) $@$(BIN_SUFFIX)
+
+bin/heli_gs: src/calc/heli_gs.cpp src/core/heli.cpp \
+		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=7 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)

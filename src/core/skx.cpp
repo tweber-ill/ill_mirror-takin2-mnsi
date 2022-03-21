@@ -385,23 +385,19 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 	t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
 
-	// indices
-	const auto& idx2 = m_idx2_dyn;
-	const auto& idx3 = m_idx3_dyn;
-
 
 	// ------------------------------------------------------------------------
 	// Mx_ij = eps_ikj M_k
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
-	for(std::size_t i=0; i<idx2[2].size(); ++i)
+	for(std::size_t i=0; i<m_idx2_dyn[2].size(); ++i)
 	{
-		const auto& vecM = get_comp(m_M, idx2[2][i].first, idx2[2][i].second);
+		const auto& vecM = get_comp(m_M, m_idx2_dyn[2][i].first, m_idx2_dyn[2][i].second);
 		auto skew = tl2::skew<t_mat_cplx>(vecM);
 
 		get_comp(*Mx, SIZE,
-			idx2[0][i].first, idx2[0][i].second,
-			idx2[1][i].first, idx2[1][i].second) = skew;
+			m_idx2_dyn[0][i].first, m_idx2_dyn[0][i].second,
+			m_idx2_dyn[1][i].first, m_idx2_dyn[1][i].second) = skew;
 	}
 	// ------------------------------------------------------------------------
 
@@ -410,10 +406,10 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	// fluct. F_q1q2_ij = 0.5 * d^2F/(dM_-q_1_q dM_q2_j)
 	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
-	for(std::size_t i=0; i<idx3[3].size(); ++i)
+	for(std::size_t i=0; i<m_idx3_dyn[3].size(); ++i)
 	{
-		const auto& vecM1 = get_comp(m_M, idx3[2][i].first, idx3[2][i].second);
-		const auto& vecM2 = get_comp(m_M, idx3[3][i].first, idx3[3][i].second);
+		const auto& vecM1 = get_comp(m_M, m_idx3_dyn[2][i].first, m_idx3_dyn[2][i].second);
+		const auto& vecM2 = get_comp(m_M, m_idx3_dyn[3][i].first, m_idx3_dyn[3][i].second);
 
 		t_mat_cplx mat = 4. * tl2::outer(vecM1, vecM2);
 
@@ -423,8 +419,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			mat(d,d) += 2.*m1m2;
 
 		auto& oldmat = get_comp(*Fluc, SIZE,
-			idx3[0][i].first, idx3[0][i].second,
-			idx3[1][i].first, idx3[1][i].second);
+			m_idx3_dyn[0][i].first, m_idx3_dyn[0][i].second,
+			m_idx3_dyn[1][i].first, m_idx3_dyn[1][i].second);
 		if(!oldmat.size1())
 			oldmat = 2.*mat;
 		else
