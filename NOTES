@@ -60,3 +60,45 @@ pinning = 1 -1 0
 Query dispersion along q_para || B? [1/0]: 1
 q_perp = 1 -1 0
 |q_perp| = 0
+
+
+
+
+
+--------------------------------------------------------------------------------
+Reproduction of the spectra in our 2018 paper,
+(http://doi.org/10.1103/PhysRevB.97.224403):
+--------------------------------------------------------------------------------
+
+Fig. 1a)
+G = 1 1 0 
+q_range = 0.2
+q_delta = 0.001
+B = 0 0 1
+|B| = 0.48
+T = 20
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0.062
+
+Fig. 1b)
+G = 1 1 0
+q_range = 0.2
+q_delta = 0.001
+B = 1 1 0
+|B| = 0.48
+T = 20
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0.062
+
+Fig. 1c)
+G = 1 1 0
+q_range = 0.2
+q_delta = 0.001
+B = 1 -1 0
+|B| = 0.48
+T = 20
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0
