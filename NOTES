@@ -28,6 +28,36 @@ Reproduction of the spectra in Johannes' PhD thesis,
 (https://kups.ub.uni-koeln.de/7937/1/DoktorarbeitJohannesWaizner_online.pdf):
 --------------------------------------------------------------------------------
 
+p. 102
+------
+
+Fig. 9.3 d)
+G = 1 1 0
+q_range = 0.2
+q_delta = 0.001
+B = 1 1 0
+|B| = 0.05
+T = 20
+Query dispersion along q_para || B? [1/0]: 1
+q_perp = 1 -1 0
+|q_perp| = 0.0522
+
+
+p. 105
+------
+
+Fig 9.5b)
+G = 1 1 0
+q_range = 0.2
+q_delta = 0.0005
+B = 1 1 0
+|B| = 0.05
+T = 20
+Query dispersion along q_para || B? [1/0]: 0
+q_perp = 1 -1 0
+|q_perp| = 0
+
+
 p. 138
 ------
 
