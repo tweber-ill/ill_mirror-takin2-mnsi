@@ -423,7 +423,6 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			oldmat += 2.*mat;
 	}
 
-
 	for(const auto &pk_rlu : m_allpeaks)
 	{
 		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
@@ -435,16 +434,22 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		t_real Q_sq = tl2::inner(Q, Q);
 		t_real dipole = g_chi<t_real> / Q_sq;
 
+		// diagonal
 		t_mat_cplx mat(3,3);
-		mat(0,0) = dipole * Q[0]*Q[0] + (1. + m_T) + Q_sq;
-		mat(0,1) = dipole * Q[0]*Q[1] - 2.*imag*Q[2];
-		mat(0,2) = dipole * Q[0]*Q[2] + 2.*imag*Q[1];
-		mat(1,0) = dipole * Q[1]*Q[0] + 2.*imag*Q[2];
-		mat(1,1) = dipole * Q[1]*Q[1] + (1. + m_T) + Q_sq;
-		mat(1,2) = dipole * Q[1]*Q[2] - 2.*imag*Q[0];
-		mat(2,0) = dipole * Q[2]*Q[0] - 2.*imag*Q[1];
-		mat(2,1) = dipole * Q[2]*Q[1] + 2.*imag*Q[0];
-		mat(2,2) = dipole * Q[2]*Q[2] + (1. + m_T) + Q_sq;
+		for(int i=0; i<3; ++i)
+			mat(i,i) = dipole * Q[i]*Q[i] + 1. + m_T + Q_sq;
+
+		// upper right triangle
+		for(int i=0; i<2; ++i)
+		{
+			for(int j=i+1; j<3; ++j)
+			{
+				int k = 3 - i - j; // third index in {0,1,2}
+				t_real sign = (k==1 ? 1. : -1.);
+				mat(i,j) = dipole * Q[i]*Q[j] + sign*2.*imag*Q[k];
+				mat(j,i) = std::conj(mat(i,j));
+			}
+		}
 
 		int idx1 = int(std::round(pk_rlu[0]));
 		int idx2 = int(std::round(pk_rlu[1]));
