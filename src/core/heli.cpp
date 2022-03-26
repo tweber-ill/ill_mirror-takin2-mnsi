@@ -131,37 +131,27 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	for(std::size_t i=1; i<m.size(); ++i)
 		cF += 2. * g_chi<t_real> * std::norm(m[i][2]);
 
-	// dmi
 	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
 		const t_real q = t_real(i);
-		const auto& them = m[i];
-
-		cF += 8. * q * (
-			them[0].real() * them[1].imag() -
-			them[1].real() * them[0].imag() );
-	}
-
-	// hoc
-	for(std::size_t i=1; i<ORDER+1; ++i)
-	{
-		const t_real q = t_real(i);
+		const t_real q_sq = q*q;
 		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
-		cF += g_hoc<t_real> * q*q*q*q * 2.*m_sq;
+		// dmi
+		cF += 8. * q * (
+			m[i][0].real() * m[i][1].imag() -
+			m[i][1].real() * m[i][0].imag() );
+
+		// hoc
+		cF += 2.*g_hoc<t_real> * m_sq * q_sq*q_sq;
+
+		// phi^2 & phi^4
+		cF += 2. * m_sq * q_sq;
+		cF += 2. * (m_T + 1. + m0*m0) * m_sq;
 	}
 
 	// phi^2 & phi^4
 	cF += (m_T + 1.) * m0*m0 + m0*m0*m0*m0;
-	for(std::size_t i=1; i<ORDER+1; ++i)
-	{
-		const t_real q = t_real(i);
-		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
-
-		// phi^2 & phi^4
-		cF += q*q * 2.*m_sq;
-		cF += (m_T + 1. + m0*m0) * 2.*m_sq;
-	}
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{

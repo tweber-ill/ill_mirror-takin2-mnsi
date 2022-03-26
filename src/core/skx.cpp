@@ -297,7 +297,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	// dip
 	cF += g_chi<t_real>/3. * m0*m0;
 
-
 	for(const auto& pair : m_idx_top)
 	{
 		t_vec q_rlu = tl2::make_vec<t_vec>({t_real(pair.first), t_real(pair.second)});
@@ -311,20 +310,18 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += 2. * g_chi<t_real> * std::pow(q[0]*m[0] + q[1]*m[1], 2.) / q_sq;
 
 		// dmi
-		cF += 8.*imag * m[2] * (q[0]*m[1] - q[1]*m[0]);
+		cF += 8. * imag * m[2] * (q[0]*m[1] - q[1]*m[0]);
 
 		// hoc
 		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
 		// phi^2 & phi^4
 		cF += 2. * m_sq * q_sq;
-		cF += (m_T + 1. + m0*m0) * 2.*m_sq;
+		cF += 2. * (m_T + 1. + m0*m0) * m_sq;
 	}
-
 
 	// phi^2 & phi^4
 	cF += (m_T + 1.) * m0*m0 + m0*m0*m0*m0;
-
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
@@ -336,7 +333,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
 	}
 
-
+	// phi^4
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		const auto& m1 = get_comp(m_M, m_idx3[0][i].first, m_idx3[0][i].second);
@@ -347,7 +344,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		// the x and y components are purely imaginary, z purely real
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
-
 
 	// zee
 	cF += -m_B*m0;
