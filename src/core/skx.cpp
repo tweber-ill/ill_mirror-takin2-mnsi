@@ -529,16 +529,6 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 
 	ql = -ql;
 
-	t_real sqrtfac = std::sqrt(t_real(-0.5 - m_T*0.5));
-	// energy scaling depends on Hc2_int (and the sample's demagnetisation factor)
-	// Hc2_int changes rapidly vs. T here at the border to the paramagnetic phase
-	const t_real E_scale_fac_heli = 0.0387;		// calculated with heli.cpp
-	t_real E_scale_fac = E_scale_fac_heli / (sqrtfac/10.);
-
-	// set experimental value for Hc2_int if given
-	if(m_Bc2_exp >= 0.)
-		E_scale_fac = g_muB<t_real> * m_Bc2_exp;
-
 	t_mat_cplx Mx2d, Fluc2d;
 	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(iGhmag, iGkmag, qh, qk, ql);
 
@@ -546,7 +536,8 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		sqrtfac, E_scale_fac,
+		std::sqrt(t_real(-0.5 - m_T*0.5)),
+		g_muB<t_real> * m_Bc2_exp, // E scale factor
 		minE, maxE,
 		m_eveps, m_evlimit, m_weighteps,
 		m_filterzeroweight, /*m_onlymode*/-1);

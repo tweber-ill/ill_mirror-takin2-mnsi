@@ -211,7 +211,6 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 	const t_real Brel = m_B / m_Bc2;
 	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
-	const t_real E_scale_fac = g_g<t_real>*g_muB<t_real>*m_Bc2;
 
 	// static susceptibility
 	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
@@ -294,7 +293,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx, fluct,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		1., E_scale_fac,
+		1., g_g<t_real>*g_muB<t_real>*m_Bc2, // E scale factor
 		minE, maxE,
 		m_eveps, /*m_evlimit*/ -1., m_weighteps,
 		m_filterzeroweight, m_onlymode,
