@@ -48,7 +48,7 @@ endif
 
 
 ifneq ($(debug_build), 1)
-	OPT = -O2 #-march=native
+	OPT = -O2 -w #-march=native
 
 	ifeq ($(strip_bins), 1)
 		STRIP = strip

@@ -44,65 +44,44 @@
 template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
 {
-	// indices of top satellite peaks
-	m_idx_top.resize(ORDER);
-	std::iota(m_idx_top.begin(), m_idx_top.end(), 1);
-
-	// #2
 	for(int i=0; i<2; ++i)
 		m_idx2[i].reserve(ORDER * (ORDER*2+1));
-	for(int i=-ORDER; i<=ORDER; ++i)
-	{
-		std::copy(m_idx_top.begin(), m_idx_top.end(), std::back_inserter(m_idx2[0]));
-		for(int j=0; j<ORDER; ++j)
-			m_idx2[1].push_back(i);
-	}
-
-	// #3
 	for(int i=0; i<3; ++i)
 		m_idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
-	for(int i=-ORDER; i<=ORDER; ++i)
+
+	// unrolled indices for two loops
+	for(int j=-ORDER; j<=ORDER; ++j)
 	{
-		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
-		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
-		for(int j=0; j<(2*ORDER+1)*ORDER; ++j)
-			m_idx3[2].push_back(i);
+		for(int i=1; i<ORDER+1; ++i)
+		{
+			int k = -i-j;
+			if(std::abs(k) > ORDER)
+				continue;
+
+			m_idx2[0].push_back(i);
+			m_idx2[1].push_back(j);
+			m_idx2[2].push_back(k);
+		}
 	}
 
-	// reduce #2
-	decltype(m_idx2) idx2;
-	for(int i=0; i<3; ++i)
-		idx2[i].reserve(ORDER * (ORDER*2+1));
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
+	// unrolled indices for three loops
+	for(int k=-ORDER; k<=ORDER; ++k)
 	{
-		int val = -m_idx2[0][i] - m_idx2[1][i];
-		if(std::abs(val) > ORDER)
-			continue;
+		for(int j=-ORDER; j<=ORDER; ++j)
+		{
+			for(int i=1; i<ORDER+1; ++i)
+			{
+				int l = -i-j-k;
+				if(std::abs(l) > ORDER)
+					continue;
 
-		idx2[0].push_back(m_idx2[0][i]);
-		idx2[1].push_back(m_idx2[1][i]);
-		idx2[2].push_back(val);
+				m_idx3[0].push_back(i);
+				m_idx3[1].push_back(j);
+				m_idx3[2].push_back(k);
+				m_idx3[3].push_back(l);
+			}
+		}
 	}
-	for(int i=0; i<3; ++i)
-		m_idx2[i] = std::move(idx2[i]);
-
-	// reduce #3
-	decltype(m_idx3) idx3;
-	for(int i=0; i<4; ++i)
-		idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
-	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
-	{
-		int val = -m_idx3[0][i] - m_idx3[1][i] - m_idx3[2][i];
-		if(std::abs(val) > ORDER)
-			continue;
-
-		idx3[0].push_back(m_idx3[0][i]);
-		idx3[1].push_back(m_idx3[1][i]);
-		idx3[2].push_back(m_idx3[2][i]);
-		idx3[3].push_back(val);
-	}
-	for(int i=0; i<4; ++i)
-		m_idx3[i] = std::move(idx3[i]);
 }
 
 

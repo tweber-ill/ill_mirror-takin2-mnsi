@@ -121,117 +121,97 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 
-	auto reduce_2 = [](decltype(m_idx2)& _idx2, int sign)
-	{
-		decltype(m_idx2) idx2;
-		for(int i=0; i<3; ++i)
-			idx2[i].reserve(_idx2[0].size());
-		for(std::size_t i=0; i<_idx2[0].size(); ++i)
-		{
-			auto val1 = sign*_idx2[0][i].first - _idx2[1][i].first;
-			auto val2 = sign*_idx2[0][i].second - _idx2[1][i].second;
-			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-				continue;
-
-			idx2[0].push_back(_idx2[0][i]);
-			idx2[1].push_back(_idx2[1][i]);
-			idx2[2].emplace_back(std::make_pair(val1, val2));
-		}
-		for(int i=0; i<3; ++i)
-			_idx2[i] = std::move(idx2[i]);
-	};
-
-	auto reduce_3 = [](decltype(m_idx3)& _idx3, int sign)
-	{
-		decltype(m_idx3) idx3;
-		for(int i=0; i<4; ++i)
-			idx3[i].reserve(_idx3[0].size());
-		for(std::size_t i=0; i<_idx3[0].size(); ++i)
-		{
-			auto val1 = sign*_idx3[0][i].first - _idx3[1][i].first - _idx3[2][i].first;
-			auto val2 = sign*_idx3[0][i].second - _idx3[1][i].second - _idx3[2][i].second;
-			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER || std::abs(val1-val2) > ORDER)
-				continue;
-
-			idx3[0].push_back(_idx3[0][i]);
-			idx3[1].push_back(_idx3[1][i]);
-			idx3[2].push_back(_idx3[2][i]);
-			idx3[3].emplace_back(std::make_pair(val1, val2));
-		}
-		for(int i=0; i<4; ++i)
-			_idx3[i] = std::move(idx3[i]);
-	};
-
-
-	// #2
 	for(int i=0; i<2; ++i)
 	{
 		m_idx2[i].reserve(m_allpeaks.size() * m_idx_top.size());
 		m_idx2_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size());
 	}
-
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
-	{
-		std::copy(m_idx_top.begin(), m_idx_top.end(), std::back_inserter(m_idx2[0]));
-		for(std::size_t j=0; j<m_idx_top.size(); ++j)
-		{
-			m_idx2[1].emplace_back(std::make_pair(
-				int(std::round(m_allpeaks[i][0])),
-				int(std::round(m_allpeaks[i][1]))));
-		}
-
-		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
-		{
-			m_idx2_dyn[0].emplace_back(std::make_pair(
-				int(std::round(m_allpeaks[j][0])),
-				int(std::round(m_allpeaks[j][1]))));
-			m_idx2_dyn[1].emplace_back(std::make_pair(
-				int(std::round(m_allpeaks[i][0])),
-				int(std::round(m_allpeaks[i][1]))));
-		}
-	}
-
-	// #3
 	for(int i=0; i<3; ++i)
 	{
 		m_idx3[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_idx_top.size());
 		m_idx3_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_allpeaks.size());
 	}
 
-	for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+
+	// unrolled indices for two loops
+	for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 	{
-		std::copy(m_idx2[0].begin(), m_idx2[0].end(), std::back_inserter(m_idx3[0]));
-		std::copy(m_idx2[1].begin(), m_idx2[1].end(), std::back_inserter(m_idx3[1]));
+		int pk_j_h = int(std::round(m_allpeaks[j][0]));
+		int pk_j_k = int(std::round(m_allpeaks[j][1]));
 
-		std::copy(m_idx2_dyn[0].begin(), m_idx2_dyn[0].end(), std::back_inserter(m_idx3_dyn[0]));
-		std::copy(m_idx2_dyn[1].begin(), m_idx2_dyn[1].end(), std::back_inserter(m_idx3_dyn[1]));
-
-		for(std::size_t j=0; j<m_idx_top.size(); ++j)
+		for(std::size_t i=0; i<m_idx_top.size(); ++i)
 		{
-			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-			{
-				m_idx3[2].emplace_back(std::make_pair(
-					int(std::round(m_allpeaks[i][0])),
-					int(std::round(m_allpeaks[i][1]))));
-			}
+			int val1 = -m_idx_top[i].first - pk_j_h;
+			int val2 = -m_idx_top[i].second - pk_j_k;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
+				|| std::abs(val1-val2) > ORDER)
+				continue;
+
+			m_idx2[0].push_back(m_idx_top[i]);
+			m_idx2[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+			m_idx2[2].emplace_back(std::make_pair(val1, val2));
 		}
 
-		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		for(std::size_t i=0; i<m_allpeaks.size(); ++i)
 		{
-			for(std::size_t k=0; k<m_allpeaks.size(); ++k)
-			{
-				m_idx3_dyn[2].emplace_back(std::make_pair(
-					int(std::round(m_allpeaks[i][0])),
-					int(std::round(m_allpeaks[i][1]))));
-			}
+			int pk_i_h = int(std::round(m_allpeaks[i][0]));
+			int pk_i_k = int(std::round(m_allpeaks[i][1]));
+
+			int val1 = pk_i_h - pk_j_h;
+			int val2 = pk_i_k - pk_j_k;
+			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
+				|| std::abs(val1-val2) > ORDER)
+				continue;
+
+			m_idx2_dyn[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
+			m_idx2_dyn[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+			m_idx2_dyn[2].emplace_back(std::make_pair(val1, val2));
 		}
 	}
 
-	reduce_2(m_idx2, -1);
-	reduce_3(m_idx3, -1);
+	// unrolled indices for three loops
+	for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+	{
+		int pk_k_h = int(std::round(m_allpeaks[k][0]));
+		int pk_k_k = int(std::round(m_allpeaks[k][1]));
 
-	reduce_2(m_idx2_dyn, 1);
-	reduce_3(m_idx3_dyn, 1);
+		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		{
+			int pk_j_h = int(std::round(m_allpeaks[j][0]));
+			int pk_j_k = int(std::round(m_allpeaks[j][1]));
+
+			for(std::size_t i=0; i<m_idx_top.size(); ++i)
+			{
+				int val1 = -m_idx_top[i].first - pk_j_h - pk_k_h;
+				int val2 = -m_idx_top[i].second - pk_j_k - pk_k_k;
+				if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
+					|| std::abs(val1-val2) > ORDER)
+					continue;
+
+				m_idx3[0].push_back(m_idx_top[i]);
+				m_idx3[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+				m_idx3[2].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+				m_idx3[3].emplace_back(std::make_pair(val1, val2));
+			}
+
+			for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+			{
+				int pk_i_h = int(std::round(m_allpeaks[i][0]));
+				int pk_i_k = int(std::round(m_allpeaks[i][1]));
+
+				int val1 = pk_i_h - pk_j_h - pk_k_h;
+				int val2 = pk_i_k - pk_j_k - pk_k_k;
+				if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
+					|| std::abs(val1-val2) > ORDER)
+					continue;
+
+				m_idx3_dyn[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
+				m_idx3_dyn[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+				m_idx3_dyn[2].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+				m_idx3_dyn[3].emplace_back(std::make_pair(val1, val2));
+			}
+		}
+	}
 }
 
 

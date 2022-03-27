@@ -101,7 +101,7 @@ private:
 	t_real m_B = 0, m_T = -100;
 
 	std::vector<t_vec_cplx> m_fourier{};
-	std::vector<int> m_idx_top{}, m_idx2[3], m_idx3[4];
+	std::vector<int> m_idx2[3], m_idx3[4];
 
 	int m_onlymode = -1;
 	bool m_filterzeroweight = false;
