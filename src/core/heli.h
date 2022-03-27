@@ -72,8 +72,8 @@ public:
 
 	virtual t_real F() override;
 
-	virtual void SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier) override;
-	virtual const std::vector<ublas::vector<t_cplx>> &GetFourier() const override { return m_fourier; }
+	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier) override;
+	virtual const std::vector<t_vec_cplx> &GetFourier() const override { return m_fourier; }
 
 	// careful: free energy still uses theory units for T and B, dynamics calculation already uses real units!
 	virtual void SetB(t_real B) override { m_B = B; }
@@ -100,8 +100,8 @@ public:
 private:
 	t_real m_B = 0, m_T = -100;
 
-	std::vector<ublas::vector<t_cplx>> m_fourier{};
-
+	std::vector<t_vec_cplx> m_fourier{};
+	std::vector<int> m_idx_top{}, m_idx2[3], m_idx3[4];
 
 	int m_onlymode = -1;
 	bool m_filterzeroweight = false;
@@ -120,10 +120,6 @@ private:
 	}};
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
-
-
-private:
-	std::vector<int> m_idx2[3], m_idx3[4];
 };
 
 

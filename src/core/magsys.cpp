@@ -53,11 +53,12 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 	std::vector<tl2::t_real_min> vars, errs;
 	std::vector<std::string> names;
 	std::vector<bool> fixed;
-	int fourier_idx = 0;
 	t_real err_def = 5.;
 
-	for(const auto &vec : fourier)
+	for(int fourier_idx=0; fourier_idx<ORDER_FOURIER+1; ++fourier_idx)
 	{
+		const auto &vec = fourier[fourier_idx];
+
 		vars.push_back(vec[0].real()); vars.push_back(vec[0].imag());
 		vars.push_back(vec[1].real()); vars.push_back(vec[1].imag());
 		vars.push_back(vec[2].real()); vars.push_back(vec[2].imag());
@@ -91,8 +92,6 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 			fixed.push_back(bFixYR); fixed.push_back(bFixYI);
 			fixed.push_back(bFixZR); fixed.push_back(bFixZI);
 		}
-
-		++fourier_idx;
 	}
 
 
@@ -223,7 +222,8 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 			const std::string labState = "state_" + tl2::var_to_str(iState);
 			ofstr << "\t<" << labState << ">\n";
 
-			t_real ang = std::atan2(std::abs(2.*fourier[1][0]), std::abs(fourier[0][2]));
+			t_real ang = std::atan2(std::abs(2.*fourier[1][0]),
+				std::abs(fourier[0][2]));
 			if(ok && ang < tl2::pi<t_real>/4. && ang > 0.01)
 			{
 				t_real Bc2 = B / std::cos(ang);
@@ -273,6 +273,8 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 
 			t_real mean = tl2::mean_value(Bc2s[T_idx]);
 			t_real dev = tl2::std_dev(Bc2s[T_idx]);
+			if(tl2::float_equal(dev, t_real(0)))
+				continue;
 
 			ostrData << std::setw(16) << T << " ";
 			ostrData << std::setw(16) << mean << " ";

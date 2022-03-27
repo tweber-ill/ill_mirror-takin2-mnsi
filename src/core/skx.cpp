@@ -289,10 +289,10 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	constexpr auto imag = t_cplx(0,1);
 
 	GenFullFourier();
+	const auto m0 = tl2::veclen(m_M(0,0));
 
 	// free energy
 	t_cplx cF = 0;
-	auto m0 = tl2::veclen(m_M(0,0));
 
 	// dip
 	cF += g_chi<t_real>/3. * m0*m0;

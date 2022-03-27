@@ -56,10 +56,12 @@ public:
 	virtual const std::vector<ublas::vector<t_cplx>> &GetFourier() const = 0;
 
 	virtual bool minimise(int iMaxOrder = 9999,
-		bool bFixXR=0, bool bFixYR=0, bool bFixZR=0, bool bFixXI=0, bool bFixYI=0, bool bFixZI=0);
+		bool bFixXR=0, bool bFixYR=0, bool bFixZR=0,
+		bool bFixXI=0, bool bFixYI=0, bool bFixZI=0);
 
 	virtual bool SaveStates(const char *file, int iMaxOrder = 9999,
-		bool bFixXR=0, bool bFixYR=0, bool bFixZR=0, bool bFixXI=0, bool bFixYI=0, bool bFixZI=0) const;
+		bool bFixXR=0, bool bFixYR=0, bool bFixZR=0,
+		bool bFixXI=0, bool bFixYI=0, bool bFixZI=0) const;
 
 	void SetDebug(bool b) { m_debug = b; }
 

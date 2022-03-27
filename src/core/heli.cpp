@@ -44,17 +44,16 @@
 template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
 {
-	// #1
-	std::vector<int> m_idx1;
-	m_idx1.resize(ORDER);
-	std::iota(m_idx1.begin(), m_idx1.end(), 1);
+	// indices of top satellite peaks
+	m_idx_top.resize(ORDER);
+	std::iota(m_idx_top.begin(), m_idx_top.end(), 1);
 
 	// #2
 	for(int i=0; i<2; ++i)
 		m_idx2[i].reserve(ORDER * (ORDER*2+1));
 	for(int i=-ORDER; i<=ORDER; ++i)
 	{
-		std::copy(m_idx1.begin(), m_idx1.end(), std::back_inserter(m_idx2[0]));
+		std::copy(m_idx_top.begin(), m_idx_top.end(), std::back_inserter(m_idx2[0]));
 		for(int j=0; j<ORDER; ++j)
 			m_idx2[1].push_back(i);
 	}
@@ -113,23 +112,14 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
 {
-	// only z component used
-	auto m0 = m_fourier[0][2];
 	const auto& m = m_fourier;
-
-	// add complex conjugate
-	auto fourier_full = m_fourier;
-	for(std::size_t i=m_fourier.size()-1; i>=1; --i)
-		fourier_full.push_back(tl2::conjugate_vec(m_fourier[i]));
-
+	const auto m0 = tl2::veclen(m[0]);
 
 	// free energy
 	t_cplx cF = 0;
 
 	// dip
 	cF += g_chi<t_real>/3. * m0*m0;
-	for(std::size_t i=1; i<m.size(); ++i)
-		cF += 2. * g_chi<t_real> * std::norm(m[i][2]);
 
 	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
@@ -137,13 +127,16 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		const t_real q_sq = q*q;
 		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
+		// dip
+		cF += 2. * g_chi<t_real> * std::norm(m[i][2]);
+
 		// dmi
 		cF += 8. * q * (
 			m[i][0].real() * m[i][1].imag() -
 			m[i][1].real() * m[i][0].imag() );
 
 		// hoc
-		cF += 2.*g_hoc<t_real> * m_sq * q_sq*q_sq;
+		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
 		// phi^2 & phi^4
 		cF += 2. * m_sq * q_sq;
@@ -155,9 +148,9 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(fourier_full, m_idx2[0][i]);
-		const auto& m2 = get_comp(fourier_full, m_idx2[1][i]);
-		const auto& m3 = get_comp(fourier_full, m_idx2[2][i]);
+		const auto& m1 = get_comp(m, m_idx2[0][i]);
+		const auto& m2 = get_comp(m, m_idx2[1][i]);
+		const auto& m3 = get_comp(m, m_idx2[2][i]);
 
 		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
 	}
@@ -165,10 +158,10 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	// phi^4
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(fourier_full, m_idx3[0][i]);
-		const auto& m2 = get_comp(fourier_full, m_idx3[1][i]);
-		const auto& m3 = get_comp(fourier_full, m_idx3[2][i]);
-		const auto& m4 = get_comp(fourier_full, m_idx3[3][i]);
+		const auto& m1 = get_comp(m, m_idx3[0][i]);
+		const auto& m2 = get_comp(m, m_idx3[1][i]);
+		const auto& m3 = get_comp(m, m_idx3[2][i]);
+		const auto& m4 = get_comp(m, m_idx3[3][i]);
 
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
@@ -183,11 +176,18 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
  * set fourier components
  */
 template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier)
+void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier)
 {
 	m_fourier = fourier;
+
 	while(m_fourier.size() < ORDER_FOURIER+1)
-		m_fourier.emplace_back(tl2::make_vec<ublas::vector<t_cplx>>({0., 0., 0.}));
+		m_fourier.emplace_back(tl2::make_vec<t_vec_cplx>({0., 0., 0.}));
+	while(m_fourier.size() > ORDER_FOURIER+1)
+		m_fourier.pop_back();
+
+	// add complex conjugate bottom peaks
+	for(std::size_t i=ORDER_FOURIER; i>=1; --i)
+		m_fourier.push_back(tl2::conjugate_vec(m_fourier[i]));
 }
 
 

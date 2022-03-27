@@ -122,6 +122,8 @@ private:
 	t_real m_Bc2_exp = 0.3;
 
 	std::vector<t_vec_cplx> m_fourier{};
+	std::vector<std::pair<int, int>> m_idx_top{}, m_idx2[3], m_idx3[4];
+	std::vector<std::pair<int, int>> m_idx2_dyn[3], m_idx3_dyn[4];
 
 	// all six sixth
 	std::vector<std::vector<t_vec>> m_peaks_360{};
@@ -142,9 +144,6 @@ private:
 
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
-
-	std::vector<std::pair<int, int>> m_idx_top{}, m_idx2[3], m_idx3[4];
-	std::vector<std::pair<int, int>> m_idx2_dyn[3], m_idx3_dyn[4];
 };
 
 

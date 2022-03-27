@@ -13,6 +13,8 @@
 #include "tlibs2-extras/mag.h"
 namespace ublas = boost::numeric::ublas;
 
+#include <type_traits>
+
 
 /**
  * splits a vector into its x,y,z components
@@ -28,7 +30,10 @@ std::tuple<T, T, T> split_vec3d(const ublas::vector<T>& vec)
  * array indexing including negative values
  */
 template<class t_arr>
-typename t_arr::value_type& get_comp(t_arr &arr, int idx)
+std::conditional_t<std::is_const_v<t_arr>,
+	const typename t_arr::value_type&,
+	typename t_arr::value_type&>
+get_comp(t_arr &arr, int idx)
 {
 	if(idx >= 0) return arr[idx];
 
@@ -40,20 +45,10 @@ typename t_arr::value_type& get_comp(t_arr &arr, int idx)
  * matrix indexing including negative values
  */
 template<class t_mat>
-typename t_mat::value_type& get_comp(t_mat &mat, int idx1, int idx2)
-{
-	if(idx1 < 0) idx1 = int(mat.size1()) + idx1;
-	if(idx2 < 0) idx2 = int(mat.size2()) + idx2;
-
-	return mat(idx1, idx2);
-}
-
-
-/**
- * matrix indexing including negative values
- */
-template<class t_mat>
-const typename t_mat::value_type& get_comp(const t_mat &mat, int idx1, int idx2)
+std::conditional_t<std::is_const_v<t_mat>,
+	const typename t_mat::value_type&,
+	typename t_mat::value_type&>
+get_comp(t_mat &mat, int idx1, int idx2)
 {
 	if(idx1 < 0) idx1 = int(mat.size1()) + idx1;
 	if(idx2 < 0) idx2 = int(mat.size2()) + idx2;
