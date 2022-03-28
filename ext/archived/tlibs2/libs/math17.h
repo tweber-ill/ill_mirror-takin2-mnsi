@@ -33,7 +33,7 @@
 #ifndef __TLIBS2_MATH_H__
 #define __TLIBS2_MATH_H__
 
-#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
+//#pragma message("The header math17.h is the old tlibs2 math library, please upgrade to math20.h.")
 
 
 //#define USE_LINALG_OPS
@@ -809,6 +809,21 @@ t_vec make_vec(const t_lst<typename t_vec::value_type>& lst)
 
 
 /**
+ * creates a vector and initialises all elements with the same component
+ */
+template<class t_vec = ublas::vector<double>>
+t_vec make_vec(std::size_t N, const typename t_vec::value_type& elem)
+{
+	t_vec vec(N);
+
+	for(std::size_t i=0; i<N; ++i)
+		vec[i] = elem;
+
+	return vec;
+}
+
+
+/**
  * creates a matrix
  */
 template<class t_mat = ublas::matrix<double>,
@@ -831,6 +846,22 @@ t_mat make_mat(t_lst<t_lst<typename t_mat::value_type>>&& lst)
 			mat(i,j) = std::move(*iterinner);
 		}
 	}
+
+	return mat;
+}
+
+
+/**
+ * creates a matrix and initialises all elements with the same component
+ */
+template<class t_mat = ublas::matrix<double>>
+t_mat make_mat(std::size_t I, std::size_t J, const typename t_mat::value_type& elem)
+{
+	t_mat mat(I, J);
+
+	for(std::size_t i=0; i<I; ++i)
+		for(std::size_t j=0; j<J; ++j)
+			mat(i, j) = elem;
 
 	return mat;
 }

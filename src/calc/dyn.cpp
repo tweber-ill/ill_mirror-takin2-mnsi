@@ -66,10 +66,8 @@ void calc_disp(char dyntype,
 		}
 
 		skx->SetFourier(fourier_skx);
-
 		skx->SetT(-1000.);
 		skx->SetB(25.);	// BC2 = 40.3425, test: 45.028487
-		skx->GenFullFourier();
 		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 		skx->SetG(G[0], G[1], G[2]);
 

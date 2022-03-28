@@ -114,7 +114,6 @@ SqwMod::SqwMod()
 		fourier_skx.push_back(tl2::make_vec<ublas::vector<t_cplx>>({_skxgs_allcomps[comp], _skxgs_allcomps[comp+1], _skxgs_allcomps[comp+2]}));
 
 	m_skx.SetFourier(fourier_skx);
-	m_skx.GenFullFourier();
 
 	m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
 	m_skx.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);

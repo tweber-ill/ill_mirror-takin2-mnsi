@@ -55,8 +55,6 @@ void calc_disp(
 	skx.SetB(25.);
 	heli.SetB(0.17);
 
-	skx.GenFullFourier();
-
 	skx.SetFilterZeroWeight(1);
 	heli.SetFilterZeroWeight(1);
 

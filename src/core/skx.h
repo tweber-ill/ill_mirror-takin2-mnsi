@@ -79,7 +79,6 @@ public:
 	}
 
 
-	void GenFullFourier();
 	std::tuple<t_mat_cplx, t_mat_cplx> GetMCrossMFluct(
 		int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql) const;
 	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -95,10 +94,6 @@ public:
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
-
-
-protected:
-	ublas::matrix<t_vec_cplx> GetFullFourier() const;
 
 
 private:

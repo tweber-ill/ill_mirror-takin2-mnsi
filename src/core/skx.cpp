@@ -214,51 +214,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 }
 
 
-template<class t_real, class t_cplx, int ORDER>
-ublas::matrix<typename Skx<t_real, t_cplx, ORDER>::t_vec_cplx>
-Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
-{
-	constexpr auto imag = t_cplx(0, 1);
-
-	ublas::matrix<t_vec_cplx> M(2*ORDER+1, 2*ORDER+1);
-	for(std::size_t i=0; i<M.size1(); ++i)
-		for(std::size_t j=0; j<M.size2(); ++j)
-			M(i,j) = tl2::make_vec<t_vec_cplx>({0,0,0});
-	M(0,0) = m_fourier[0];
-
-	// generate all skx fourier components
-	for(std::size_t ipk=0; ipk<m_peaks_360.size(); ++ipk) // 6
-	{
-		const auto& rot = m_rot[ipk];
-		for(std::size_t ihx=0; ihx<m_peaks_360[ipk].size(); ++ihx)
-		{
-			int idx1 = int(std::round(m_peaks_360[ipk][ihx][0]));
-			int idx2 = int(std::round(m_peaks_360[ipk][ihx][1]));
-
-			const auto& vecPk = m_peaks_60_lab[ihx];
-			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
-				({ -vecPk[1] * imag * m_fourier[ihx+1][0],
-				   +vecPk[0] * imag * m_fourier[ihx+1][0] });
-			fourier = tl2::prod_mv(rot, fourier);
-
-			fourier.resize(3, true);
-			fourier[2] = m_fourier[ihx+1][2];
-
-			get_comp(M, idx1, idx2) = fourier;
-		}
-	}
-
-	return M;
-}
-
-
-template<class t_real, class t_cplx, int ORDER>
-void Skx<t_real, t_cplx, ORDER>::GenFullFourier()
-{
-	m_M = GetFullFourier();
-}
-
-
 /**
  * free energy
  */
@@ -266,8 +221,6 @@ template<class t_real, class t_cplx, int ORDER>
 t_real Skx<t_real, t_cplx, ORDER>::F()
 {
 	constexpr auto imag = t_cplx(0,1);
-
-	GenFullFourier();
 	const auto m0 = tl2::veclen(m_M(0,0));
 
 	// free energy
@@ -339,6 +292,35 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 		m_fourier.emplace_back(tl2::make_vec<t_vec_cplx>({0., 0., 0.}));
 	while(m_fourier.size() > ORDER_FOURIER+1)
 		m_fourier.pop_back();
+
+	// generate full fourier coefficients
+	constexpr auto imag = t_cplx(0, 1);
+
+	m_M = tl2::make_mat<ublas::matrix<t_vec_cplx>>(
+		2*ORDER+1, 2*ORDER+1, tl2::make_vec<t_vec_cplx>({0,0,0}));
+	m_M(0,0) = m_fourier[0];
+
+	// generate all skx fourier components
+	for(std::size_t ipk=0; ipk<m_peaks_360.size(); ++ipk) // 6
+	{
+		const auto& rot = m_rot[ipk];
+		for(std::size_t ihx=0; ihx<m_peaks_360[ipk].size(); ++ihx)
+		{
+			int idx1 = int(std::round(m_peaks_360[ipk][ihx][0]));
+			int idx2 = int(std::round(m_peaks_360[ipk][ihx][1]));
+
+			const auto& vecPk = m_peaks_60_lab[ihx];
+			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
+				({ -vecPk[1] * imag * m_fourier[ihx+1][0],
+				   +vecPk[0] * imag * m_fourier[ihx+1][0] });
+			fourier = tl2::prod_mv(rot, fourier);
+
+			fourier.resize(3, true);
+			fourier[2] = m_fourier[ihx+1][2];
+
+			get_comp(m_M, idx1, idx2) = fourier;
+		}
+	}
 }
 
 

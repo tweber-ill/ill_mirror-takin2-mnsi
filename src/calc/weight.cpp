@@ -42,7 +42,6 @@ void calc_disp(char dyntype,
 		skx->SetProjNeutron(iProj!=0);
 		skx->SetT(-1000.);
 		skx->SetB(25.);
-		skx->GenFullFourier();
 		skx->SetFilterZeroWeight(1);
 		skx->SetCoords(Bx,By,Bz, Px,Py,Pz);
 		skx->SetG(Gx,Gy,Gz);
