@@ -221,13 +221,15 @@ template<class t_real, class t_cplx, int ORDER>
 t_real Skx<t_real, t_cplx, ORDER>::F()
 {
 	constexpr auto imag = t_cplx(0,1);
-	const auto m0 = tl2::veclen(m_M(0,0));
+
+	const t_vec_cplx& m0 = m_M(0, 0);
+	const auto m0_sq = tl2::inner_cplx(m0, m0);
 
 	// free energy
 	t_cplx cF = 0;
 
 	// dip
-	cF += g_chi<t_real>/3. * m0*m0;
+	cF += g_chi<t_real>/3. * m0_sq;
 
 	for(const auto& pair : m_idx_top)
 	{
@@ -249,11 +251,11 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		// phi^2 & phi^4
 		cF += 2. * m_sq * q_sq;
-		cF += 2. * (m_T + 1. + m0*m0) * m_sq;
+		cF += 2. * (m_T + 1. + m0_sq) * m_sq;
 	}
 
 	// phi^2 & phi^4
-	cF += (m_T + 1.) * m0*m0 + m0*m0*m0*m0;
+	cF += (m_T + 1.) * m0_sq + m0_sq*m0_sq;
 
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
@@ -261,7 +263,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const auto& m2 = get_comp(m_M, m_idx2[1][i].first, m_idx2[1][i].second);
 		const auto& m3 = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
 
-		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
+		cF += 2. * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
 
 	// phi^4
@@ -276,7 +278,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	}
 
 	// zee
-	cF += -m_B*m0;
+	cF += -m_B * std::sqrt(m0_sq);
 	return cF.real();
 }
 
