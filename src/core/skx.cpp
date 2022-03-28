@@ -227,24 +227,24 @@ Skx<t_real, t_cplx, ORDER>::GetFullFourier() const
 	M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
-	for(std::size_t ipk=0; ipk<m_peaks_360.size(); ++ipk)	// 6
+	for(std::size_t ipk=0; ipk<m_peaks_360.size(); ++ipk) // 6
 	{
 		const auto& rot = m_rot[ipk];
-		for(std::size_t ihx=0; ihx<m_peaks_360[ipk].size(); ++ihx)	// 10
+		for(std::size_t ihx=0; ihx<m_peaks_360[ipk].size(); ++ihx)
 		{
 			int idx1 = int(std::round(m_peaks_360[ipk][ihx][0]));
 			int idx2 = int(std::round(m_peaks_360[ipk][ihx][1]));
 
 			const auto& vecPk = m_peaks_60_lab[ihx];
-			auto fourier = tl2::make_vec<t_vec_cplx>
-				({ -vecPk[1] * m_fourier[ihx+1][0],
-				   +vecPk[0] * m_fourier[ihx+1][0] });
+			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
+				({ -vecPk[1] * imag * m_fourier[ihx+1][0],
+				   +vecPk[0] * imag * m_fourier[ihx+1][0] });
 			fourier = tl2::prod_mv(rot, fourier);
 
-			get_comp(M, idx1, idx2) = tl2::make_vec<t_vec_cplx>
-				({ imag * fourier[0],
-				   imag * fourier[1],
-				   m_fourier[ihx+1][2] });
+			fourier.resize(3, true);
+			fourier[2] = m_fourier[ihx+1][2];
+
+			get_comp(M, idx1, idx2) = fourier;
 		}
 	}
 
