@@ -132,7 +132,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		m_idx3_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_allpeaks.size());
 	}
 
-
 	// unrolled indices for two loops
 	for(std::size_t j=0; j<m_allpeaks.size(); ++j)
 	{
@@ -309,7 +308,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const auto& m2 = get_comp(m_M, m_idx2[1][i].first, m_idx2[1][i].second);
 		const auto& m3 = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
 
-		// the x and y components are purely imaginary, z purely real
 		cF += 2. * m0 * m1[2] * tl2::inner(m2, m3);
 	}
 
@@ -321,7 +319,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const auto& m3 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
 		const auto& m4 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
 
-		// the x and y components are purely imaginary, z purely real
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
 

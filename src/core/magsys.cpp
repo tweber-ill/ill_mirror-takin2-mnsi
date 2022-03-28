@@ -45,7 +45,9 @@
  */
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
-	int iMaxOrder, bool bFixXR, bool bFixYR, bool bFixZR, bool bFixXI, bool bFixYI, bool bFixZI)
+	int iMaxOrder,
+	bool bFixXR, bool bFixYR, bool bFixZR,
+	bool bFixXI, bool bFixYI, bool bFixZI)
 {
 	auto& sys = *this;
 	const auto& fourier = sys.GetFourier();
@@ -147,7 +149,8 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	const char *file, int iMaxOrder,
-	bool bFixXR, bool bFixYR, bool bFixZR, bool bFixXI, bool bFixYI, bool bFixZI) const
+	bool bFixXR, bool bFixYR, bool bFixZR,
+	bool bFixXI, bool bFixYI, bool bFixZI) const
 {
 	bool calc_angles = 1;
 
@@ -306,7 +309,9 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
-	int iMaxOrder, bool bFixXR, bool bFixYR, bool bFixZR, bool bFixXI, bool bFixYI, bool bFixZI)
+	int iMaxOrder,
+	bool bFixXR, bool bFixYR, bool bFixZR,
+	bool bFixXI, bool bFixYI, bool bFixZI)
 {
 	return 0;
 }
@@ -315,7 +320,8 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	const char *file, int iMaxOrder,
-	bool bFixXR, bool bFixYR, bool bFixZR, bool bFixXI, bool bFixYI, bool bFixZI) const
+	bool bFixXR, bool bFixYR, bool bFixZR,
+	bool bFixXI, bool bFixYI, bool bFixZI) const
 {
 	return 0;
 }

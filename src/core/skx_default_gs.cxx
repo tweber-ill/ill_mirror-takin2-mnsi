@@ -10,8 +10,9 @@
 
 /**
  * output from skx_gs.cpp
- * x and y values are the imaginary components
- * z values are the real components
+ * x values are the x (and y) imaginary components
+ * y values are not used (same as x)
+ * z values are the z real components
  */
 static const std::vector<t_real> _skxgs_allcomps =
 {{
