@@ -91,42 +91,48 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
 {
+	constexpr t_cplx imag = t_cplx(0, 1);
+
 	const auto& m = m_fourier;
-
 	const auto& m0 = m[0];
-	const auto m0_sq = tl2::inner_cplx(m0, m0);
-
-	// free energy
-	t_cplx cF = 0;
+	const auto m0_sq = tl2::inner(m0, m0);
 
 	// dip
-	cF += g_chi<t_real>/3. * m0_sq;
+	t_cplx cF = g_chi<t_real>/3. * m0_sq;
+
+	// phi^2
+	cF += (m_T + 1.) * m0_sq;
+
+	// phi^4
+	cF += m0_sq*m0_sq;
 
 	for(std::size_t i=1; i<ORDER+1; ++i)
 	{
-		const t_real q = t_real(i);
+		const t_vec_cplx& mi = m[i];
+		t_vec_cplx mj = tl2::conjugate_vec(mi);
+		const auto m_sq = tl2::inner(mi, mj);
+
+		const t_real q = t_real(i); // q_vec = [0, 0, q]
 		const t_real q_sq = q*q;
-		const auto m_sq = tl2::inner_cplx(m[i], m[i]);
 
 		// dip
-		cF += 2. * g_chi<t_real> * std::norm(m[i][2]);
+		cF += 2. * g_chi<t_real> * mi[2]*mj[2];
 
 		// dmi
-		cF += 8. * q * (
-			m[i][0].real() * m[i][1].imag() -
-			m[i][1].real() * m[i][0].imag() );
+		cF += -4. * imag * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
 		// hoc
 		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
-		// phi^2 & phi^4
+		// phi^2
 		cF += 2. * m_sq * q_sq;
-		cF += 2. * (m_T + 1. + m0_sq) * m_sq;
+		cF += 2. * (m_T + 1.) * m_sq;
+
+		// phi^4
+		cF += 2. * m0_sq * m_sq;
 	}
 
-	// phi^2 & phi^4
-	cF += (m_T + 1.) * m0_sq + m0_sq*m0_sq;
-
+	// phi^4
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
 		const auto& m1 = get_comp(m, m_idx2[0][i]);
@@ -180,7 +186,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::v
 Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
 {
 	constexpr int SIZE = 2*ORDER+1;
-	constexpr t_cplx imag = t_cplx(0,1);
+	constexpr t_cplx imag = t_cplx(0, 1);
 	static const std::vector<t_real> empty;
 	const t_real epshkl = 1e-5;
 

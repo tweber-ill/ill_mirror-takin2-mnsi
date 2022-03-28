@@ -1165,6 +1165,16 @@ vector_type cross_3(const vector_type& vec0, const vector_type& vec1)
 
 
 /**
+ * 2-dim cross product
+ */
+template<typename vector_type = ublas::vector<double>>
+typename vector_type::value_type cross_2(const vector_type& vec0, const vector_type& vec1)
+{
+	return vec0[0]*vec1[1] - vec1[0]*vec0[1];
+}
+
+
+/**
  * inner product -- general version
  */
 template<typename t_vec = ublas::vector<double>,

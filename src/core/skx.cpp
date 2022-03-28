@@ -220,43 +220,50 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 template<class t_real, class t_cplx, int ORDER>
 t_real Skx<t_real, t_cplx, ORDER>::F()
 {
-	constexpr auto imag = t_cplx(0,1);
+	constexpr auto imag = t_cplx(0, 1);
 
 	const t_vec_cplx& m0 = m_M(0, 0);
-	const auto m0_sq = tl2::inner_cplx(m0, m0);
-
-	// free energy
-	t_cplx cF = 0;
+	const auto m0_sq = tl2::inner(m0, m0);
 
 	// dip
-	cF += g_chi<t_real>/3. * m0_sq;
+	t_cplx cF = g_chi<t_real>/3. * m0_sq;
+
+	// phi^2
+	cF += (m_T + 1.) * m0_sq;
+
+	// phi^4
+	cF += m0_sq * m0_sq;
 
 	for(const auto& pair : m_idx_top)
 	{
-		t_vec q_rlu = tl2::make_vec<t_vec>({t_real(pair.first), t_real(pair.second)});
+		t_vec q_rlu = tl2::make_vec<t_vec>(
+			{ t_real(pair.first), t_real(pair.second) });
 		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
+		t_vec_cplx qc = tl2::make_vec<t_vec_cplx>({q[0], q[1], 0.});
 
-		const auto& m = get_comp(m_M, pair.first, pair.second);
-		const auto m_sq = tl2::inner_cplx(m, m);
-		const auto q_sq = tl2::inner(q, q);
+		const t_vec_cplx& m = get_comp(m_M, pair.first, pair.second);
+		t_vec_cplx mj = tl2::conjugate_vec(m);
+		const t_cplx m_sq = tl2::inner(m, mj);
+		const t_real q_sq = tl2::inner(q, q);
 
 		// dip
-		cF += 2. * g_chi<t_real> * std::pow(q[0]*m[0] + q[1]*m[1], 2.) / q_sq;
+		cF += 2. * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
 		// dmi
-		cF += 8. * imag * m[2] * (q[0]*m[1] - q[1]*m[0]);
+		cF += -4. * imag * tl2::inner(m, tl2::cross_3(qc, mj));
 
 		// hoc
 		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
-		// phi^2 & phi^4
+		// phi^2
 		cF += 2. * m_sq * q_sq;
-		cF += 2. * (m_T + 1. + m0_sq) * m_sq;
+		cF += 2. * (m_T + 1.) * m_sq;
+
+		// phi^4
+		cF += 2. * m0_sq * m_sq;
 	}
 
-	// phi^2 & phi^4
-	cF += (m_T + 1.) * m0_sq + m0_sq*m0_sq;
-
+	// phi^4
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
 		const auto& m1 = get_comp(m_M, m_idx2[0][i].first, m_idx2[0][i].second);
