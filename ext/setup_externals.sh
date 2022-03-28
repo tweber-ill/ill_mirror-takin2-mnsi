@@ -63,13 +63,12 @@ else
 fi
 
 
-#if [ -L tlibs2-mag ] || [ -d tlibs2-mag ]; then
-#	echo -e "A tlibs2-mag directory already exists. Skipping.";
-#else
-#	echo -e "Cloning tlibs2-mag repo..."
-#	git clone https://code.ill.fr/tweber/tlibs2_magnon_helpers.git
-#	mv -v tlibs2_magnon_helpers tlibs2-mag
-#fi
-
-#cp -v tlibs2-mag/mag.h tlibs2/libs/
-#cp -v tlibs2-mag/math17.h tlibs2/libs/
+if [ -L data ] || [ -d data ]; then
+	echo -e "A data directory already exists. Skipping.";
+else
+	echo -e "Downloading experimental data..."
+	mkdir -v data && cd data
+	wget -O data.zip https://zenodo.org/record/5724117/files/data.zip?download=1
+	unzip data.zip
+	rm -v data.zip
+fi

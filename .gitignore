@@ -34,10 +34,12 @@ ext/tlibs
 ext/tlibs2
 ext/takin
 ext/takin2
+ext/data
 ext/tlibs/**
 ext/tlibs2/**
 ext/takin/**
 ext/takin2/**
+ext/data/**
 
 # Figures
 *.jpg
