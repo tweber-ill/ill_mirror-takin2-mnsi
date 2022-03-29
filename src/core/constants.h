@@ -8,7 +8,7 @@
 #ifndef __MNSI_CONSTS_H__
 #define __MNSI_CONSTS_H__
 
-#include "tlibs2-extras/math17.h"
+#include "tlibs2/libs/math17.h"
 #include "tlibs2/libs/units.h"
 
 

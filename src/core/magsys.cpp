@@ -17,7 +17,7 @@
 #include "magsys.h"
 
 #define USE_LAPACK
-#include "tlibs2-extras/math17.h"
+#include "tlibs2/libs/math17.h"
 #include "tlibs2/libs/str.h"
 #include "tlibs2/libs/log.h"
 

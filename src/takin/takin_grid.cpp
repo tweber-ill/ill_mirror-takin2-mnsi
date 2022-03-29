@@ -8,8 +8,7 @@
 #include "tools/monteconvo/sqwbase.h"
 #include "libs/version.h"
 
-//#include "tlibs2/libs/math17.h"
-#include "tlibs2-extras/math17.h"
+#include "tlibs2/libs/math17.h"
 #include "tlibs2/libs/str.h"
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/file.h"

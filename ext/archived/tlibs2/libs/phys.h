@@ -39,7 +39,7 @@
 	#include "maths.h"
 #else
 	#pragma message("The compiler does not support C++20, trying to use old C++17 math library, if available.")
-	#include "tlibs2-extras/math17.h"
+	#include "math17.h"
 #endif
 
 #include <boost/units/pow.hpp>
