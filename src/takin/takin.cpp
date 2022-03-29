@@ -44,6 +44,7 @@ public:
 	using t_real = t_real_reso;
 	using t_vec = ublas::vector<t_real>;
 	using t_cplx = std::complex<t_real>;
+	using t_vec_cplx = ublas::vector<t_cplx>;
 
 protected:
 	Skx<t_real, t_cplx, SKX_ORDER> m_skx{};
@@ -107,13 +108,7 @@ SqwMod::SqwMod()
 	m_heli.SetB(0.35);
 	m_lf.SetT(29.);
 
-	std::vector<ublas::vector<t_cplx>> fourier_skx;
-	fourier_skx.reserve(_skxgs_allcomps.size()/3);
-
-	for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
-		fourier_skx.push_back(tl2::make_vec<ublas::vector<t_cplx>>({_skxgs_allcomps[comp], _skxgs_allcomps[comp+1], _skxgs_allcomps[comp+2]}));
-
-	m_skx.SetFourier(fourier_skx);
+	m_skx.SetFourier(_get_skx_gs<t_vec_cplx>());
 
 	m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
 	m_skx.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);

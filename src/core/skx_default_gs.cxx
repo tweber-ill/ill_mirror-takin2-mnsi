@@ -1,5 +1,5 @@
 /**
- * Default ground state for skx
+ * default ground state for skx
  * @author tweber@ill.fr
  * @date aug-18
  * @license GPLv2 (see 'LICENSE' file)
@@ -115,3 +115,27 @@ static const std::vector<t_real> _skxgs_allcomps =
 	8.4820229e-06, 0, 6.3066594e-06,
 #endif
 }};
+
+
+template<class t_vec_cplx>
+std::vector<t_vec_cplx> _get_skx_gs()
+{
+	using t_cplx = typename t_vec_cplx::value_type;
+	constexpr auto imag = t_cplx(0, 1);
+
+	// set initial fourier components
+	std::vector<t_vec_cplx> fourier;
+	fourier.reserve(_skxgs_allcomps.size()/3);
+
+	for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
+	{
+		fourier.push_back(tl2::make_vec<t_vec_cplx>(
+		{
+			_skxgs_allcomps[comp] * imag,
+			_skxgs_allcomps[comp+1] * imag,
+			_skxgs_allcomps[comp+2]
+		}));
+	}
+
+	return fourier;
+}

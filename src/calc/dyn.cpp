@@ -20,6 +20,7 @@
 using t_real = double;
 using t_cplx = std::complex<t_real>;
 using t_vec = ublas::vector<t_real>;
+using t_vec_cplx = ublas::vector<t_cplx>;
 
 #include "core/skx_default_gs.cxx"
 
@@ -36,6 +37,7 @@ void calc_disp(char dyntype,
 	tl2::Stopwatch<t_real> timer;
 	timer.start();
 
+	constexpr auto imag = t_cplx(0, 1);
 	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
 	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
 	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
@@ -51,21 +53,7 @@ void calc_disp(char dyntype,
 		std::cout << "Calculating skyrmion dispersion." << std::endl;
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
 
-		std::vector<ublas::vector<t_cplx>> fourier_skx;
-		fourier_skx.reserve(_skxgs_allcomps.size()/3);
-
-		for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
-		{
-			fourier_skx.push_back(
-				tl2::make_vec<ublas::vector<t_cplx>>(
-				{
-					_skxgs_allcomps[comp],
-					_skxgs_allcomps[comp+1],
-					_skxgs_allcomps[comp+2]
-				}));
-		}
-
-		skx->SetFourier(fourier_skx);
+		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
 		skx->SetT(-1000.);
 		skx->SetB(25.);	// BC2 = 40.3425, test: 45.028487
 		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);

@@ -17,6 +17,7 @@ namespace hist = boost::histogram;
 using t_real = double;
 using t_cplx = std::complex<t_real>;
 using t_vec = ublas::vector<t_real>;
+using t_vec_cplx = ublas::vector<t_cplx>;
 
 #include "core/skx_default_gs.cxx"
 
@@ -38,13 +39,7 @@ void calc_disp(
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
-	std::vector<ublas::vector<t_cplx>> fourier_skx;
-	fourier_skx.reserve(_skxgs_allcomps.size()/3);
-
-	for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
-		fourier_skx.push_back(tl2::make_vec<ublas::vector<t_cplx>>({_skxgs_allcomps[comp], _skxgs_allcomps[comp+1], _skxgs_allcomps[comp+2]}));
-
-	skx.SetFourier(fourier_skx);
+	skx.SetFourier(_get_skx_gs<t_vec_cplx>());
 
 	skx.SetProjNeutron(iProj!=0);
 	heli.SetProjNeutron(iProj!=0);
