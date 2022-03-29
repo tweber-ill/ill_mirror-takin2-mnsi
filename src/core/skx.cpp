@@ -42,42 +42,34 @@
 template<class t_real, class t_cplx, int ORDER>
 Skx<t_real, t_cplx, ORDER>::Skx()
 {
-	// xtal B matrix
-	tl2::inverse(m_Bmat, m_Binv);
+	tl2::inverse(m_Bmat, m_Binv); // xtal B matrix
 
-	// rotation in lab
 	t_mat curRot = tl2::unit_m<t_mat>(2);
 	const auto rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
 
-	m_rot.reserve(6);
+	m_rot60lab.reserve(6);    // skx segment rotations in lab units
+	m_rot60rlu.reserve(6); // skx segment rotations in rlu units
 	for(int i=0; i<6; ++i)
 	{
 		curRot = tl2::prod_mm(curRot, rot60);
-		m_rot.push_back(curRot);
+		m_rot60lab.push_back(curRot);
+
+		auto rotRlu = tl2::transform<t_mat>(curRot, m_Bmat, 0);
+		m_rot60rlu.emplace_back(std::move(rotRlu));
 	}
 
-	// rotation in rlu
-	m_rotRlu.reserve(m_rot.size());
-	for(const auto& rot : m_rot)
-	{
-		auto M = tl2::transform<t_mat>(rot, m_Bmat, 0);
-		m_rotRlu.emplace_back(M);
-	}
-
-
-	// all peaks
 	m_allpeaks.reserve((2*ORDER+1) * (2*ORDER+1));
 	for(t_real h=-ORDER; h<ORDER+1; ++h)
 	{
 		for(t_real k=-ORDER; k<ORDER+1; ++k)
 		{
 			if(std::abs(h-k) <= t_real(ORDER))
-				m_allpeaks.emplace_back(tl2::make_vec<t_vec>({h,k}));
+				m_allpeaks.emplace_back(tl2::make_vec<t_vec>({h, k}));
 		}
 	}
 
-	m_peaks_60.reserve((ORDER+1) * ORDER);
-	m_peaks_60_lab.reserve((ORDER+1) * ORDER);
+	m_peaks60rlu.reserve((ORDER+1) * ORDER);
+	m_peaks60lab.reserve((ORDER+1) * ORDER);
 	for(t_real h=0; h<ORDER+1; ++h)
 	{
 		for(t_real k=0; k<h; ++k)
@@ -86,18 +78,18 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			t_vec vec_lab = tl2::prod_mv(m_Bmat, vec_rlu);
 			vec_lab /= tl2::veclen(vec_lab);
 
-			m_peaks_60.emplace_back(std::move(vec_rlu));
-			m_peaks_60_lab.emplace_back(std::move(vec_lab));
+			m_peaks60rlu.emplace_back(std::move(vec_rlu));
+			m_peaks60lab.emplace_back(std::move(vec_lab));
 		}
 	}
 
 
 	// indices for the top 180 degrees
-	m_idx_top.reserve(m_rotRlu.size() * m_peaks_60.size());
+	m_idx_top.reserve(m_rot60rlu.size() * m_peaks60rlu.size());
 
-	for(const auto& rot : m_rotRlu)
+	for(const auto& rot : m_rot60rlu)
 	{
-		for(const auto &vec : m_peaks_60)
+		for(const auto& vec : m_peaks60rlu)
 		{
 			t_vec pk_rlu = tl2::prod_mv(rot, vec);
 			t_vec pk = tl2::prod_mv(m_Bmat, pk_rlu);
@@ -304,23 +296,23 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	m_M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
-	for(std::size_t ipk=0; ipk<m_rot.size(); ++ipk)
+	for(std::size_t ipk=0; ipk<m_rot60lab.size(); ++ipk)
 	{
-		const auto& rotRlu = m_rotRlu[ipk];
-		const auto& rot = m_rot[ipk];
+		const auto& rotRlu = m_rot60rlu[ipk];
+		const auto& rotLab = m_rot60lab[ipk];
 
-		for(std::size_t ihx=0; ihx<m_peaks_60.size(); ++ihx)
+		for(std::size_t ihx=0; ihx<m_peaks60rlu.size(); ++ihx)
 		{
-			const auto &vec = m_peaks_60[ihx];
+			const auto &vec = m_peaks60rlu[ihx];
 			t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
 			int idx1 = int(std::round(pk_rlu[0]));
 			int idx2 = int(std::round(pk_rlu[1]));
 
-			const auto& vecPk = m_peaks_60_lab[ihx];
+			const auto& vecPk = m_peaks60lab[ihx];
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
 				({ vecPk[1] * m_fourier[ihx+1][1],
 				   vecPk[0] * m_fourier[ihx+1][0] });
-			fourier = tl2::prod_mv(rot, fourier);
+			fourier = tl2::prod_mv(rotLab, fourier);
 
 			fourier.resize(3, true);
 			fourier[2] = m_fourier[ihx+1][2];
