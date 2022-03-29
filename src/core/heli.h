@@ -72,7 +72,7 @@ public:
 
 	virtual t_real F() override;
 
-	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier) override;
+	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm=true) override;
 	virtual const std::vector<t_vec_cplx> &GetFourier() const override { return m_fourier; }
 
 	// careful: free energy still uses theory units for T and B, dynamics calculation already uses real units!

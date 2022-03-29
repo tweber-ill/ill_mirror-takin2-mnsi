@@ -52,7 +52,7 @@ public:
 
 	virtual t_real F() = 0;
 
-	virtual void SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier) = 0;
+	virtual void SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier, bool symm=true) = 0;
 	virtual const std::vector<ublas::vector<t_cplx>> &GetFourier() const = 0;
 
 	virtual bool minimise(int iMaxOrder = 9999,

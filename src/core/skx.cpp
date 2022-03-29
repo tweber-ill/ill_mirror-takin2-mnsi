@@ -225,7 +225,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	const t_vec_cplx& m0 = m_M(0, 0);
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dip
+	// dipolar interaction
 	const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
@@ -247,14 +247,11 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const t_cplx m_sq = tl2::inner(m, mj);
 		const t_real q_sq = tl2::inner(q, q);
 
-		// dip
+		// dipolar interaction
 		cF += 2. * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
 		// dmi
 		cF += -4. * imag * tl2::inner(m, tl2::cross_3(qc, mj));
-
-		// hoc
-		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
 		// phi^2
 		cF += 2. * m_sq * q_sq;
@@ -262,6 +259,9 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		// phi^4
 		cF += 2. * m0_sq * m_sq;
+
+		// high-order correction
+		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
@@ -273,8 +273,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		cF += 2. * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
-
-	// phi^4
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		const auto& m1 = get_comp(m_M, m_idx3[0][i].first, m_idx3[0][i].second);
@@ -285,7 +283,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
 
-	// zee
+	// zeeman shift
 	cF += -m_B * std::sqrt(m0_sq);
 	return cF.real();
 }
@@ -295,17 +293,21 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
  * set fourier components
  */
 template<class t_real, class t_cplx, int ORDER>
-void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier)
+void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm)
 {
 	m_fourier = fourier;
+	if(symm) // symmetrise
+	{
+		for(t_vec_cplx& fourier : m_fourier)
+			fourier[1] = std::conj(fourier[0]);
+	}
+
 	while(m_fourier.size() < ORDER_FOURIER+1)
 		m_fourier.emplace_back(tl2::make_vec<t_vec_cplx>({0., 0., 0.}));
 	while(m_fourier.size() > ORDER_FOURIER+1)
 		m_fourier.pop_back();
 
 	// generate full fourier coefficients
-	constexpr auto imag = t_cplx(0, 1);
-
 	m_M = tl2::make_mat<ublas::matrix<t_vec_cplx>>(
 		2*ORDER+1, 2*ORDER+1, tl2::make_vec<t_vec_cplx>({0,0,0}));
 	m_M(0,0) = m_fourier[0];
@@ -321,8 +323,8 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 			const auto& vecPk = m_peaks_60_lab[ihx];
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
-				({ -vecPk[1] * imag * m_fourier[ihx+1][0],
-				   +vecPk[0] * imag * m_fourier[ihx+1][0] });
+				({ vecPk[1] * m_fourier[ihx+1][1],
+				   vecPk[0] * m_fourier[ihx+1][0] });
 			fourier = tl2::prod_mv(rot, fourier);
 
 			fourier.resize(3, true);

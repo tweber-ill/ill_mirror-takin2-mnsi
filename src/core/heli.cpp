@@ -97,7 +97,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	const auto& m0 = m[0];
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dip
+	// dipolar interaction
 	const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
@@ -116,14 +116,11 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		const t_real q = t_real(i); // q_vec = [0, 0, q]
 		const t_real q_sq = q*q;
 
-		// dip
+		// dipolar interaction
 		cF += 2. * g_chi<t_real> * mi[2]*mj[2];
 
 		// dmi
 		cF += -4. * imag * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
-
-		// hoc
-		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 
 		// phi^2
 		cF += 2. * m_sq * q_sq;
@@ -131,6 +128,9 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 		// phi^4
 		cF += 2. * m0_sq * m_sq;
+
+		// high-order correction
+		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
@@ -142,8 +142,6 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 		cF += 2. * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
-
-	// phi^4
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
 		const auto& m1 = get_comp(m, m_idx3[0][i]);
@@ -154,7 +152,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
 
-	// zee
+	// zeeman shift
 	cF += -m_B * std::sqrt(m0_sq);
 	return cF.real();
 }
@@ -164,9 +162,14 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
  * set fourier components
  */
 template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier)
+void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm)
 {
 	m_fourier = fourier;
+	if(symm) // symmetrise
+	{
+		for(t_vec_cplx& fourier : m_fourier)
+			fourier[1] = std::conj(fourier[0]);
+	}
 
 	while(m_fourier.size() < ORDER_FOURIER+1)
 		m_fourier.emplace_back(tl2::make_vec<t_vec_cplx>({0., 0., 0.}));

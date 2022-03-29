@@ -18,7 +18,7 @@ int main()
 
 	Heli<t_real, t_cplx, ORDER> heli;
 	std::vector<ublas::vector<t_cplx>> fourier{
-		tl2::make_vec<ublas::vector<t_cplx>>({0, 0, 0.1}),
+		tl2::make_vec<ublas::vector<t_cplx>>({0, 0, 1.0}),
 		// helical order => Re{M} perp. Im{M}
 		tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) / std::sqrt(2),
 	};
@@ -26,7 +26,7 @@ int main()
 	heli.SetFourier(fourier);
 	heli.SetT(-100);
 	heli.SetB(0);
-	heli.SaveStates("heli.dat", ORDER, 0, 0, 0, 0);
+	heli.SaveStates("heli.dat", ORDER, 0,1,0, 0,1,1);
 
 	return 0;
 }

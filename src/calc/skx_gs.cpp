@@ -166,6 +166,8 @@ const std::vector<t_real> _allcomps =
 
 int main()
 {
+	constexpr auto imag = t_cplx(0, 1);
+
 	Skx<t_real, t_cplx, ORDER> skx;
 	skx.SetDebug(1);
 
@@ -178,8 +180,8 @@ int main()
 		{
 			fourier.push_back(tl2::make_vec<ublas::vector<t_cplx>>(
 			{
-				_allcomps[comp],
-				_allcomps[comp+1],
+				_allcomps[comp] * imag,
+				_allcomps[comp+1] * imag,
 				_allcomps[comp+2]
 			}));
 		}
@@ -195,13 +197,13 @@ int main()
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;
 	std::cout << "F_start = " << skx.F() << std::endl;
-	bool ok = skx.minimise(ORDER, 0,1,0, 1,1,1);
+	bool ok = skx.minimise(ORDER, 1,1,0, 0,1,1);
 	std::cout << "F_min = " << skx.F() << " (ok: " << std::boolalpha << ok << ")" << std::endl;
 
 	std::cout << "\nFourier components:\n";
 	for(const auto& fourier : skx.GetFourier())
 	{
-		std::cout << fourier[0].real() << ", " << fourier[1].real() << ", " << fourier[2].real() << ", ";
+		std::cout << fourier[0].imag() << ", " << fourier[1].imag() << ", " << fourier[2].real() << ", ";
 		std::cout << std::endl;
 	}
 
