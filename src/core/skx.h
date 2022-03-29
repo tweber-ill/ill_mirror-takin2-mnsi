@@ -120,8 +120,6 @@ private:
 	std::vector<std::pair<int, int>> m_idx_top{}, m_idx2[3], m_idx3[4];
 	std::vector<std::pair<int, int>> m_idx2_dyn[3], m_idx3_dyn[4];
 
-	// all six sixth
-	std::vector<std::vector<t_vec>> m_peaks_360{};
 	// one sixth of the magnetic lattice
 	std::vector<t_vec> m_peaks_60{}, m_peaks_60_lab{};
 	std::vector<t_vec> m_allpeaks{};

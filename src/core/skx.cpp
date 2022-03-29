@@ -95,29 +95,20 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	// indices for the top 180 degrees
 	m_idx_top.reserve(m_rotRlu.size() * m_peaks_60.size());
 
-	m_peaks_360.reserve(m_rotRlu.size());
 	for(const auto& rot : m_rotRlu)
 	{
-		std::vector<t_vec> _peaks;
-		_peaks.reserve(m_peaks_60.size());
-
 		for(const auto &vec : m_peaks_60)
 		{
 			t_vec pk_rlu = tl2::prod_mv(rot, vec);
 			t_vec pk = tl2::prod_mv(m_Bmat, pk_rlu);
 
-			if((tl2::float_equal<t_real>(pk[1], 0.) && pk[0] >= 0.)
-				|| pk[1] > 0.)
+			if((tl2::float_equal<t_real>(pk[1], 0.) && pk[0] >= 0.) || pk[1] > 0.)
 			{
 				m_idx_top.emplace_back(std::make_pair(
 					int(std::round(pk_rlu[0])),
 					int(std::round(pk_rlu[1]))));
 			}
-
-			_peaks.emplace_back(pk_rlu);
 		}
-
-		m_peaks_360.emplace_back(_peaks);
 	}
 
 
@@ -309,17 +300,21 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 	// generate full fourier coefficients
 	m_M = tl2::make_mat<ublas::matrix<t_vec_cplx>>(
-		2*ORDER+1, 2*ORDER+1, tl2::make_vec<t_vec_cplx>({0,0,0}));
+		2*ORDER+1, 2*ORDER+1, tl2::make_vec<t_vec_cplx>({0, 0, 0}));
 	m_M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
-	for(std::size_t ipk=0; ipk<m_peaks_360.size(); ++ipk) // 6
+	for(std::size_t ipk=0; ipk<m_rot.size(); ++ipk)
 	{
+		const auto& rotRlu = m_rotRlu[ipk];
 		const auto& rot = m_rot[ipk];
-		for(std::size_t ihx=0; ihx<m_peaks_360[ipk].size(); ++ihx)
+
+		for(std::size_t ihx=0; ihx<m_peaks_60.size(); ++ihx)
 		{
-			int idx1 = int(std::round(m_peaks_360[ipk][ihx][0]));
-			int idx2 = int(std::round(m_peaks_360[ipk][ihx][1]));
+			const auto &vec = m_peaks_60[ihx];
+			t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
+			int idx1 = int(std::round(pk_rlu[0]));
+			int idx2 = int(std::round(pk_rlu[1]));
 
 			const auto& vecPk = m_peaks_60_lab[ihx];
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>
