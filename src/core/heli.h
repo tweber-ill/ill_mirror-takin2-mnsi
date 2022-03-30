@@ -98,6 +98,7 @@ public:
 
 
 private:
+	t_real m_eps = 1e-5;
 	t_real m_B = 0, m_T = -100;
 
 	std::vector<t_vec_cplx> m_fourier{};

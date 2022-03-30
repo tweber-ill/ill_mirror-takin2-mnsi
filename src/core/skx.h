@@ -101,6 +101,7 @@ private:
 	t_real m_eveps = 1e-6;
 	t_real m_weighteps = 1e-6;
 	t_real m_evlimit = 0.9995;
+	t_real m_eps = 1e-5;
 
 	// B matrix with 120 deg between (100) and (010), Q_lab = B*Q_rlu
 	t_mat m_Bmat = tl2::make_mat<t_mat>({

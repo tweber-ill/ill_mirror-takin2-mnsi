@@ -192,12 +192,11 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	constexpr int SIZE = 2*ORDER+1;
 	constexpr t_cplx imag = t_cplx(0, 1);
 	static const std::vector<t_real> empty;
-	const t_real epshkl = 1e-5;
 
 	t_vec qvec = tl2::make_vec<t_vec>({ qh, qk, -ql });
 
-	if(tl2::float_equal<t_real>(qvec[2], 0., epshkl))
-		qvec[2] += epshkl;
+	if(tl2::float_equal<t_real>(qvec[2], 0., m_eps))
+		qvec[2] += m_eps;
 
 
 	const t_real Brel = m_B / m_Bc2;

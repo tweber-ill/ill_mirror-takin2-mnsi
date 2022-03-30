@@ -54,7 +54,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		{
 			t_vec pk_rlu = tl2::make_vec<t_vec>({ t_real(h), t_real(k) });
 			t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-			t_real pk_len = tl2::veclen(pk_lab);
 
 			// all peaks
 			if(std::abs(h-k) <= t_real(ORDER))
@@ -63,7 +62,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			// 60 degree peak segment
 			if(h>=0 && k>=0 && k<h)
 			{
-				if(!tl2::float_equal<t_real>(pk_len, 0.))
+				t_real pk_len = tl2::veclen(pk_lab);
+				if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
 					pk_lab /= pk_len;
 
 				m_peaks60rlu.emplace_back(std::move(pk_rlu));
@@ -142,8 +142,8 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 	auto is_peak_in_top_half = [this](const t_vec& q, t_real q_sq) -> bool
 	{
-		bool in_top = ((tl2::float_equal<t_real>(q[1], 0.) && q[0] >= 0.) || q[1] > 0.);
-		bool valid_pks = !tl2::float_equal<t_real>(q_sq, 0.);
+		bool in_top = ((tl2::float_equal<t_real>(q[1], 0., m_eps) && q[0] >= 0.) || q[1] > 0.);
+		bool valid_pks = !tl2::float_equal<t_real>(q_sq, 0., m_eps);
 
 		return in_top && valid_pks;
 	};
@@ -184,7 +184,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		const t_cplx m_sq = tl2::inner(m, mj);
 
 		// dipolar interaction
-		if(!tl2::float_equal<t_real>(q_sq, 0.))
+		if(!tl2::float_equal<t_real>(q_sq, 0., m_eps))
 			cF += mult * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
 		// dmi
@@ -441,14 +441,11 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql,
 	t_real minE, t_real maxE) const
 {
-	const t_real epshkl = 1e-5;
-	if(tl2::float_equal<t_real>(qh, 0., epshkl) &&
-		tl2::float_equal<t_real>(qk, 0., epshkl) &&
-		tl2::float_equal<t_real>(ql, 0., epshkl))
+	if(tl2::float_equal<t_real>(qh, 0., m_eps) &&
+		tl2::float_equal<t_real>(qk, 0., m_eps) &&
+		tl2::float_equal<t_real>(ql, 0., m_eps))
 	{
-		qh += epshkl;
-		qk += epshkl;
-		ql += epshkl;
+		qh += m_eps; qk += m_eps; ql += m_eps;
 	}
 
 	ql = -ql;
