@@ -115,8 +115,7 @@ private:
 	t_real m_Bc2_exp = 0.3;
 
 	std::vector<t_vec_cplx> m_fourier{};
-	std::vector<std::pair<int, int>> m_idx_top{}, m_idx2[3], m_idx3[4];
-	std::vector<std::pair<int, int>> m_idx2_dyn[3], m_idx3_dyn[4];
+	std::vector<std::pair<int, int>> m_idx2[3], m_idx3[4];
 
 	// one sixth of the magnetic lattice
 	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu;
