@@ -138,39 +138,7 @@ extern "C"
 
 
 namespace tl2 {
-
 // -----------------------------------------------------------------------------
-// traits
-// -----------------------------------------------------------------------------
-template<class T, bool bScalar=std::is_scalar<T>::value>
-struct underlying_value_type
-{};
-
-
-template<class T>
-struct underlying_value_type<T, 1>
-{
-	using value_type = T;
-};
-
-
-template<class T>
-struct underlying_value_type<T, 0>
-{
-	using value_type = typename underlying_value_type<
-	typename T::value_type>::value_type;
-};
-
-
-template<class T>
-using underlying_value_type_t =
-typename underlying_value_type<T, std::is_scalar<T>::value>::value_type;
-// -----------------------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------------------
-
 typedef std::integral_constant<int, 0> dim_0d_type;
 typedef std::integral_constant<int, 1> dim_1d_type;
 typedef std::integral_constant<int, 2> dim_2d_type;

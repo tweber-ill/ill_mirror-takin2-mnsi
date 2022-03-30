@@ -109,8 +109,6 @@ private:
 	});
 	t_mat m_Binv{};
 
-	std::vector<t_mat> m_rot60lab{}, m_rot60rlu{};
-
 	t_real m_B = 0;
 	t_real m_T = -100;
 	t_real m_Bc2 = 0;
@@ -122,7 +120,7 @@ private:
 
 	// one sixth of the magnetic lattice
 	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu;
-	std::vector<t_vec> m_allpeaks{};
+	std::vector<t_vec> m_allpeaks_rlu{};
 
 	ublas::matrix<t_vec_cplx> m_M{};
 	t_vec m_Grlu{};

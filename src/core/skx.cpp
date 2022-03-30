@@ -44,82 +44,55 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 {
 	tl2::inverse(m_Bmat, m_Binv); // xtal B matrix
 
-	t_mat curRot = tl2::unit_m<t_mat>(2);
-	const auto rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
-
-	m_rot60lab.reserve(6);    // skx segment rotations in lab units
-	m_rot60rlu.reserve(6); // skx segment rotations in rlu units
-	for(int i=0; i<6; ++i)
-	{
-		curRot = tl2::prod_mm(curRot, rot60);
-		m_rot60lab.push_back(curRot);
-
-		auto rotRlu = tl2::transform<t_mat>(curRot, m_Bmat, 0);
-		m_rot60rlu.emplace_back(std::move(rotRlu));
-	}
-
-	m_allpeaks.reserve((2*ORDER+1) * (2*ORDER+1));
+	m_allpeaks_rlu.reserve((2*ORDER+1) * (2*ORDER+1));
+	m_peaks60rlu.reserve((ORDER+1) * ORDER);
+	m_peaks60lab.reserve((ORDER+1) * ORDER);
+	m_idx_top.reserve(6 * (ORDER+1) * ORDER);
 	for(t_real h=-ORDER; h<ORDER+1; ++h)
 	{
 		for(t_real k=-ORDER; k<ORDER+1; ++k)
 		{
+			t_vec pk_rlu = tl2::make_vec<t_vec>({h, k});
+			t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
+			pk_lab /= tl2::veclen(pk_lab);
+
+			// all peaks
 			if(std::abs(h-k) <= t_real(ORDER))
-				m_allpeaks.emplace_back(tl2::make_vec<t_vec>({h, k}));
-		}
-	}
+				m_allpeaks_rlu.push_back(pk_rlu);
 
-	m_peaks60rlu.reserve((ORDER+1) * ORDER);
-	m_peaks60lab.reserve((ORDER+1) * ORDER);
-	for(t_real h=0; h<ORDER+1; ++h)
-	{
-		for(t_real k=0; k<h; ++k)
-		{
-			t_vec vec_rlu = tl2::make_vec<t_vec>({h, k});
-			t_vec vec_lab = tl2::prod_mv(m_Bmat, vec_rlu);
-			vec_lab /= tl2::veclen(vec_lab);
-
-			m_peaks60rlu.emplace_back(std::move(vec_rlu));
-			m_peaks60lab.emplace_back(std::move(vec_lab));
-		}
-	}
-
-
-	// indices for the top 180 degrees
-	m_idx_top.reserve(m_rot60rlu.size() * m_peaks60rlu.size());
-
-	for(const auto& rot : m_rot60rlu)
-	{
-		for(const auto& vec : m_peaks60rlu)
-		{
-			t_vec pk_rlu = tl2::prod_mv(rot, vec);
-			t_vec pk = tl2::prod_mv(m_Bmat, pk_rlu);
-
-			if((tl2::float_equal<t_real>(pk[1], 0.) && pk[0] >= 0.) || pk[1] > 0.)
+			// top 180 degree peaks
+			if((tl2::float_equal<t_real>(pk_lab[1], 0.) && pk_lab[0] >= 0.) || pk_lab[1] > 0.)
 			{
 				m_idx_top.emplace_back(std::make_pair(
 					int(std::round(pk_rlu[0])),
 					int(std::round(pk_rlu[1]))));
 			}
+
+			// 60 degree peak segment
+			if(h>=0 && k>=0 && k<h)
+			{
+				m_peaks60rlu.emplace_back(std::move(pk_rlu));
+				m_peaks60lab.emplace_back(std::move(pk_lab));
+			}
 		}
 	}
 
-
 	for(int i=0; i<2; ++i)
 	{
-		m_idx2[i].reserve(m_allpeaks.size() * m_idx_top.size());
-		m_idx2_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size());
+		m_idx2[i].reserve(m_allpeaks_rlu.size() * m_idx_top.size());
+		m_idx2_dyn[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 	}
 	for(int i=0; i<3; ++i)
 	{
-		m_idx3[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_idx_top.size());
-		m_idx3_dyn[i].reserve(m_allpeaks.size() * m_allpeaks.size() * m_allpeaks.size());
+		m_idx3[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_idx_top.size());
+		m_idx3_dyn[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 	}
 
 	// unrolled indices for two loops
-	for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+	for(std::size_t j=0; j<m_allpeaks_rlu.size(); ++j)
 	{
-		int pk_j_h = int(std::round(m_allpeaks[j][0]));
-		int pk_j_k = int(std::round(m_allpeaks[j][1]));
+		int pk_j_h = int(std::round(m_allpeaks_rlu[j][0]));
+		int pk_j_k = int(std::round(m_allpeaks_rlu[j][1]));
 
 		for(std::size_t i=0; i<m_idx_top.size(); ++i)
 		{
@@ -134,10 +107,10 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			m_idx2[2].emplace_back(std::make_pair(val1, val2));
 		}
 
-		for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+		for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
 		{
-			int pk_i_h = int(std::round(m_allpeaks[i][0]));
-			int pk_i_k = int(std::round(m_allpeaks[i][1]));
+			int pk_i_h = int(std::round(m_allpeaks_rlu[i][0]));
+			int pk_i_k = int(std::round(m_allpeaks_rlu[i][1]));
 
 			int val1 = pk_i_h - pk_j_h;
 			int val2 = pk_i_k - pk_j_k;
@@ -152,15 +125,15 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	}
 
 	// unrolled indices for three loops
-	for(std::size_t k=0; k<m_allpeaks.size(); ++k)
+	for(std::size_t k=0; k<m_allpeaks_rlu.size(); ++k)
 	{
-		int pk_k_h = int(std::round(m_allpeaks[k][0]));
-		int pk_k_k = int(std::round(m_allpeaks[k][1]));
+		int pk_k_h = int(std::round(m_allpeaks_rlu[k][0]));
+		int pk_k_k = int(std::round(m_allpeaks_rlu[k][1]));
 
-		for(std::size_t j=0; j<m_allpeaks.size(); ++j)
+		for(std::size_t j=0; j<m_allpeaks_rlu.size(); ++j)
 		{
-			int pk_j_h = int(std::round(m_allpeaks[j][0]));
-			int pk_j_k = int(std::round(m_allpeaks[j][1]));
+			int pk_j_h = int(std::round(m_allpeaks_rlu[j][0]));
+			int pk_j_k = int(std::round(m_allpeaks_rlu[j][1]));
 
 			for(std::size_t i=0; i<m_idx_top.size(); ++i)
 			{
@@ -176,10 +149,10 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 				m_idx3[3].emplace_back(std::make_pair(val1, val2));
 			}
 
-			for(std::size_t i=0; i<m_allpeaks.size(); ++i)
+			for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
 			{
-				int pk_i_h = int(std::round(m_allpeaks[i][0]));
-				int pk_i_k = int(std::round(m_allpeaks[i][1]));
+				int pk_i_h = int(std::round(m_allpeaks_rlu[i][0]));
+				int pk_i_k = int(std::round(m_allpeaks_rlu[i][1]));
 
 				int val1 = pk_i_h - pk_j_h - pk_k_h;
 				int val2 = pk_i_k - pk_j_k - pk_k_k;
@@ -296,10 +269,13 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	m_M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
-	for(std::size_t ipk=0; ipk<m_rot60lab.size(); ++ipk)
+	t_mat rotLab = tl2::unit_m<t_mat>(2);
+	const t_mat rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
+
+	for(int ipk=0; ipk<6; ++ipk)
 	{
-		const auto& rotRlu = m_rot60rlu[ipk];
-		const auto& rotLab = m_rot60lab[ipk];
+		rotLab = tl2::prod_mm(rotLab, rot60);
+		t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
 
 		for(std::size_t ihx=0; ihx<m_peaks60rlu.size(); ++ihx)
 		{
@@ -381,7 +357,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			oldmat += 2.*mat;
 	}
 
-	for(const auto &pk_rlu : m_allpeaks)
+	for(const auto &pk_rlu : m_allpeaks_rlu)
 	{
 		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
 

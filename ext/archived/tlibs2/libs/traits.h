@@ -64,7 +64,7 @@ namespace tl2 {
 	 */
 	template<class T>
 	concept is_scalar =
-		std::is_floating_point_v<T> || 
+		std::is_floating_point_v<T> ||
 		std::is_integral_v<T> /*|| std::is_arithmetic_v<T>*/;
 
 
@@ -206,7 +206,27 @@ namespace tl2 {
 	template<class T> struct _underlying_value_type<T, false> { using ty = T; };
 	template<class T> struct _underlying_value_type<T, true> { using ty = typename T::value_type; };
 	template<class T> using underlying_value_type = typename _underlying_value_type<T>::ty;
+	template<class T> using underlying_value_type_t = underlying_value_type<T>;
 	// ----------------------------------------------------------------------------
+
+#else
+
+	template<class T, bool b = std::is_scalar<T>::value> struct _underlying_value_type {};
+
+	template<class T> struct _underlying_value_type<T, true>
+	{
+		using value_type = T;
+	};
+
+	template<class T> struct _underlying_value_type<T, false>
+	{
+		using value_type = typename _underlying_value_type<
+			typename T::value_type>::value_type;
+	};
+
+	template<class T> using underlying_value_type_t =
+		typename _underlying_value_type<T, std::is_scalar<T>::value>::value_type;
+
 #endif
 
 
