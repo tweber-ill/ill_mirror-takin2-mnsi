@@ -48,6 +48,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	m_peaks60rlu.reserve((ORDER+1) * ORDER);
 	m_peaks60lab.reserve((ORDER+1) * ORDER);
 
+	// plot "peaks.dat" u 3:4 pt 7
+	std::ofstream ofstr("peaks.dat");
 	for(int h=-ORDER; h<ORDER+1; ++h)
 	{
 		for(int k=-ORDER; k<ORDER+1; ++k)
@@ -57,7 +59,10 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 			// all peaks
 			if(std::abs(h-k) <= t_real(ORDER))
+			{
 				m_allpeaks_rlu.push_back(pk_rlu);
+				ofstr << h << " " << k << " " << pk_lab[0] << " " << pk_lab[1] << std::endl;
+			}
 
 			// 60 degree peak segment
 			if(h>=0 && k>=0 && k<h)
@@ -150,7 +155,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 	auto is_hk_in_top_half = [this, &is_peak_in_top_half](int h, int k) -> bool
 	{
-		t_vec q_rlu = tl2::make_vec<t_vec>({ h, k });
+		t_vec q_rlu = tl2::make_vec<t_vec>({ t_real(h), t_real(k) });
 		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
 		const t_real q_sq = tl2::inner(q, q);
 
