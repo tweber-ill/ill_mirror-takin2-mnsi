@@ -77,30 +77,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	for(int i=0; i<3; ++i)
 		m_idx3[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 
-	// unrolled indices for two loops
-	for(std::size_t j=0; j<m_allpeaks_rlu.size(); ++j)
-	{
-		int pk_j_h = int(std::round(m_allpeaks_rlu[j][0]));
-		int pk_j_k = int(std::round(m_allpeaks_rlu[j][1]));
-
-		for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
-		{
-			int pk_i_h = int(std::round(m_allpeaks_rlu[i][0]));
-			int pk_i_k = int(std::round(m_allpeaks_rlu[i][1]));
-
-			int val1 = pk_i_h - pk_j_h;
-			int val2 = pk_i_k - pk_j_k;
-			if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
-				|| std::abs(val1-val2) > ORDER)
-				continue;
-
-			m_idx2[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
-			m_idx2[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
-			m_idx2[2].emplace_back(std::make_pair(val1, val2));
-		}
-	}
-
-	// unrolled indices for three loops
 	for(std::size_t k=0; k<m_allpeaks_rlu.size(); ++k)
 	{
 		int pk_k_h = int(std::round(m_allpeaks_rlu[k][0]));
@@ -111,21 +87,33 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			int pk_j_h = int(std::round(m_allpeaks_rlu[j][0]));
 			int pk_j_k = int(std::round(m_allpeaks_rlu[j][1]));
 
+			// unrolled indices for two loops
+			int l_h2 = pk_j_h - pk_k_h;
+			int l_k2 = pk_j_k - pk_k_k;
+			if(std::abs(l_h2) <= ORDER && std::abs(l_k2) <= ORDER
+				&& std::abs(l_h2-l_k2) <= ORDER)
+			{
+				m_idx2[0].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+				m_idx2[1].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+				m_idx2[2].emplace_back(std::make_pair(l_h2, l_k2));
+			}
+
+			// unrolled indices for three loops
 			for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
 			{
 				int pk_i_h = int(std::round(m_allpeaks_rlu[i][0]));
 				int pk_i_k = int(std::round(m_allpeaks_rlu[i][1]));
 
-				int val1 = pk_i_h - pk_j_h - pk_k_h;
-				int val2 = pk_i_k - pk_j_k - pk_k_k;
-				if(std::abs(val1) > ORDER || std::abs(val2) > ORDER
-					|| std::abs(val1-val2) > ORDER)
-					continue;
-
-				m_idx3[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
-				m_idx3[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
-				m_idx3[2].emplace_back(std::make_pair(pk_k_h, pk_k_k));
-				m_idx3[3].emplace_back(std::make_pair(val1, val2));
+				int l_h3 = pk_i_h - pk_j_h - pk_k_h;
+				int l_k3 = pk_i_k - pk_j_k - pk_k_k;
+				if(std::abs(l_h3) <= ORDER && std::abs(l_k3) <= ORDER
+					&& std::abs(l_h3-l_k3) <= ORDER)
+				{
+					m_idx3[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
+					m_idx3[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
+					m_idx3[2].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+					m_idx3[3].emplace_back(std::make_pair(l_h3, l_k3));
+				}
 			}
 		}
 	}
