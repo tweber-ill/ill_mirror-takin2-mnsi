@@ -48,8 +48,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	m_peaks60rlu.reserve((ORDER+1) * ORDER);
 	m_peaks60lab.reserve((ORDER+1) * ORDER);
 
-	// plot "peaks.dat" u 3:4 pt 7
-	std::ofstream ofstr("peaks.dat");
 	for(int h=-ORDER; h<ORDER+1; ++h)
 	{
 		for(int k=-ORDER; k<ORDER+1; ++k)
@@ -59,10 +57,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 			// all peaks
 			if(std::abs(h-k) <= t_real(ORDER))
-			{
 				m_allpeaks_rlu.push_back(pk_rlu);
-				ofstr << h << " " << k << " " << pk_lab[0] << " " << pk_lab[1] << std::endl;
-			}
 
 			// 60 degree peak segment
 			if(h>=0 && k>=0 && k<h)
