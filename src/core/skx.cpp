@@ -126,8 +126,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 template<class t_real, class t_cplx, int ORDER>
 t_real Skx<t_real, t_cplx, ORDER>::F()
 {
-	constexpr auto imag = t_cplx(0, 1);
-
 	auto is_peak_in_top_half = [this](const t_vec& q, t_real q_sq) -> bool
 	{
 		bool in_top = ((tl2::float_equal<t_real>(q[1], 0., m_eps) && q[0] >= 0.) || q[1] > 0.);
@@ -176,7 +174,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 			cF += mult * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
 		// dmi
-		cF += -2. * mult * imag * tl2::inner(m, tl2::cross_3(qc, mj));
+		cF += -2. * mult * t_cplx(0, 1) * tl2::inner(m, tl2::cross_3(qc, mj));
 
 		// phi^2
 		cF += mult * m_sq * q_sq;
@@ -186,7 +184,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += mult * m0_sq * m_sq;
 
 		// high-order correction
-		cF += mult * g_hoc<t_real> * m_sq * q_sq*q_sq;
+		//cF += mult * g_hoc<t_real> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
@@ -255,7 +253,7 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 		for(std::size_t ihx=0; ihx<m_peaks60rlu.size(); ++ihx)
 		{
-			const auto &vec = m_peaks60rlu[ihx];
+			const t_vec &vec = m_peaks60rlu[ihx];
 			t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
 			int idx1 = int(std::round(pk_rlu[0]));
 			int idx2 = int(std::round(pk_rlu[1]));
@@ -286,125 +284,106 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	int iGh, int iGk, t_real qh, t_real qk, t_real ql) const
 {
 	constexpr int SIZE = 2*ORDER+1;
-	constexpr auto imag = t_cplx(0,1);
-
 	const int CRYSSIZE = ORDER + std::max(std::abs(iGh), std::abs(iGk));
 	const int VIRTSIZE = 2*CRYSSIZE + 1;
 
-	t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
+	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
 
-
-	// ------------------------------------------------------------------------
-	// Mx_ij = eps_ikj M_k
+	// M-cross matrix
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
 	{
-		const auto& vecM = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
-		auto skew = tl2::skew<t_mat_cplx>(vecM);
+		const t_vec_cplx& vecM = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
+		t_mat_cplx skew = tl2::skew<t_mat_cplx>(vecM);
 
 		get_comp(*Mx, SIZE,
 			m_idx2[0][i].first, m_idx2[0][i].second,
 			m_idx2[1][i].first, m_idx2[1][i].second) = skew;
 	}
-	// ------------------------------------------------------------------------
 
-
-	// ------------------------------------------------------------------------
-	// fluct. F_q1q2_ij = 0.5 * d^2F/(dM_-q_1_q dM_q2_j)
+	// fluctuation matrix
 	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx3[3].size(); ++i)
 	{
-		const auto& vecM1 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
-		const auto& vecM2 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
+		const t_vec_cplx& vecM1 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
+		const t_vec_cplx& vecM2 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
 
 		t_mat_cplx mat = 4. * tl2::outer(vecM1, vecM2);
-
-		// delta term
-		t_cplx m1m2 = tl2::inner(vecM1, vecM2);
+		t_cplx m1m2 = 2. * tl2::inner(vecM1, vecM2);
 		for(int d=0; d<3; ++d)
-			mat(d,d) += 2.*m1m2;
+			mat(d,d) += m1m2;
 
-		auto& oldmat = get_comp(*Fluc, SIZE,
+		t_mat_cplx& oldmat = get_comp(*Fluc, SIZE,
 			m_idx3[0][i].first, m_idx3[0][i].second,
 			m_idx3[1][i].first, m_idx3[1][i].second);
-		if(!oldmat.size1())
-			oldmat = 2.*mat;
-		else
-			oldmat += 2.*mat;
+		assign_or_add(oldmat, 2.*mat);
 	}
 
-	for(const auto &pk_rlu : m_allpeaks_rlu)
+	for(const t_vec &pk_rlu : m_allpeaks_rlu)
 	{
-		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-
+		const t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
 		t_vec Q = pk_lab + q_lab;
 		Q.resize(3, true);
 		Q[2] = ql;
+		const t_real Q_sq = tl2::inner(Q, Q);
 
-		t_real Q_sq = tl2::inner(Q, Q);
-		t_real dipole = g_chi<t_real> / Q_sq;
+		auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+		{
+			if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
+				return 0.;
+			return g_chi<t_real>/Q_sq * Qi*Qj;
+		};
 
-		// diagonal
 		t_mat_cplx mat(3,3);
-		for(int i=0; i<3; ++i)
-			mat(i,i) = dipole * Q[i]*Q[i] + 1. + m_T + Q_sq;
+		for(int i=0; i<3; ++i)  // diagonal
+			mat(i,i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq /*+ g_hoc<t_real>*Q_sq*Q_sq*/;
 
-		// upper right triangle
-		for(int i=0; i<2; ++i)
+		for(int i=0; i<2; ++i)  // off-diagonal
 		{
 			for(int j=i+1; j<3; ++j)
 			{
 				int k = 3 - i - j; // third index in {0,1,2}
 				t_real sign = (k==1 ? 1. : -1.);
-				mat(i,j) = dipole * Q[i]*Q[j] + sign*2.*imag*Q[k];
+				mat(i,j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
 				mat(j,i) = std::conj(mat(i,j));
 			}
 		}
 
-		int idx1 = int(std::round(pk_rlu[0]));
-		int idx2 = int(std::round(pk_rlu[1]));
-
-		auto& oldmat = get_comp(*Fluc, SIZE, idx1, idx2, idx1, idx2);
-		if(!oldmat.size1())
-			oldmat = 2.*mat;
-		else
-			oldmat += 2.*mat;
+		const int idx1 = int(std::round(pk_rlu[0]));
+		const int idx2 = int(std::round(pk_rlu[1]));
+		t_mat_cplx& oldmat = get_comp(*Fluc, SIZE, idx1, idx2, idx1, idx2);
+		assign_or_add(oldmat, 2.*mat);
 	}
-	// ------------------------------------------------------------------------
-
 
 	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](
 		const decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(VIRTSIZE);
-		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);
-		std::iota(pks1.begin()+CRYSSIZE+1, pks1.end(), -CRYSSIZE);
+		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);       // 0, 1, ..., CRYSSIZE
+		std::iota(pks1.begin()+CRYSSIZE+1, pks1.end(), -CRYSSIZE); // -CRYSSIZE, -CRYSSIZE+1, ..., -1
 
-		std::vector<std::pair<int, int>> pks2;
-		pks2.reserve(VIRTSIZE*VIRTSIZE);
+		std::vector<std::pair<int, int>> pks;
+		pks.reserve(VIRTSIZE*VIRTSIZE);
 		for(int k : pks1)
 		{
 			for(int h : pks1)
 			{
-				if(std::abs(h-k) > CRYSSIZE)
-					continue;
-				pks2.emplace_back(std::make_pair(h, k));
+				if(std::abs(h-k) <= CRYSSIZE)
+					pks.emplace_back(std::make_pair(h, k));
 			}
 		}
 
-		auto mat = tl2::zero_matrix<t_mat_cplx>(3*pks2.size(), 3*pks2.size());
-		for(std::size_t idx1=0; idx1<pks2.size(); ++idx1)
+		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*pks.size(), 3*pks.size());
+		for(std::size_t idx1=0; idx1<pks.size(); ++idx1)
 		{
-			const auto& hk1 = pks2[idx1];
-			for(std::size_t idx2=0; idx2<pks2.size(); ++idx2)
+			for(std::size_t idx2=0; idx2<pks.size(); ++idx2)
 			{
-				const auto& hk2 = pks2[idx2];
-				const auto& comp = get_virt_comp(
+				const t_mat_cplx& comp = get_virt_comp(
 					arr, SIZE, VIRTSIZE, ORDER,
-					hk1.first+iGh, hk1.second+iGk,
-					hk2.first+iGh, hk2.second+iGk);
+					pks[idx1].first + iGh, pks[idx1].second + iGk,
+					pks[idx2].first + iGh, pks[idx2].second + iGk);
 
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
@@ -413,10 +392,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		return mat;
 	};
 
-
-	auto Mx2d = mk_2dim(*Mx);
-	auto Fluc2d = mk_2dim(*Fluc);
-	return std::make_tuple(Mx2d, Fluc2d);
+	return std::make_tuple(mk_2dim(*Mx), mk_2dim(*Fluc));
 }
 
 
@@ -501,9 +477,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	qkh.resize(2, true);
 
 	t_vec Qmagrlu = tl2::prod_mv(m_Binv, qkh);
-	t_vec Gmagrlu = tl2::make_vec<t_vec>({
-		std::round(Qmagrlu[0]), std::round(Qmagrlu[1]) });
-
+	t_vec Gmagrlu = tl2::make_vec<t_vec>({ std::round(Qmagrlu[0]), std::round(Qmagrlu[1]) });
 
 	static const std::vector<t_vec> sats =
 	{

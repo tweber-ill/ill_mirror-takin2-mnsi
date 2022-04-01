@@ -49,36 +49,30 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 	for(int i=0; i<3; ++i)
 		m_idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
 
-	// unrolled indices for two loops
-	for(int j=-ORDER; j<=ORDER; ++j)
-	{
-		for(int i=1; i<ORDER+1; ++i)
-		{
-			int k = -i-j;
-			if(std::abs(k) > ORDER)
-				continue;
-
-			m_idx2[0].push_back(i);
-			m_idx2[1].push_back(j);
-			m_idx2[2].push_back(k);
-		}
-	}
-
-	// unrolled indices for three loops
 	for(int k=-ORDER; k<=ORDER; ++k)
 	{
 		for(int j=-ORDER; j<=ORDER; ++j)
 		{
-			for(int i=1; i<ORDER+1; ++i)
+			for(int i=1; i<=ORDER; ++i)
 			{
+				// unrolled indices for three loops
 				int l = -i-j-k;
-				if(std::abs(l) > ORDER)
-					continue;
+				if(std::abs(l) <= ORDER)
+				{
+					m_idx3[0].push_back(i);
+					m_idx3[1].push_back(j);
+					m_idx3[2].push_back(k);
+					m_idx3[3].push_back(l);
+				}
 
-				m_idx3[0].push_back(i);
-				m_idx3[1].push_back(j);
-				m_idx3[2].push_back(k);
-				m_idx3[3].push_back(l);
+				// unrolled indices for two loops
+				int m = -i-j;
+				if(k == 0 && std::abs(m) <= ORDER)
+				{
+					m_idx2[0].push_back(i);
+					m_idx2[1].push_back(j);
+					m_idx2[2].push_back(m);
+				}
 			}
 		}
 	}
@@ -91,10 +85,8 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
 {
-	constexpr t_cplx imag = t_cplx(0, 1);
-
 	const auto& m = m_fourier;
-	const auto& m0 = m[0];
+	const t_vec_cplx& m0 = m[0];
 	const auto m0_sq = tl2::inner(m0, m0);
 
 	// dipolar interaction
@@ -120,7 +112,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += 2. * g_chi<t_real> * mi[2]*mj[2];
 
 		// dmi
-		cF += -4. * imag * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
+		cF += -4. * t_cplx(0, 1) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
 		// phi^2
 		cF += 2. * m_sq * q_sq;
@@ -198,28 +190,24 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	if(tl2::float_equal<t_real>(qvec[2], 0., m_eps))
 		qvec[2] += m_eps;
 
-
 	const t_real Brel = m_B / m_Bc2;
 	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
-
-	// static susceptibility
-	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 
 	constexpr t_real A = g_hoc<t_real>;
 	constexpr t_real A2 = A*A;
 	constexpr t_real A3 = A2*A;
 
-	static const/*expr*/ t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A *
+	static const t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) /
 		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
 
-	static const/*expr*/ t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A -
+	static const t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A -
 		imag*std::pow(3.,1./6.)*(std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.), 2.) /
 		(24.*std::pow(2., 1./3.) * A*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
 
-	static const/*expr*/ t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) +
+	static const t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) +
 		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) -
 		A*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.) +
 		std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))) /
@@ -230,8 +218,28 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	const t_real _c4 = _c3 + 88./3. * Brel2*Brel2;
 	const t_real _c5 = _c3 + 88./3. * Brel*Brel;
 
+	t_mat_cplx Mx = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+
 	for(int pos=0; pos<int(SIZE); ++pos)
 	{
+		// M-cross matrix
+		if(pos > 0)
+		{
+			Mx(3*pos + 2, 3*(pos-1) + 0) = imag*Brel2;
+			Mx(3*pos + 1, 3*(pos-1) + 2) = -imag*Brel2;
+		}
+
+		Mx(3*pos + 0, 3*pos + 0) = -imag*Brel;
+		Mx(3*pos + 1, 3*pos + 1) = imag*Brel;
+
+		if(pos < int(SIZE)-1)
+		{
+			Mx(3*pos + 0, 3*(pos+1) + 2) = imag*Brel2;
+			Mx(3*pos + 2, 3*(pos+1) + 1) = -imag*Brel2;
+		}
+
+		// fluctuation matrix
 		t_real qz = qvec[2] - t_real(ORDER) + t_real(pos);
 		const t_real q2 = qvec[0]*qvec[0] + qvec[1]*qvec[1] + qz*qz;
 
@@ -256,28 +264,6 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		if(pos < int(SIZE)-2)
 			fluct(3*pos + 0, 3*(pos+2) + 1) = Brel2 * Brel2 * 88./3.;
 	}
-
-
-	// Mx
-	t_mat_cplx Mx = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
-	for(int pos=0; pos<int(SIZE); ++pos)
-	{
-		if(pos > 0)
-		{
-			Mx(3*pos + 2, 3*(pos-1) + 0) = imag*Brel2;
-			Mx(3*pos + 1, 3*(pos-1) + 2) = -imag*Brel2;
-		}
-
-		Mx(3*pos + 0, 3*pos + 0) = -imag*Brel;
-		Mx(3*pos + 1, 3*pos + 1) = imag*Brel;
-
-		if(pos < int(SIZE)-1)
-		{
-			Mx(3*pos + 0, 3*(pos+1) + 2) = imag*Brel2;
-			Mx(3*pos + 2, 3*(pos+1) + 1) = -imag*Brel2;
-		}
-	}
-
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
@@ -314,9 +300,7 @@ void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 	m_projNeutron -= tl2::outer_cplx<t_vec_cplx, t_mat_cplx>(G, G);
 
 	if(bInChiralBase)
-	{
 		m_projNeutron = tl2::conjugate_mat(m_projNeutron);
-	}
 }
 
 

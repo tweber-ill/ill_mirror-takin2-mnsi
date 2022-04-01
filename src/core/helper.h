@@ -333,8 +333,18 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 template<class t_cont, std::size_t... seq>
 void insert_vals(t_cont& val0, const t_cont& val1, std::index_sequence<seq...>)
 {
-	( std::get<seq>(val0).insert(std::get<seq>(val0).end(), 
+	( std::get<seq>(val0).insert(std::get<seq>(val0).end(),
 		std::get<seq>(val1).begin(), std::get<seq>(val1).end()), ... );
+}
+
+
+template<class t_mat1, class t_mat2>
+void assign_or_add(t_mat1& matDst, const t_mat2& mat)
+{
+	if(!matDst.size1())
+		matDst = mat;
+	else
+		matDst += mat;
 }
 
 
