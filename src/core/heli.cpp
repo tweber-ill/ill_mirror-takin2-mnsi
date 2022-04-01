@@ -99,7 +99,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	// phi^4
 	cF += m0_sq*m0_sq;
 
-	for(std::size_t i=1; i<ORDER+1; ++i)
+	for(std::size_t i=1; i<=ORDER; ++i)
 	{
 		const t_vec_cplx& mi = m[i];
 		t_vec_cplx mj = tl2::conjugate_vec(mi);

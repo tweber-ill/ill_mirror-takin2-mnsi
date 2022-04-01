@@ -48,9 +48,9 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	m_peaks60rlu.reserve((ORDER+1) * ORDER);
 	m_peaks60lab.reserve((ORDER+1) * ORDER);
 
-	for(int h=-ORDER; h<ORDER+1; ++h)
+	for(int h=-ORDER; h<=ORDER; ++h)
 	{
-		for(int k=-ORDER; k<ORDER+1; ++k)
+		for(int k=-ORDER; k<=ORDER; ++k)
 		{
 			t_vec pk_rlu = tl2::make_vec<t_vec>({ t_real(h), t_real(k) });
 			t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
@@ -255,11 +255,10 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 		{
 			const t_vec &vec = m_peaks60rlu[ihx];
 			t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
-			int idx1 = int(std::round(pk_rlu[0]));
-			int idx2 = int(std::round(pk_rlu[1]));
+			const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
 
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>({ 0., 0. });
-			if(idx1 != 0 || idx2 != 0)  // avoid singularity at (0, 0)
+			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
 			{
 				fourier[0] = m_peaks60lab[ihx][1] * m_fourier[ihx+1][1];
 				fourier[1] = m_peaks60lab[ihx][0] * m_fourier[ihx+1][0];
@@ -269,7 +268,7 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 			fourier.resize(3, true);
 			fourier[2] = m_fourier[ihx+1][2];
 
-			get_comp(m_M, idx1, idx2) = fourier;
+			get_comp(m_M, hk[0], hk[1]) = fourier;
 		}
 	}
 }
@@ -283,9 +282,9 @@ std::tuple<typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx, typename Skx<t_real,
 Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 	int iGh, int iGk, t_real qh, t_real qk, t_real ql) const
 {
-	constexpr int SIZE = 2*ORDER+1;
-	const int CRYSSIZE = ORDER + std::max(std::abs(iGh), std::abs(iGk));
-	const int VIRTSIZE = 2*CRYSSIZE + 1;
+	constexpr int SIZE = 2*ORDER + 1;
+	const int MAXORDER = ORDER + std::max(std::abs(iGh), std::abs(iGk));
+	const int MAXSIZE = 2*MAXORDER + 1;
 
 	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
 
@@ -315,10 +314,10 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		for(int d=0; d<3; ++d)
 			mat(d,d) += m1m2;
 
-		t_mat_cplx& oldmat = get_comp(*Fluc, SIZE,
+		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE,
 			m_idx3[0][i].first, m_idx3[0][i].second,
 			m_idx3[1][i].first, m_idx3[1][i].second);
-		assign_or_add(oldmat, 2.*mat);
+		assign_or_add(fluccomp, 2.*mat);
 	}
 
 	for(const t_vec &pk_rlu : m_allpeaks_rlu)
@@ -351,26 +350,23 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			}
 		}
 
-		const int idx1 = int(std::round(pk_rlu[0]));
-		const int idx2 = int(std::round(pk_rlu[1]));
-		t_mat_cplx& oldmat = get_comp(*Fluc, SIZE, idx1, idx2, idx1, idx2);
-		assign_or_add(oldmat, 2.*mat);
+		const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
+		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
 	}
 
-	auto mk_2dim = [VIRTSIZE, CRYSSIZE, iGh, iGk](
-		const decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [MAXSIZE, MAXORDER, iGh, iGk](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
-		std::vector<int> pks1(VIRTSIZE);
-		std::iota(pks1.begin(), pks1.begin()+CRYSSIZE+1, 0);       // 0, 1, ..., CRYSSIZE
-		std::iota(pks1.begin()+CRYSSIZE+1, pks1.end(), -CRYSSIZE); // -CRYSSIZE, -CRYSSIZE+1, ..., -1
+		std::vector<int> pks1(MAXSIZE);
+		std::iota(pks1.begin(), pks1.begin()+MAXORDER+1, 0);       // 0, 1, ..., MAXORDER
+		std::iota(pks1.begin()+MAXORDER+1, pks1.end(), -MAXORDER); // -MAXORDER, -MAXORDER+1, ..., -1
 
 		std::vector<std::pair<int, int>> pks;
-		pks.reserve(VIRTSIZE*VIRTSIZE);
+		pks.reserve(MAXSIZE*MAXSIZE);
 		for(int k : pks1)
 		{
 			for(int h : pks1)
 			{
-				if(std::abs(h-k) <= CRYSSIZE)
+				if(std::abs(h-k) <= MAXORDER)
 					pks.emplace_back(std::make_pair(h, k));
 			}
 		}
@@ -380,8 +376,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		{
 			for(std::size_t idx2=0; idx2<pks.size(); ++idx2)
 			{
-				const t_mat_cplx& comp = get_virt_comp(
-					arr, SIZE, VIRTSIZE, ORDER,
+				const t_mat_cplx& comp = get_flat_comp(
+					arr, SIZE, MAXSIZE, ORDER,
 					pks[idx1].first + iGh, pks[idx1].second + iGk,
 					pks[idx2].first + iGh, pks[idx2].second + iGk);
 

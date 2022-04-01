@@ -1,8 +1,12 @@
 /**
- * Helper functions
+ * helper functions
  * @author Tobias Weber <tweber@ill.fr>
  * @date jul-18
  * @license GPLv2 (see 'LICENSE' file)
+ * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:
+ *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
+ *	- Personal communications with M. Garst, 2017-2020.
  */
 
 #ifndef __HELPER_H__
@@ -121,37 +125,33 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 
 
 template<class t_arr>
-const typename t_arr::value_type& get_virt_comp(
-	const t_arr& arr, int ORGSIZE, int VIRTSIZE, int ORDER,
+const typename t_arr::value_type& get_flat_comp(
+	const t_arr& arr, int ORGSIZE, int MAXSIZE, int ORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
 	// negative indices
-	if(idx1 < 0) idx1 = VIRTSIZE + idx1;
-	if(idx2 < 0) idx2 = VIRTSIZE + idx2;
-	if(idx3 < 0) idx3 = VIRTSIZE + idx3;
-	if(idx4 < 0) idx4 = VIRTSIZE + idx4;
+	if(idx1 < 0) idx1 = MAXSIZE + idx1;
+	if(idx2 < 0) idx2 = MAXSIZE + idx2;
+	if(idx3 < 0) idx3 = MAXSIZE + idx3;
+	if(idx4 < 0) idx4 = MAXSIZE + idx4;
 
 	static const typename t_arr::value_type zero{};
+	const int diffsize = MAXSIZE-ORGSIZE;
 
-	if(idx1 >= ORDER && idx1 < VIRTSIZE-ORDER-1) return zero;
-	if(idx2 >= ORDER && idx2 < VIRTSIZE-ORDER-1) return zero;
-	if(idx3 >= ORDER && idx3 < VIRTSIZE-ORDER-1) return zero;
-	if(idx4 >= ORDER && idx4 < VIRTSIZE-ORDER-1) return zero;
+	if(idx1 >= ORDER && (idx1 < MAXSIZE-ORDER-1 || idx1 < diffsize)) return zero;
+	if(idx2 >= ORDER && (idx2 < MAXSIZE-ORDER-1 || idx2 < diffsize)) return zero;
+	if(idx3 >= ORDER && (idx3 < MAXSIZE-ORDER-1 || idx3 < diffsize)) return zero;
+	if(idx4 >= ORDER && (idx4 < MAXSIZE-ORDER-1 || idx4 < diffsize)) return zero;
 
 	if(idx1 < ORDER && idx1 >= ORGSIZE) return zero;
 	if(idx2 < ORDER && idx2 >= ORGSIZE) return zero;
 	if(idx3 < ORDER && idx3 >= ORGSIZE) return zero;
 	if(idx4 < ORDER && idx4 >= ORGSIZE) return zero;
 
-	if(idx1 >= ORDER && idx1 < VIRTSIZE-ORGSIZE) return zero;
-	if(idx2 >= ORDER && idx2 < VIRTSIZE-ORGSIZE) return zero;
-	if(idx3 >= ORDER && idx3 < VIRTSIZE-ORGSIZE) return zero;
-	if(idx4 >= ORDER && idx4 < VIRTSIZE-ORGSIZE) return zero;
-
-	if(idx1 >= ORDER) idx1 -= VIRTSIZE-ORGSIZE;
-	if(idx2 >= ORDER) idx2 -= VIRTSIZE-ORGSIZE;
-	if(idx3 >= ORDER) idx3 -= VIRTSIZE-ORGSIZE;
-	if(idx4 >= ORDER) idx4 -= VIRTSIZE-ORGSIZE;
+	if(idx1 >= ORDER) idx1 -= diffsize;
+	if(idx2 >= ORDER) idx2 -= diffsize;
+	if(idx3 >= ORDER) idx3 -= diffsize;
+	if(idx4 >= ORDER) idx4 -= diffsize;
 
 	return arr[idx1*ORGSIZE*ORGSIZE*ORGSIZE +
 		idx2*ORGSIZE*ORGSIZE +
@@ -238,13 +238,8 @@ t_mat get_chiralpol(int which)
 }
 
 
-
 /**
  * calculate energies and weights from Landau-Lifshitz Mcross and fluctuation matrices
- * Mcross rotates magnetisation
- *	- has 3 eigenvalues: 0, 1, -1:
- *		- 0: parallel magnetisation, long. fluctuation, not used
- *		- 1, -1: trans. fluctuations
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -287,7 +282,6 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 			if(onlymode >=0 && onlymode != iCurMode++)
 				continue;
 
-
 			EW ew;
 			ew.E = E_meV;
 			ew.wUnpol = std::get<1>(E_weight)[0];
@@ -324,7 +318,6 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		return std::make_tuple(empty, empty, empty, empty, empty);
 	}
 }
-
 
 
 /**
