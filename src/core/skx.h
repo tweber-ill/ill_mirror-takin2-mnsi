@@ -132,7 +132,7 @@ private:
 	t_mat m_Binv{};
 
 	t_real m_B = 0;
-	t_real m_T = -100;
+	t_real m_T = -1000;
 	t_real m_Bc2 = 0;
 	t_real m_Bc2_exp = 0.3;
 

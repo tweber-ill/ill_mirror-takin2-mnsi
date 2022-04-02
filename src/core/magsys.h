@@ -38,11 +38,22 @@ public:
 };
 
 
+template<class t_real = double>
+class HasF
+{
+public:
+	HasF() = default;
+	virtual ~HasF() = default;
+
+	virtual t_real F() = 0;
+};
+
+
 /**
  * interface for a magnetic system having a free energy and fourier components defined
  */
 template<class t_real = double, class t_cplx = std::complex<t_real>, int ORDER_FOURIER=2>
-class MagSystem : public HasTandB<t_real>
+class MagSystem : public HasTandB<t_real>, public HasF<t_real>
 {
 public:
 	using value_type = t_real;
@@ -51,8 +62,6 @@ public:
 public:
 	MagSystem() = default;
 	virtual ~MagSystem() = default;
-
-	virtual t_real F() = 0;
 
 	virtual void SetFourier(const std::vector<ublas::vector<t_cplx>> &fourier, bool symm=true) = 0;
 	virtual const std::vector<ublas::vector<t_cplx>> &GetFourier() const = 0;

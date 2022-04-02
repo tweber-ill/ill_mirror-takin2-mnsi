@@ -46,7 +46,6 @@ void calc_disp(char dyntype,
 	t_vec qperpdir = tl2::make_vec<t_vec>({ qperpdir_x, qperpdir_y, qperpdir_z });
 	qperpdir /= tl2::veclen(qperpdir);
 
-	t_real F = 0.;
 	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn;
 
 	if(dyntype == 's')
@@ -57,7 +56,6 @@ void calc_disp(char dyntype,
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
 		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 
-		F = skx->F();
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
@@ -78,7 +76,6 @@ void calc_disp(char dyntype,
 				<< std::endl;
 		}
 
-		F = heli->F();
 		dyn = heli;
 	}
 	else if(dyntype == 'f')
@@ -103,7 +100,14 @@ void calc_disp(char dyntype,
 
 	dyn->SetG(G[0], G[1], G[2]);
 
-	std::cout << "Ground state F = " << F << "." << std::endl;
+
+	t_real F = 0.;
+	auto *magsys = dynamic_cast<HasF<t_real>*>(dyn.get());
+	if(magsys)
+	{
+		F = magsys->F();
+		std::cout << "Ground state F = " << F << "." << std::endl;
+	}
 
 
 	auto calc_spectrum = [dyntype, &dyn, &G, T, &qparadir, &qperpdir, &qperp, bSwapQParaQPerp]
