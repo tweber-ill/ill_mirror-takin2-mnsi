@@ -412,11 +412,10 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 
 	t_mat_cplx Mx2d, Fluc2d;
 	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(Ghmag, Gkmag, qh, qk, ql);
-	Mx2d /= std::sqrt(t_real(-0.5 - m_T*0.5)) /* m_Bc2 / g_g<t_real> */;
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-		Mx2d, Fluc2d,
+		Mx2d / (m_Bc2 / g_g<t_real>), Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
 		g_muB<t_real> * m_Bc2_exp, // E scale factor
 		minE, maxE, m_eveps, m_evlimit, m_weighteps,

@@ -79,9 +79,9 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 		const t_real ex = 0.499501;		// critical exponent
 
 		if(T >= 0.) return 0.;
-		return amp * std::pow(-T, ex);
+		//return amp * std::pow(-T, ex);
 
-		//return g_g<t_real> * std::sqrt(-0.5 - 0.5*T);
+		return g_g<t_real> * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
 	{

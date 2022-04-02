@@ -267,9 +267,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-		Mx, fluct,
+		Mx * g_g<t_real>, fluct,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		g_g<t_real>*g_muB<t_real>*m_Bc2, // E scale factor
+		g_muB<t_real> * m_Bc2, // E scale factor
 		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, 3*ORDER);
 }
@@ -310,7 +310,6 @@ void Heli<t_real, t_cplx, ORDER>::SetCoords(t_real Bx, t_real By, t_real Bz)
 {
 	t_vec B = tl2::make_vec<t_vec>( {Bx, By, Bz} );
 	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>( {0, 0, 1} ));
-
 	m_rotCoord = quatB;
 }
 
