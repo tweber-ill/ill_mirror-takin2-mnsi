@@ -412,13 +412,13 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 
 	t_mat_cplx Mx2d, Fluc2d;
 	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(Ghmag, Gkmag, qh, qk, ql);
+	Mx2d /= std::sqrt(t_real(-0.5 - m_T*0.5)) /* m_Bc2 / g_g<t_real> */;
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		2. * std::sqrt(t_real(-0.5 - m_T*0.5)) /* m_Bc2 */,
-		g_g<t_real> * g_muB<t_real> * m_Bc2_exp, // E scale factor
+		g_muB<t_real> * m_Bc2_exp, // E scale factor
 		minE, maxE, m_eveps, m_evlimit, m_weighteps,
 		m_filterzeroweight, /*m_onlymode*/-1);
 }
@@ -465,7 +465,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 {
 	t_vec Qrlu = tl2::make_vec<t_vec>( {h, k, l} );
 	t_vec qrlu = Qrlu - m_Grlu;
-	t_vec qkh = qrlu / G_KH_RLU_29K;
+	t_vec qkh = qrlu / g_kh_rlu_29K<t_real>;
 
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
 	t_real _l = qkh[2];

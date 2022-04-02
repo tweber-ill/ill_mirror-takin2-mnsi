@@ -245,7 +245,7 @@ template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	bool bProjNeutron, const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
-	t_real normfac = 1, t_real E_scale_fac = 1, t_real minE = -1, t_real maxE = -2,
+	t_real E_scale_fac = 1, t_real minE = -1, t_real maxE = -2,
 	t_real eveps = 1e-6, t_real evlimit = 0.9995, t_real weighteps = 1e-6,
 	bool bfilterzeroweight = 0, int onlymode = -1, std::size_t MxsubMatRowBegin = 0)
 {
@@ -260,7 +260,7 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		};
 
 		auto eigs = tl2::calc_dynstrucfact_landau<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-			Mx, Fluc, normfac, &eveps, &evlimit, 3, MxsubMatRowBegin, eveps);
+			Mx, Fluc, &eveps, &evlimit, 3, MxsubMatRowBegin, eveps);
 
 		std::size_t numEVals = std::get<0>(eigs).size();
 		std::vector<EW> EWs;

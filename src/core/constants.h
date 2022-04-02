@@ -81,7 +81,7 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 		if(T >= 0.) return 0.;
 		return amp * std::pow(-T, ex);
 
-		//return 2. * std::sqrt(-0.5 - 0.5*T);
+		//return g_g<t_real> * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
 	{
@@ -96,13 +96,6 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 		return p[0]*std::pow(tau, p[1]) * (1. + p[3]*std::pow(tau, p[4]));
 	}
 }
-
-
-#define G_CHI g_chi<t_real>
-#define G_HOC g_hoc<t_real>
-#define G_G g_g<t_real>
-#define G_MUB g_muB<t_real>
-#define G_KH_RLU_29K g_kh_rlu_29K<t_real>
 
 
 #endif

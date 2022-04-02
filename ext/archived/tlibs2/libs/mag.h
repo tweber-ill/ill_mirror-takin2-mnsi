@@ -76,7 +76,7 @@ namespace tl2 {
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
 calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
-	t_real normfac = 1, const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
+	const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
 	std::size_t MxsubMatSize = 3, std::size_t MxsubMatRowBegin = 0, t_real eps = 1e-6)
 {
 	constexpr t_cplx imag = t_cplx(0,1);
@@ -143,7 +143,7 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	t_mat_cplx Mxx = prod_mm(Mx, MxEvecs);
 	Mxx = prod_mm(MxEvecsH, Mxx);
 #endif
-	Mxx *= imag / normfac;
+	Mxx *= imag;
 
 	// Landau-Lifshitz: d/dt dM = -Mx B_mean, B_mean = -chi^(-1) * dM
 	// E = EVals{ i Mx chi^(-1) }
@@ -168,9 +168,7 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 	for(std::size_t iInteract=0; iInteract<Interactevals.size(); ++iInteract)
 	{
-		//const t_cplx& eval = Interactevals[iInteract];
 		const t_vec_cplx& evec = Interactevecs[iInteract];
-
 		auto evec_scale = prod_mv(Mxx, evec);
 
 		auto matOuter = outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec);
@@ -179,7 +177,6 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		t_mat_cplx emat = prod_mm(matOuter, MxEvecsH3);
 		emat = prod_mm(MxEvecs3, emat);
 		Interactemats.emplace_back(std::move(emat));
-		//eigs.emplace_back(Eig{.eval=eval, .evec=evec, .emat=emat});
 	}
 
 	return std::make_tuple(Interactevals, Interactevecs, Interactemats);
