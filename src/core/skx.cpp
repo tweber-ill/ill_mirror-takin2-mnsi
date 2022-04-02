@@ -417,10 +417,9 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		std::sqrt(t_real(-0.5 - m_T*0.5)),
-		g_muB<t_real> * m_Bc2_exp, // E scale factor
-		minE, maxE,
-		m_eveps, m_evlimit, m_weighteps,
+		2. * std::sqrt(t_real(-0.5 - m_T*0.5)) /* m_Bc2 */,
+		g_g<t_real> * g_muB<t_real> * m_Bc2_exp, // E scale factor
+		minE, maxE, m_eveps, m_evlimit, m_weighteps,
 		m_filterzeroweight, /*m_onlymode*/-1);
 }
 

@@ -80,6 +80,8 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 
 		if(T >= 0.) return 0.;
 		return amp * std::pow(-T, ex);
+
+		//return 2. * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
 	{

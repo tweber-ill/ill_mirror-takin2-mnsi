@@ -270,10 +270,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		Mx, fluct,
 		m_bProjNeutron, m_projNeutron, m_polMat,
 		1., g_g<t_real>*g_muB<t_real>*m_Bc2, // E scale factor
-		minE, maxE,
-		m_eveps, /*m_evlimit*/ -1., m_weighteps,
-		m_filterzeroweight, m_onlymode,
-		3*ORDER);
+		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
+		m_filterzeroweight, m_onlymode, 3*ORDER);
 }
 
 

@@ -296,7 +296,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 		(*ofstrGplBc2) << "set xlabel \"T\"\nset ylabel \"Bc2\"\n";
 		(*ofstrGplBc2) << "set autosc xfix\nset autosc yfix\n\n";
 
-		(*ofstrGplBc2) << "plot \"-\" u 1:2:3 w yerrorbars pt 7, func(x) w lines lw 2\n";
+		(*ofstrGplBc2) << "plot \"-\" u 1:2:3 w yerrorbars pt 7, func(x) w lines lw 2, 2*sqrt(-0.5 - 0.5*x) lw 2\n";
 		(*ofstrGplBc2) << ostrData.str();
 	}
 
