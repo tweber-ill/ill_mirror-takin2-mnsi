@@ -50,15 +50,36 @@ public:
 	virtual t_real F() override;
 
 	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm=true) override;
-	virtual const std::vector<t_vec_cplx> &GetFourier() const override { return m_fourier; }
+	virtual const std::vector<t_vec_cplx>& GetFourier() const override { return m_fourier; }
 
-	virtual void SetB(t_real B) override { m_B = B; }
-	virtual void SetT(t_real T) override { m_T = T; m_Bc2 = get_bc2(m_T); }
-	t_real GetBC2() const { return m_Bc2; }
+	virtual void SetB(t_real B, bool exp=true) override
+	{
+		if(!exp)
+			m_B = B;
+	}
 
-	void SetTExp(t_real T) { m_Bc2_exp = get_bc2(T, false); }
-	void SetBC2Exp(t_real bc2) { m_Bc2_exp = bc2; }
-	t_real GetBC2Exp() const { return m_Bc2_exp; }
+	virtual void SetT(t_real T, bool exp=true) override
+	{
+		if(exp)
+		{
+			m_Bc2_exp = get_bc2(T, !exp);
+		}
+		else
+		{
+			m_T = T;
+			m_Bc2 = get_bc2(m_T, !exp);
+		}
+	}
+
+	virtual t_real GetBC2(bool exp=true) const override
+	{
+		return exp ? m_Bc2_exp : m_Bc2;
+	}
+
+	void SetBC2Exp(t_real bc2)
+	{
+		m_Bc2_exp = bc2;
+	}
 
 	using MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise;
 
@@ -80,13 +101,13 @@ public:
 
 
 	std::tuple<t_mat_cplx, t_mat_cplx> GetMCrossMFluct(
-		int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql) const;
+		int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql) const;
 	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-		GetSpecWeights(int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
+		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
 
 	void SetCoords(t_real Bx, t_real By, t_real Bz,
 		t_real Pinx, t_real Piny, t_real Pinz);
-	void SetG(t_real h, t_real k, t_real l);
+	virtual void SetG(t_real h, t_real k, t_real l) override;
 	void SetProjNeutron(bool b) { m_bProjNeutron = b; }
 	void SetFilterZeroWeight(bool b) { m_filterzeroweight = b; }
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }

@@ -44,11 +44,13 @@ void calc_disp(
 	skx.SetProjNeutron(iProj!=0);
 	heli.SetProjNeutron(iProj!=0);
 
-	skx.SetT(-1000.);
-	heli.SetT(g_T);
+	skx.SetT(-1000., false);
+	heli.SetT(-1000., false);
+	heli.SetT(g_T, true);
 
-	skx.SetB(25.);
-	heli.SetB(0.17);
+	skx.SetB(25., false);
+	heli.SetB(25., false);
+	heli.SetB(0.17, true);
 
 	skx.SetFilterZeroWeight(1);
 	heli.SetFilterZeroWeight(1);

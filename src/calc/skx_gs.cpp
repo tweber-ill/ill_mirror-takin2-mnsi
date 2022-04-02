@@ -252,8 +252,8 @@ int main()
 		skx.SetFourier(fourier);
 	}
 
-	skx.SetT(-1000.);
-	skx.SetB(25.);
+	skx.SetT(-1000., false);
+	skx.SetB(25., false);
 
 	std::cout << "Bc2 = " << get_bc2<t_real>(-1000.) << std::endl;
 

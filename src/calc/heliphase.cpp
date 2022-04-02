@@ -24,8 +24,8 @@ int main()
 	};
 
 	heli.SetFourier(fourier);
-	heli.SetT(-100);
-	heli.SetB(0);
+	heli.SetT(-100, false);
+	heli.SetB(0, false);
 	heli.SaveStates("heli.dat", ORDER, 0,1,0, 0,1,1);
 
 	return 0;

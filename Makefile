@@ -177,14 +177,14 @@ bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp \
 
 bin/heli_gs: src/calc/heli_gs.cpp src/core/heli.cpp \
 		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=7 \
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=9 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/skx_gs: src/calc/skx_gs.cpp src/core/skx.cpp src/core/heli.cpp \
 		src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=7 \
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=9 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
 	$(STRIP) $@$(BIN_SUFFIX)

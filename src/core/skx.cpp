@@ -228,8 +228,8 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	m_fourier = fourier;
 	if(symm) // symmetrise
 	{
-		for(t_vec_cplx& fourier : m_fourier)
-			fourier[1] = std::conj(fourier[0]);
+		for(t_vec_cplx& _fourier : m_fourier)
+			_fourier[1] = std::conj(_fourier[0]);
 	}
 
 	while(m_fourier.size() < ORDER_FOURIER+1)
@@ -280,10 +280,10 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx, typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx>
 Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
-	int iGh, int iGk, t_real qh, t_real qk, t_real ql) const
+	int Gh, int Gk, t_real qh, t_real qk, t_real ql) const
 {
 	constexpr int SIZE = 2*ORDER + 1;
-	const int MAXORDER = ORDER + std::max(std::abs(iGh), std::abs(iGk));
+	const int MAXORDER = ORDER + std::max(std::abs(Gh), std::abs(Gk));
 	const int MAXSIZE = 2*MAXORDER + 1;
 
 	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
@@ -337,7 +337,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 		t_mat_cplx mat(3,3);
 		for(int i=0; i<3; ++i)  // diagonal
-			mat(i,i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq /*+ g_hoc<t_real>*Q_sq*Q_sq*/;
+			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq /*+ g_hoc<t_real>*Q_sq*Q_sq*/;
 
 		for(int i=0; i<2; ++i)  // off-diagonal
 		{
@@ -345,8 +345,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			{
 				int k = 3 - i - j; // third index in {0,1,2}
 				t_real sign = (k==1 ? 1. : -1.);
-				mat(i,j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
-				mat(j,i) = std::conj(mat(i,j));
+				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
+				mat(j, i) = std::conj(mat(i,j));
 			}
 		}
 
@@ -354,7 +354,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
 	}
 
-	auto mk_2dim = [MAXSIZE, MAXORDER, iGh, iGk](const decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [MAXSIZE, MAXORDER, Gh, Gk](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(MAXSIZE);
 		std::iota(pks1.begin(), pks1.begin()+MAXORDER+1, 0);       // 0, 1, ..., MAXORDER
@@ -378,8 +378,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			{
 				const t_mat_cplx& comp = get_flat_comp(
 					arr, SIZE, MAXSIZE, ORDER,
-					pks[idx1].first + iGh, pks[idx1].second + iGk,
-					pks[idx2].first + iGh, pks[idx2].second + iGk);
+					pks[idx1].first + Gh, pks[idx1].second + Gk,
+					pks[idx2].first + Gh, pks[idx2].second + Gk);
 
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
@@ -398,7 +398,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
-	int iGhmag, int iGkmag, t_real qh, t_real qk, t_real ql,
+	int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
 	t_real minE, t_real maxE) const
 {
 	if(tl2::float_equal<t_real>(qh, 0., m_eps) &&
@@ -411,7 +411,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 	ql = -ql;
 
 	t_mat_cplx Mx2d, Fluc2d;
-	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(iGhmag, iGkmag, qh, qk, ql);
+	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(Ghmag, Gkmag, qh, qk, ql);
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
@@ -449,7 +449,7 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-	m_Grlu = tl2::make_vec<t_vec>({h,k,l});
+	m_Grlu = tl2::make_vec<t_vec>({h, k, l});
 
 	t_vec G = m_Grlu / tl2::veclen(m_Grlu);
 	G = tl2::quat_vec_prod(m_rotCoord, G);

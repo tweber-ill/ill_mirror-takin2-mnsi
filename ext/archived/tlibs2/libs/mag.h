@@ -76,8 +76,8 @@ namespace tl2 {
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
 calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
-	t_real normfac=1, const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
-	std::size_t MxsubMatSize=3, std::size_t MxsubMatRowBegin=0, t_real eps=1e-6)
+	t_real normfac = 1, const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
+	std::size_t MxsubMatSize = 3, std::size_t MxsubMatRowBegin = 0, t_real eps = 1e-6)
 {
 	constexpr t_cplx imag = t_cplx(0,1);
 
@@ -199,7 +199,7 @@ template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<t_real, std::vector<t_real>>
 get_dynstrucfact_neutron(
 	const t_cplx& eval, const t_mat_cplx& _emat,
-	const t_mat_cplx* projNeutron=nullptr,
+	const t_mat_cplx* projNeutron = nullptr,
 	const std::vector<t_mat_cplx>* pol = nullptr)
 {
 	t_real E = eval.real();

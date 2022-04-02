@@ -54,11 +54,26 @@ public:
 	}
 
 
-	virtual void SetB(t_real B) override { m_B = B; }
-	virtual void SetT(t_real T) override { m_T = T; m_Bc2 = get_bc2(m_T, false); }
-	t_real GetBC2() const { return m_Bc2; }
+	virtual void SetB(t_real B, bool exp=true) override
+	{
+		if(exp) m_B = B;
+	}
 
-	void SetG(t_real h, t_real k, t_real l);
+	virtual void SetT(t_real T, bool exp=true) override
+	{
+		if(exp)
+		{
+			m_T = T;
+			m_Bc2 = get_bc2(m_T, false);
+		}
+	}
+
+	virtual t_real GetBC2(bool exp=true) const override
+	{
+		return exp ? m_Bc2 : 0.;
+	}
+
+	virtual void SetG(t_real h, t_real k, t_real l) override;
 	void SetCoords(t_real Bx, t_real By, t_real Bz);
 	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
 	void SetProjNeutron(bool b) { m_bProjNeutron = b; }

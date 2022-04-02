@@ -94,7 +94,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
 	// phi^2
-	cF += (m_T + 1.) * m0_sq;
+	cF += (m_T_theo + 1.) * m0_sq;
 
 	// phi^4
 	cF += m0_sq*m0_sq;
@@ -116,7 +116,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 		// phi^2
 		cF += 2. * m_sq * q_sq;
-		cF += 2. * (m_T + 1.) * m_sq;
+		cF += 2. * (m_T_theo + 1.) * m_sq;
 
 		// phi^4
 		cF += 2. * m0_sq * m_sq;
@@ -145,7 +145,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	}
 
 	// zeeman shift
-	cF += -m_B * std::sqrt(m0_sq);
+	cF += -m_B_theo * std::sqrt(m0_sq);
 	return cF.real();
 }
 
@@ -159,8 +159,8 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &four
 	m_fourier = fourier;
 	if(symm) // symmetrise
 	{
-		for(t_vec_cplx& fourier : m_fourier)
-			fourier[1] = std::conj(fourier[0]);
+		for(t_vec_cplx& _fourier : m_fourier)
+			_fourier[1] = std::conj(_fourier[0]);
 	}
 
 	while(m_fourier.size() < ORDER_FOURIER+1)
@@ -326,7 +326,6 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 {
 	t_vec Qvec = tl2::make_vec<t_vec>({ h, k, l });
 	t_vec qvec = tl2::quat_vec_prod(m_rotCoord, Qvec) - tl2::quat_vec_prod(m_rotCoord, m_Grlu);
-
 	qvec /= g_kh_rlu<t_real>(m_T);
 	return GetSpecWeights(qvec[0], qvec[1], qvec[2], minE, maxE);
 }

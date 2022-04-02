@@ -30,8 +30,8 @@ void calc_disp(
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
 	heli.SetProjNeutron(true);
-	heli.SetT(20.);
-	heli.SetB(0.3);
+	heli.SetT(20., true);
+	heli.SetB(0.3, true);
 	heli.SetFilterZeroWeight(true);
 
 	t_vec G = tl2::make_vec<t_vec>({ 1, 1, 0 });

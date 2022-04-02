@@ -22,6 +22,7 @@ using t_cplx = std::complex<t_real>;
 using t_vec = ublas::vector<t_real>;
 using t_vec_cplx = ublas::vector<t_cplx>;
 
+#include "core/heli_default_gs.cxx"
 #include "core/skx_default_gs.cxx"
 
 
@@ -45,7 +46,7 @@ void calc_disp(char dyntype,
 	t_vec qperpdir = tl2::make_vec<t_vec>({ qperpdir_x, qperpdir_y, qperpdir_z });
 	qperpdir /= tl2::veclen(qperpdir);
 
-	t_real bc2 = -1.;
+	t_real F = 0.;
 	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn;
 
 	if(dyntype == 's')
@@ -54,14 +55,9 @@ void calc_disp(char dyntype,
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
 
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
-		skx->SetT(-1000.);
-		skx->SetB(25.);	// BC2 = 40.3425, test: 45.028487
 		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
-		skx->SetG(G[0], G[1], G[2]);
 
-		std::cout << "Ground state F = " << skx->F() << "." << std::endl;
-
-		bc2 = skx->GetBC2();
+		F = skx->F();
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
@@ -69,12 +65,20 @@ void calc_disp(char dyntype,
 		std::cout << "Calculating helical dispersion." << std::endl;
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
 
-		heli->SetT(T);
-		heli->SetB(B);
+		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
 		heli->SetCoords(Bdir[0], Bdir[1], Bdir[2]);
-		heli->SetG(G[0], G[1], G[2]);
 
-		bc2 = heli->GetBC2();
+		std::cout << "Ground state:\n";
+		for(const auto& fourier : heli->GetFourier())
+		{
+			std::cout
+				<< "{ " << fourier[0].real() << ", " << fourier[0].imag() << " }, "
+				<< "{ " << fourier[1].real() << ", " << fourier[1].imag() << " }, "
+				<< "{ " << fourier[2].real() << ", " << fourier[2].imag() << " },"
+				<< std::endl;
+		}
+
+		F = heli->F();
 		dyn = heli;
 	}
 	else if(dyntype == 'f')
@@ -82,12 +86,8 @@ void calc_disp(char dyntype,
 		std::cout << "Calculating field-polarised dispersion." << std::endl;
 		auto fp = std::make_shared<FP<t_real, t_cplx>>();
 
-		fp->SetT(T);
-		fp->SetB(B);
 		fp->SetCoords(Bdir[0], Bdir[1], Bdir[2]);
-		fp->SetG(G[0], G[1], G[2]);
 
-		bc2 = fp->GetBC2();
 		dyn = fp;
 	}
 	else
@@ -95,6 +95,15 @@ void calc_disp(char dyntype,
 		std::cerr << "Unknown dynamics type selected." << std::endl;
 		return;
 	}
+
+	dyn->SetT(-1000., false);
+	dyn->SetB(25., false);	// BC2 = 45.028487
+	dyn->SetT(T, true);
+	dyn->SetB(B, true);
+
+	dyn->SetG(G[0], G[1], G[2]);
+
+	std::cout << "Ground state F = " << F << "." << std::endl;
 
 
 	auto calc_spectrum = [dyntype, &dyn, &G, T, &qparadir, &qperpdir, &qperp, bSwapQParaQPerp]
@@ -187,7 +196,9 @@ void calc_disp(char dyntype,
 	ofstr << "# G = " << G << "\n";
 	ofstr << "# Bdir = " << Bdir << "\n";
 	ofstr << "# Pdir = " << Pdir << "\n";
-	ofstr << "# Bc2 = " << bc2 << "\n";
+	ofstr << "# Bc2 = " << dyn->GetBC2(false) << "\n";
+	ofstr << "# Bc2_exp = " << dyn->GetBC2(true) << "\n";
+	ofstr << "# F = " << F << "\n";
 	if(bSwapQParaQPerp)
 		ofstr << "# WARNING: In the following, q_para_* and q_perp_* are swapped!\n";
 

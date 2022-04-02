@@ -213,8 +213,8 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 		{
 			t_real T = Ts[T_idx];
 
-			mag->SetT(T);
-			mag->SetB(B);
+			mag->SetT(T, false);
+			mag->SetB(B, false);
 
 			bool ok = mag->minimise(iMaxOrder, bFixXR, bFixYR, bFixZR, bFixXI, bFixYI, bFixZI);
 			if(T_idx == 0)	// run twice to get better initial values

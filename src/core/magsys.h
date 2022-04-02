@@ -31,8 +31,10 @@ public:
 	HasTandB() = default;
 	virtual ~HasTandB() = default;
 
-	virtual void SetB(t_real B) = 0;
-	virtual void SetT(t_real T) = 0;
+	virtual void SetB(t_real B, bool exp=true) = 0;
+	virtual void SetT(t_real T, bool exp=true) = 0;
+
+	virtual t_real GetBC2(bool exp=true) const = 0;
 };
 
 
@@ -81,6 +83,8 @@ class MagDynamics : public HasTandB<t_real>
 public:
 	MagDynamics() = default;
 	virtual ~MagDynamics() = default;
+
+	virtual void SetG(t_real h, t_real k, t_real l) = 0;
 
 	// unpol, SF-+, SF+-, NSF
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>

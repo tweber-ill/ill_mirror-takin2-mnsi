@@ -73,17 +73,39 @@ public:
 	virtual t_real F() override;
 
 	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm=true) override;
-	virtual const std::vector<t_vec_cplx> &GetFourier() const override { return m_fourier; }
+	virtual const std::vector<t_vec_cplx>& GetFourier() const override { return m_fourier; }
 
-	// careful: free energy still uses theory units for T and B, dynamics calculation already uses real units!
-	virtual void SetB(t_real B) override { m_B = B; }
-	virtual void SetT(t_real T) override { m_T = T;  m_Bc2 = get_bc2(m_T, false); }
-	t_real GetBC2() const { return m_Bc2; }
+	virtual void SetB(t_real B, bool exp=true) override
+	{
+		if(exp)
+			m_B = B;
+		else
+			m_B_theo = B;
+	}
+
+	virtual void SetT(t_real T, bool exp=true) override
+	{
+		if(exp)
+		{
+			m_T = T;
+			m_Bc2 = get_bc2(m_T, !exp);
+		}
+		else
+		{
+			m_T_theo = T;
+			m_Bc2_theo = get_bc2(m_T_theo, !exp);
+		}
+	}
+
+	virtual t_real GetBC2(bool exp=true) const override
+	{
+		return exp ? m_Bc2 : m_Bc2_theo;
+	}
 
 	using MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise;
 
 
-	void SetG(t_real h, t_real k, t_real l);
+	virtual void SetG(t_real h, t_real k, t_real l) override;
 	void SetCoords(t_real Bx, t_real By, t_real Bz);
 	void SetFilterZeroWeight(bool b) { m_filterzeroweight = b; }
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
@@ -99,7 +121,9 @@ public:
 
 private:
 	t_real m_eps = 1e-5;
-	t_real m_B = 0, m_T = -100;
+	t_real m_B = 0.2, m_B_theo = 25.;
+	t_real m_T = 20., m_T_theo = -1000.;
+	t_real m_Bc2 = 0.6, m_Bc2_theo = 45.;
 
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<int> m_idx2[3], m_idx3[4];
@@ -109,7 +133,6 @@ private:
 	t_real m_eveps = 1e-6;
 	t_real m_weighteps = 1e-6;
 
-	t_real m_Bc2 = 0;
 	t_vec m_Grlu{};
 	t_quat m_rotCoord{};
 

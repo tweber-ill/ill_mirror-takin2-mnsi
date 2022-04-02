@@ -26,8 +26,8 @@ int main()
  	};
 
         heli.SetFourier(fourier);
-        heli.SetT(-1000);
-        heli.SetB(25);
+        heli.SetT(-1000, false);
+        heli.SetB(25, false);
 	//std::cout << "Bc2 = " << get_bc2<t_real>(-1000.) << std::endl;
 
 	std::cout.precision(8);
@@ -39,8 +39,11 @@ int main()
 	std::cout << "\nFourier components:\n";
 	for(const auto& fourier : heli.GetFourier())
 	{
-		std::cout << fourier[0] << ", " << fourier[1] << ", " << fourier[2] << ", ";
-		std::cout << std::endl;
+		std::cout
+			<< "{ " << fourier[0].real() << ", " << fourier[0].imag() << " }, "
+			<< "{ " << fourier[1].real() << ", " << fourier[1].imag() << " }, "
+			<< "{ " << fourier[2].real() << ", " << fourier[2].imag() << " },"
+			<< std::endl;
 	}
 
 	return 0;

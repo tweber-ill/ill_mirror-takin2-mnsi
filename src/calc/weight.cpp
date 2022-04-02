@@ -35,8 +35,6 @@ void calc_disp(char dyntype,
 
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
 		skx->SetProjNeutron(iProj!=0);
-		skx->SetT(-1000.);
-		skx->SetB(25.);
 		skx->SetFilterZeroWeight(1);
 		skx->SetCoords(Bx,By,Bz, Px,Py,Pz);
 		skx->SetG(Gx,Gy,Gz);
@@ -48,8 +46,6 @@ void calc_disp(char dyntype,
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
 
 		heli->SetProjNeutron(iProj!=0);
-		heli->SetT(T);
-		heli->SetB(B);
 		heli->SetFilterZeroWeight(1);
 		heli->SetCoords(Bx,By,Bz);
 		heli->SetG(Gx,Gy,Gz);
@@ -60,8 +56,6 @@ void calc_disp(char dyntype,
 	{
 		auto fp = std::make_shared<FP<t_real, t_cplx>>();
 
-		fp->SetT(T);
-		fp->SetB(B);
 		fp->SetCoords(Bx,By,Bz);
 		fp->SetG(Gx,Gy,Gz);
 
@@ -72,6 +66,11 @@ void calc_disp(char dyntype,
 		std::cerr << "Unknown dynamics type selected." << std::endl;
 		return;
 	}
+
+	dyn->SetT(-1000., false);
+	dyn->SetB(25., false);
+	dyn->SetT(T, true);
+	dyn->SetB(B, true);
 
 
 	t_real Erange = -1.;	// negative: disable range

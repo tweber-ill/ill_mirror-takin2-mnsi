@@ -179,7 +179,7 @@ std::vector<t_vec_cplx> _get_skx_gs()
 
 	for(std::size_t comp=0; comp<_skxgs_allcomps.size(); comp+=3)
 	{
-		fourier.push_back(tl2::make_vec<t_vec_cplx>(
+		fourier.emplace_back(tl2::make_vec<t_vec_cplx>(
 		{
 			_skxgs_allcomps[comp] * imag,
 			_skxgs_allcomps[comp+1] * imag,

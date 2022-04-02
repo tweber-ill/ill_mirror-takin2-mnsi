@@ -88,6 +88,7 @@ public:
 
 
 using t_real = typename SqwMod::t_real;
+#include "core/heli_default_gs.cxx"
 #include "core/skx_default_gs.cxx"
 
 
@@ -99,15 +100,18 @@ SqwMod::SqwMod()
 	tl2::log_info("\tby T. Weber <tweber@ill.fr>, September 2018.");
 	tl2::log_info("--------------------------------------------------------------------------------");
 
-	m_skx.SetT(-1000.);
-	m_skx.SetB(25.);
-	//m_skx.SetTExp(29.);
-	m_fp.SetT(29.);
-	m_fp.SetB(0.35);
-	m_heli.SetT(29.);
-	m_heli.SetB(0.35);
+	m_skx.SetT(-1000., false);
+	m_skx.SetB(25., false);
+	m_skx.SetT(29., true);
+	m_fp.SetT(29., true);
+	m_fp.SetB(0.35, true);
+	m_heli.SetT(-1000., false);
+	m_heli.SetB(25., false);
+	m_heli.SetT(29., true);
+	m_heli.SetB(0.35, true);
 	m_lf.SetT(29.);
 
+	m_heli.SetFourier(_get_heli_gs<t_vec_cplx>());
 	m_skx.SetFourier(_get_skx_gs<t_vec_cplx>());
 
 	m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
@@ -247,20 +251,18 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 		{
 			m_dT = tl2::str_to_var<decltype(m_dT)>(strVal);
 
-			m_fp.SetT(m_dT);
-			m_heli.SetT(m_dT);
-			//m_skx.SetTExp(m_dT);
-			// fixed (and theo units) for skx!
-
+			m_fp.SetT(m_dT, true);
+			m_heli.SetT(m_dT, true);
+			m_skx.SetT(m_dT, true);
 			m_lf.SetT(m_dT);
 		}
 		else if(strVar == "B")
 		{
 			m_dB = tl2::str_to_var<decltype(m_dB)>(strVal);
 
-			m_fp.SetB(m_dB);
-			m_heli.SetB(m_dB);
-			// fixed (and theo units) for skx!
+			m_fp.SetB(m_dB, true);
+			m_heli.SetB(m_dB, true);
+			m_skx.SetB(m_dB, true);
 		}
 		else if(strVar == "pol_chan") m_iPolChan = tl2::str_to_var<decltype(m_iPolChan)>(strVal);
 		else if(strVar == "G" || strVal == "proj_neutron")

@@ -34,8 +34,8 @@ void calc_disp(
 
 	skx.SetFourier(_get_skx_gs<t_vec_cplx>());
 	skx.SetProjNeutron(false);
-	skx.SetT(-1000.);
-	skx.SetB(25.);
+	skx.SetT(-1000., false);
+	skx.SetB(25., false);
 	skx.SetFilterZeroWeight(true);
 
 	//t_vec G = tl2::make_vec<t_vec>({ 1, 1, 0 });
