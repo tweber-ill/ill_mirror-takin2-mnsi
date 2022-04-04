@@ -138,12 +138,11 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	// transform Mx into Mx eigenvector system
 	// Mxx is diagonal with this construction => directly use Mxevals
 #if MXX_IS_DIAG == 1
-	t_mat_cplx Mxx = diag_matrix<t_mat_cplx>(Mxevals);
+	t_mat_cplx Mxx = imag * diag_matrix<t_mat_cplx>(Mxevals);
 #else
 	t_mat_cplx Mxx = prod_mm(Mx, MxEvecs);
-	Mxx = prod_mm(MxEvecsH, Mxx);
+	Mxx = imag * prod_mm(MxEvecsH, Mxx);
 #endif
-	Mxx *= imag;
 
 	// Landau-Lifshitz: d/dt dM = -Mx B_mean, B_mean = -chi^(-1) * dM
 	// E = EVals{ i Mx chi^(-1) }
@@ -169,7 +168,7 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	for(std::size_t iInteract=0; iInteract<Interactevals.size(); ++iInteract)
 	{
 		const t_vec_cplx& evec = Interactevecs[iInteract];
-		auto evec_scale = prod_mv(Mxx, evec);
+		const t_vec_cplx evec_scale = prod_mv(Mxx, evec);
 
 		auto matOuter = outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec);
 		matOuter /= inner_cplx<t_vec_cplx>(evec, evec_scale);

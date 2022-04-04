@@ -245,7 +245,7 @@ template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	bool bProjNeutron, const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
-	t_real E_scale_fac = 1, t_real minE = -1, t_real maxE = -2,
+	t_real E_scale_fac = 1, t_real w_scale_fac = 1, t_real minE = -1, t_real maxE = -2,
 	t_real eveps = 1e-6, t_real evlimit = 0.9995, t_real weighteps = 1e-6,
 	bool bfilterzeroweight = 0, int onlymode = -1, std::size_t MxsubMatRowBegin = 0)
 {
@@ -284,10 +284,10 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 			EW ew;
 			ew.E = E_meV;
-			ew.wUnpol = std::get<1>(E_weight)[0];
-			ew.wSF1 = std::get<1>(E_weight)[1];
-			ew.wSF2 = std::get<1>(E_weight)[2];
-			ew.wNSF = std::get<1>(E_weight)[3];
+			ew.wUnpol = std::get<1>(E_weight)[0] * w_scale_fac;
+			ew.wSF1 = std::get<1>(E_weight)[1] * w_scale_fac;
+			ew.wSF2 = std::get<1>(E_weight)[2] * w_scale_fac;
+			ew.wNSF = std::get<1>(E_weight)[3] * w_scale_fac;
 			EWs.emplace_back(ew);
 		}
 

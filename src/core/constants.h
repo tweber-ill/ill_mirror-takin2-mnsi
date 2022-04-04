@@ -29,7 +29,7 @@ template<class t_real = double> constexpr t_real g_muB
 template<class t_real = double> constexpr t_real g_chi = 0.34;
 template<class t_real = double> constexpr t_real g_hoc = -0.0073;
 template<class t_real = double> constexpr t_real g_a = 4.558;
-template<class t_real = double> constexpr t_real g_g = 2.;
+template<class t_real = double> constexpr t_real g_g = -tl2::g_e<t_real>;
 template<class t_real = double> constexpr t_real g_kh_A_29K = 0.039;
 template<class t_real = double> constexpr t_real g_kh_rlu_29K = g_kh_A_29K<t_real> / (t_real(2.)*g_pi<t_real> / g_a<t_real>);
 
