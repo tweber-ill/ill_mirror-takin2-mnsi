@@ -269,7 +269,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx * g_g<t_real>, fluct,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		g_muB<t_real> * m_Bc2, 2./std::sqrt(Brel*Brel + 2.*Brel2*Brel2),
+		g_muB<t_real> * m_Bc2, g_g<t_real>,
 		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, 3*ORDER);
 }
