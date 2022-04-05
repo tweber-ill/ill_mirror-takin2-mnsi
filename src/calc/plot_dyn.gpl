@@ -111,8 +111,8 @@ set arrow 2 from -qrange,0 to qrange,0 lw 2 dt 2 lc rgb col_axis nohead
 if(show_scans != 0) {
 	scanw = 0.0025
 
-	qpos1 = -0.05 * sqrt(2)
-	qpos2 = +0.05 * sqrt(2)
+	qpos1 = -0.05 #* sqrt(2)
+	qpos2 = +0.05 #* sqrt(2)
 
 	E_begin1 = -0.5
 	E_end1   = +0.5
