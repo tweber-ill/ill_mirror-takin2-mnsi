@@ -33,7 +33,7 @@
 	#ifdef __HACK_FULL_INST__
 		template Heli<double, std::complex<double>, DEF_HELI_ORDER>::Heli();
 		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetG(double, double, double);
-		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetCoords(double, double, double);
+		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetCoords(double, double, double, double, double, double);
 	#endif
 #endif
 
@@ -306,7 +306,7 @@ void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
  * rotates field to internal [001] convention
  */
 template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetCoords(t_real Bx, t_real By, t_real Bz)
+void Heli<t_real, t_cplx, ORDER>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t_real Py, t_real pZ)
 {
 	t_vec B = tl2::make_vec<t_vec>( {Bx, By, Bz} );
 	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>( {0, 0, 1} ));

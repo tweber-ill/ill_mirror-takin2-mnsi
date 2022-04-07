@@ -25,7 +25,7 @@
 
 
 /**
- * interface for querying the temperature and the magnetic field
+ * interface for setting the temperature and the magnetic field magnitudes
  */
 template<class t_real = double>
 class HasTandB
@@ -102,6 +102,7 @@ public:
 	virtual void SetG(t_real h, t_real k, t_real l) = 0;
 	virtual void SetProjNeutron(bool b) = 0;
 	virtual void SetFilterZeroWeight(bool b) = 0;
+	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) = 0;
 
 	// unpol, SF-+, SF+-, NSF
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>

@@ -100,21 +100,23 @@ public:
 	}
 
 
-	std::tuple<t_mat_cplx, t_mat_cplx> GetMCrossMFluct(
-		int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql) const;
-	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
-
-	void SetCoords(t_real Bx, t_real By, t_real Bz,
-		t_real Pinx, t_real Piny, t_real Pinz);
+	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Pinx, t_real Piny, t_real Pinz) override;
 	virtual void SetG(t_real h, t_real k, t_real l) override;
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
-	void SetWeightEps(t_real eps) { m_weighteps = eps; }
-	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
+
+	void SetWeightEps(t_real eps) { m_weighteps = eps; }
+	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
+
+
+protected:
+	std::tuple<t_mat_cplx, t_mat_cplx> GetMCrossMFluct(
+		int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql) const;
+		std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
 
 
 private:

@@ -18,9 +18,10 @@ using t_vec = ublas::vector<t_real>;
 using t_vec_cplx = ublas::vector<t_cplx>;
 
 #include "core/skx_default_gs.cxx"
+#include "core/heli_default_gs.cxx"
 
 
-void calc_disp(char dyntype,
+static void calc_weight(char dyntype,
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
@@ -32,27 +33,18 @@ void calc_disp(char dyntype,
 	if(dyntype == 's')
 	{
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
-
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
-		skx->SetCoords(Bx,By,Bz, Px,Py,Pz);
-
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
 	{
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
-
-		heli->SetCoords(Bx,By,Bz);
-
+		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
 		dyn = heli;
 	}
 	else if(dyntype == 'f')
 	{
-		auto fp = std::make_shared<FP<t_real, t_cplx>>();
-
-		fp->SetCoords(Bx,By,Bz);
-
-		dyn = fp;
+		dyn = std::make_shared<FP<t_real, t_cplx>>();
 	}
 	else
 	{
@@ -60,6 +52,8 @@ void calc_disp(char dyntype,
 		return;
 	}
 
+
+	dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
 	dyn->SetT(-1000., false);
 	dyn->SetB(25., false);
 	dyn->SetT(T, true);
@@ -145,7 +139,7 @@ int main()
 		std::cout << "# q = (" << Qx-Gx << ", " << Qy-Gy << ", " << Qz-Gz << ")\n";
 		std::cout << "# Q_proj = " << proj << "\n";
 
-		calc_disp(dyntype, Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, Qx,Qy,Qz, proj, T, B);
+		calc_weight(dyntype, Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, Qx,Qy,Qz, proj, T, B);
 		std::cout << std::endl;
 	}
 

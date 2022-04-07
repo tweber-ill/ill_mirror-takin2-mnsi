@@ -19,7 +19,7 @@ template class FP<double, std::complex<double>>;
 #ifdef __HACK_FULL_INST__
 	template FP<double, std::complex<double>>::FP();
 	template void FP<double, std::complex<double>>::SetG(double, double, double);
-	template void FP<double, std::complex<double>>::SetCoords(double, double, double);
+	template void FP<double, std::complex<double>>::SetCoords(double, double, double, double, double, double);
 #endif
 
 
@@ -47,7 +47,7 @@ void FP<t_real, t_cplx>::SetG(t_real h, t_real k, t_real l)
  * rotates field to internal [001] convention
  */
 template<class t_real, class t_cplx>
-void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz)
+void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t_real Py, t_real Pz)
 {
 	t_vec B = tl2::make_vec<t_vec>( {Bx, By, Bz} );
 	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>( {0, 0, 1} ));

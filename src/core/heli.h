@@ -106,17 +106,18 @@ public:
 
 
 	virtual void SetG(t_real h, t_real k, t_real l) override;
-	void SetCoords(t_real Bx, t_real By, t_real Bz);
+	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) override;
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
-	void SetWeightEps(t_real eps) { m_weighteps = eps; }
-	void SetOnlyMode(int iMode) { m_onlymode = iMode; }
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
-
-	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-	GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
+
+	void SetWeightEps(t_real eps) { m_weighteps = eps; }
+	void SetOnlyMode(int iMode) { m_onlymode = iMode; }
+
+	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+	GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
 
 
 private:

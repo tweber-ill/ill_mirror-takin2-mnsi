@@ -30,8 +30,7 @@
 	#ifdef __HACK_FULL_INST__
 		template Skx<double, std::complex<double>, DEF_SKX_ORDER>::Skx();
 		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetG(double, double, double);
-		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(
-			double, double, double, double, double, double);
+		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(double, double, double, double, double, double);
 	#endif
 #endif
 

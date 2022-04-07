@@ -26,7 +26,21 @@ using t_vec_cplx = ublas::vector<t_cplx>;
 #include "core/skx_default_gs.cxx"
 
 
-void calc_disp(char dyntype,
+static void print_groundstate(const std::vector<t_vec_cplx>& gs)
+{
+	std::cout << "Ground state:\n";
+	for(const auto& fourier : gs)
+	{
+		std::cout
+			<< "{ " << fourier[0].real() << ", " << fourier[0].imag() << " }, "
+			<< "{ " << fourier[1].real() << ", " << fourier[1].imag() << " }, "
+			<< "{ " << fourier[2].real() << ", " << fourier[2].imag() << " },"
+			<< std::endl;
+	}
+}
+
+
+static void calc_disp(char dyntype,
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
@@ -52,40 +66,23 @@ void calc_disp(char dyntype,
 	{
 		std::cout << "Calculating skyrmion dispersion." << std::endl;
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
-
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
-		skx->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
-
+		print_groundstate(skx->GetFourier());
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
 	{
 		std::cout << "Calculating helical dispersion." << std::endl;
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
-
 		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
-		heli->SetCoords(Bdir[0], Bdir[1], Bdir[2]);
-
-		std::cout << "Ground state:\n";
-		for(const auto& fourier : heli->GetFourier())
-		{
-			std::cout
-				<< "{ " << fourier[0].real() << ", " << fourier[0].imag() << " }, "
-				<< "{ " << fourier[1].real() << ", " << fourier[1].imag() << " }, "
-				<< "{ " << fourier[2].real() << ", " << fourier[2].imag() << " },"
-				<< std::endl;
-		}
-
+		print_groundstate(heli->GetFourier());
 		dyn = heli;
+
 	}
 	else if(dyntype == 'f')
 	{
 		std::cout << "Calculating field-polarised dispersion." << std::endl;
-		auto fp = std::make_shared<FP<t_real, t_cplx>>();
-
-		fp->SetCoords(Bdir[0], Bdir[1], Bdir[2]);
-
-		dyn = fp;
+		dyn = std::make_shared<FP<t_real, t_cplx>>();
 	}
 	else
 	{
@@ -93,11 +90,12 @@ void calc_disp(char dyntype,
 		return;
 	}
 
+
+	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(-1000., false);
 	dyn->SetB(25., false);	// BC2 = 45.028487
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
-
 	dyn->SetG(G[0], G[1], G[2]);
 
 
@@ -213,7 +211,7 @@ void calc_disp(char dyntype,
 
 	ofstr << "#\n";
 
-	ofstr 
+	ofstr
 		<< "#" << std::setw(15) << "h" << " "
 		<< std::setw(16) << "k" << " "
 		<< std::setw(16) << "l" << " "
