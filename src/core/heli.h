@@ -107,10 +107,10 @@ public:
 
 	virtual void SetG(t_real h, t_real k, t_real l) override;
 	void SetCoords(t_real Bx, t_real By, t_real Bz);
-	void SetFilterZeroWeight(bool b) { m_filterzeroweight = b; }
+	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
 	void SetOnlyMode(int iMode) { m_onlymode = iMode; }
-	void SetProjNeutron(bool b) { m_bProjNeutron = b; }
+	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 
 	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 	GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;

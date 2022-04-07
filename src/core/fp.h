@@ -76,7 +76,8 @@ public:
 	virtual void SetG(t_real h, t_real k, t_real l) override;
 	void SetCoords(t_real Bx, t_real By, t_real Bz);
 	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
-	void SetProjNeutron(bool b) { m_bProjNeutron = b; }
+	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
+	virtual void SetFilterZeroWeight(bool b) override {}
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;

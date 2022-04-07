@@ -444,6 +444,9 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 }
 
 
+/**
+ * set the lattice vector and orthogonal projector
+ */
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {

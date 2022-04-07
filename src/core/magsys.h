@@ -24,6 +24,9 @@
 #include "constants.h"
 
 
+/**
+ * interface for querying the temperature and the magnetic field
+ */
 template<class t_real = double>
 class HasTandB
 {
@@ -38,6 +41,9 @@ public:
 };
 
 
+/**
+ * interface for querying the free energy
+ */
 template<class t_real = double>
 class HasF
 {
@@ -94,6 +100,8 @@ public:
 	virtual ~MagDynamics() = default;
 
 	virtual void SetG(t_real h, t_real k, t_real l) = 0;
+	virtual void SetProjNeutron(bool b) = 0;
+	virtual void SetFilterZeroWeight(bool b) = 0;
 
 	// unpol, SF-+, SF+-, NSF
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>

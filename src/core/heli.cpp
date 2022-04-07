@@ -276,7 +276,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 
 /**
- * set lattice vector and orthogonal projector
+ * set the lattice vector and orthogonal projector
  */
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)

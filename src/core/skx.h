@@ -108,8 +108,8 @@ public:
 	void SetCoords(t_real Bx, t_real By, t_real Bz,
 		t_real Pinx, t_real Piny, t_real Pinz);
 	virtual void SetG(t_real h, t_real k, t_real l) override;
-	void SetProjNeutron(bool b) { m_bProjNeutron = b; }
-	void SetFilterZeroWeight(bool b) { m_filterzeroweight = b; }
+	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
+	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
 	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
 

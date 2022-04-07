@@ -155,8 +155,8 @@ void calc_disp(char dyntype,
 			std::cout << "done." << std::endl;
 		}
 
-		return std::make_tuple(allh, allk, alll, allEs, 
-			allWsUnpol, allWsSF1, allWsSF2, allWsNSF, 
+		return std::make_tuple(allh, allk, alll, allEs,
+			allWsUnpol, allWsSF1, allWsSF2, allWsNSF,
 			allqpara_kh, allqperp_kh, allqpara_rlu, allqperp_rlu);
 	};
 
@@ -231,18 +231,18 @@ void calc_disp(char dyntype,
 	{
 		for(std::size_t j=0; j<std::get<3>(val0)[i].size(); ++j)
 		{
-			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "	// h
-				<< std::setw(16) << std::get<1>(val0)[i] << " "		// k
-				<< std::setw(16) << std::get<2>(val0)[i] << " "		// l
-				<< std::setw(16) << std::get<3>(val0)[i][j] << " "	// E
-				<< std::setw(16) << std::get<4>(val0)[i][j] << " "	// w_unpol
-				<< std::setw(16) << std::get<5>(val0)[i][j] << " "	// w_sf1
-				<< std::setw(16) << std::get<6>(val0)[i][j] << " "	// w_sf2
-				<< std::setw(16) << std::get<7>(val0)[i][j] << " "	// w_nsf
-				<< std::setw(16) << std::get<8>(val0)[i] << " "	// q_para_kh
-				<< std::setw(16) << std::get<9>(val0)[i] << " "	// q_perp_kh
-				<< std::setw(16) << std::get<10>(val0)[i] << " "	// q_para_rlu
-				<< std::setw(16) << std::get<11>(val0)[i] << "\n";	// q_perp_rlu
+			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "       // h
+				<< std::setw(16) << std::get<1>(val0)[i] << " "     // k
+				<< std::setw(16) << std::get<2>(val0)[i] << " "     // l
+				<< std::setw(16) << std::get<3>(val0)[i][j] << " "  // E
+				<< std::setw(16) << std::get<4>(val0)[i][j] << " "  // w_unpol
+				<< std::setw(16) << std::get<5>(val0)[i][j] << " "  // w_sf1
+				<< std::setw(16) << std::get<6>(val0)[i][j] << " "  // w_sf2
+				<< std::setw(16) << std::get<7>(val0)[i][j] << " "  // w_nsf
+				<< std::setw(16) << std::get<8>(val0)[i] << " "     // q_para_kh
+				<< std::setw(16) << std::get<9>(val0)[i] << " "     // q_perp_kh
+				<< std::setw(16) << std::get<10>(val0)[i] << " "    // q_para_rlu
+				<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // q_perp_rlu
 		}
 	}
 
