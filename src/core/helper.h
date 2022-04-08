@@ -342,4 +342,21 @@ void assign_or_add(t_mat1& matDst, const t_mat2& mat)
 }
 
 
+/**
+ * move the momentum transfer away from the lattice vector to avoid divergences
+ */
+template<class t_real>
+void avoid_G(t_real& qh, t_real& qk, t_real& ql, t_real eps)
+{
+	if(tl2::float_equal<t_real>(qh, 0., eps) &&
+		tl2::float_equal<t_real>(qk, 0., eps) &&
+		tl2::float_equal<t_real>(ql, 0., eps))
+	{
+		qh += eps;
+		qk += eps;
+		ql += eps;
+	}
+}
+
+
 #endif

@@ -46,7 +46,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			if(std::abs(h-k) <= t_real(ORDER))
 				m_allpeaks_rlu.push_back(pk_rlu);
 
-			// 60 degree peak segment
+			// 60 degree peak segments
 			if(h>=0 && k>=0 && k<h)
 			{
 				t_real pk_len = tl2::veclen(pk_lab);
@@ -265,25 +265,14 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
  */
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
-	int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
-	t_real minE, t_real maxE) const
+Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
+	t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
 {
-	if(tl2::float_equal<t_real>(qh, 0., m_eps) &&
-		tl2::float_equal<t_real>(qk, 0., m_eps) &&
-		tl2::float_equal<t_real>(ql, 0., m_eps))
-	{
-		qh += m_eps; qk += m_eps; ql += m_eps;
-	}
-
+	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
-
-	const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
-	const int MAXSIZE = 2*MAXORDER + 1;
-
 	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
 
-	// M-cross matrix
+	// M-cross tensor
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
@@ -295,7 +284,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 					get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second));
 	}
 
-	// fluctuation matrix
+	// fluctuation tensor
 	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx3[3].size(); ++i)
@@ -337,16 +326,20 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 		{
 			for(int j=i+1; j<3; ++j)
 			{
-				int k = 3 - i - j; // third index in {0,1,2}
-				t_real sign = (k==1 ? 1. : -1.);
+				int k = 3 - i - j;                // third index in {0,1,2}
+				t_real sign = (k==1 ? 1. : -1.);  // - + -
 				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
-				mat(j, i) = std::conj(mat(i,j));
+				mat(j, i) = std::conj(mat(i, j));
 			}
 		}
 
 		const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
 		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
 	}
+
+	// M-cross and fluctuation matrix
+	const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
+	const int MAXSIZE = 2*MAXORDER + 1;
 
 	auto mk_2dim = [MAXSIZE, MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
@@ -469,7 +462,5 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 
 	Gmagrlu += *iterClosest;
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
-
-	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]),
-		qmagrlu[0], qmagrlu[1], _l, minE, maxE);
+	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]), qmagrlu[0], qmagrlu[1], _l, minE, maxE);
 }

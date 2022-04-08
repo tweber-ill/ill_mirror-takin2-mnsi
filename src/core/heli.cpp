@@ -170,86 +170,87 @@ std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::v
 Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
 {
 	constexpr t_cplx imag = t_cplx(0, 1);
-	static const std::vector<t_real> empty;
 
-	t_vec qvec = tl2::make_vec<t_vec>({ qh, qk, -ql });
+	avoid_G(qh, qk, ql, m_eps);
+	const t_vec qvec = tl2::make_vec<t_vec>({ qh, qk, -ql });
+	const t_cplx hx = qvec[0] - imag*qvec[1];
 
-	if(tl2::float_equal<t_real>(qvec[2], 0., m_eps))
-		qvec[2] += m_eps;
+	constexpr t_real A1 = g_hoc<t_real>;
+	constexpr t_real A2 = A1*A1;
+	constexpr t_real A3 = A2*A1;
+
+	static const t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
+		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
+		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A1 + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
+		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
+	static const t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
+		imag*std::pow(3.,1./6.)*(std::sqrt(3.)-imag) *
+		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.), 2.) /
+		(24.*std::pow(2., 1./3.) * A1*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
+	static const t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
+		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A1))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) -
+		A1*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) +
+		std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))) /
+		(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) *
+		(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A1 - imag*std::pow(3., 1./6) *
+		(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.)))).real();
 
 	const t_real Brel = m_B / m_Bc2;
 	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
 
-	constexpr t_real A = g_hoc<t_real>;
-	constexpr t_real A2 = A*A;
-	constexpr t_real A3 = A2*A;
-
-	static const t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) /
-		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
-
-	static const t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A -
-		imag*std::pow(3.,1./6.)*(std::sqrt(3.)-imag) *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.), 2.) /
-		(24.*std::pow(2., 1./3.) * A*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))).real();
-
-	static const t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) +
-		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 1./3.) -
-		A*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.) +
-		std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.))) /
-		(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.) *
-		(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A - imag*std::pow(3., 1./6) *
-		(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A)))), 2./3.)))).real();
-
-	const t_real _c4 = _c3 + 88./3. * Brel2*Brel2;
-	const t_real _c5 = _c3 + 88./3. * Brel*Brel;
-
 	t_mat_cplx Mx = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 
-	for(int pos=0; pos<SIZE; ++pos)
+	for(int pk=0; pk<SIZE; ++pk)
 	{
+		const t_real qz = qvec[2] + t_real(pk) - t_real(ORDER);
+		const t_real qxy2 = qvec[0]*qvec[0] + qvec[1]*qvec[1];
+		const t_real q2 = qxy2 + qz*qz;
+
 		// M-cross matrix
-		if(pos > 0)
+		Mx(3*pk + 0, 3*pk + 0) = -imag*Brel;
+		Mx(3*pk + 1, 3*pk + 1) = imag*Brel;
+
+		if(pk > 0)
 		{
-			Mx(3*pos + 2, 3*(pos-1) + 0) = imag*Brel2;
-			Mx(3*pos + 1, 3*(pos-1) + 2) = -imag*Brel2;
+			Mx(3*pk + 2, 3*(pk-1) + 0) = imag*Brel2;
+			Mx(3*pk + 1, 3*(pk-1) + 2) = -imag*Brel2;
 		}
 
-		Mx(3*pos + 0, 3*pos + 0) = -imag*Brel;
-		Mx(3*pos + 1, 3*pos + 1) = imag*Brel;
-
-		if(pos < SIZE-1)
+		if(pk < SIZE-1)
 		{
-			Mx(3*pos + 0, 3*(pos+1) + 2) = imag*Brel2;
-			Mx(3*pos + 2, 3*(pos+1) + 1) = -imag*Brel2;
+			Mx(3*pk + 0, 3*(pk+1) + 2) = imag*Brel2;
+			Mx(3*pk + 2, 3*(pk+1) + 1) = -imag*Brel2;
 		}
 
 		// fluctuation matrix
-		t_real qz = qvec[2] - t_real(ORDER) + t_real(pos);
-		const t_real q2 = qvec[0]*qvec[0] + qvec[1]*qvec[1] + qz*qz;
+		auto get_dip = [this](t_real q, t_real q_sq) -> t_real
+		{
+			if(tl2::float_equal<t_real>(q_sq, 0., m_eps))
+				return 0.;
+			return g_chi<t_real>/q_sq * q;
+		};
 
-		fluct(3*pos + 0, 3*pos + 0) = (g_chi<t_real>*(qvec[0]*qvec[0] + qvec[1]*qvec[1]) + 2.*q2*(2.*_c1*qz + q2 + _c2*q2*q2 + _c4)) / (2.*q2);
-		fluct(3*pos + 0, 3*pos + 1) = (g_chi<t_real>*(qvec[0] - imag*qvec[1])*(qvec[0] - imag*qvec[1])) / (2.*q2);
-		fluct(3*pos + 0, 3*pos + 2) = ((qvec[0] - imag*qvec[1]) * (g_chi<t_real>*qz - 2*_c1*q2) * std::sqrt(2)) / (2.*q2);
+		fluct(3*pk + 0, 3*pk + 0) = 0.5*get_dip(qxy2, q2) + 2.*_c1*qz + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel2*Brel2;
+		fluct(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
+		fluct(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - _c1) * std::sqrt(2) * hx;
 
-		fluct(3*pos + 1, 3*pos + 0) = std::conj(fluct(3*pos + 0, 3*pos + 1));
-		fluct(3*pos + 1, 3*pos + 1) = (g_chi<t_real>*(qvec[0]*qvec[0] + qvec[1]*qvec[1]) + 2.*q2*(-2.*_c1*qz + q2 + _c2*q2*q2 + _c4)) / (2.*q2);
-		fluct(3*pos + 1, 3*pos + 2) = ((qvec[0] + imag*qvec[1]) * (g_chi<t_real>*qz + 2.*_c1*q2) * std::sqrt(2.)) / (2.*q2);
+		fluct(3*pk + 1, 3*pk + 0) = std::conj(fluct(3*pk + 0, 3*pk + 1));
+		fluct(3*pk + 1, 3*pk + 1) = fluct(3*pk + 0, 3*pk + 0) - 4.*_c1*qz;
+		fluct(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + _c1) * std::sqrt(2.) * std::conj(hx);
 
-		fluct(3*pos + 2, 3*pos + 0) = std::conj(fluct(3*pos + 0, 3*pos + 2));
-		fluct(3*pos + 2, 3*pos + 1) = std::conj(fluct(3*pos + 1, 3*pos + 2));
-		fluct(3*pos + 2, 3*pos + 2) = (2.*g_chi<t_real>*qz*qz + 2.*q2*(q2 + _c2*q2*q2 + _c5)) / (2.*q2);
+		fluct(3*pk + 2, 3*pk + 0) = std::conj(fluct(3*pk + 0, 3*pk + 2));
+		fluct(3*pk + 2, 3*pk + 1) = std::conj(fluct(3*pk + 1, 3*pk + 2));
+		fluct(3*pk + 2, 3*pk + 2) = get_dip(qz*qz, q2) + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel*Brel;
 
-		if(pos > 1)
-			fluct(3*pos + 1, 3*(pos-2) + 0) = Brel2 * Brel2 * 88./3.;
-		if(pos > 0)
-			fluct(3*pos + 1, 3*(pos-1) + 2) = fluct(3*pos + 2, 3*(pos-1) + 0) = Brel * Brel2 * 88./3.;
-		if(pos < SIZE-1)
-			fluct(3*pos + 0, 3*(pos+1) + 2) = fluct(3*pos + 2, 3*(pos+1) + 1) = Brel * Brel2 * 88./3.;
-		if(pos < SIZE-2)
-			fluct(3*pos + 0, 3*(pos+2) + 1) = Brel2 * Brel2 * 88./3.;
+		if(pk > 1)
+			fluct(3*pk + 1, 3*(pk-2) + 0) = 88./3.*Brel2*Brel2;
+		if(pk > 0)
+			fluct(3*pk + 1, 3*(pk-1) + 2) = fluct(3*pk + 2, 3*(pk-1) + 0) = 88./3.*Brel*Brel2;
+		if(pk < SIZE-1)
+			fluct(3*pk + 0, 3*(pk+1) + 2) = fluct(3*pk + 2, 3*(pk+1) + 1) = 88./3.*Brel*Brel2;
+		if(pk < SIZE-2)
+			fluct(3*pk + 0, 3*(pk+2) + 1) = 88./3.*Brel2*Brel2;
 	}
 
 	// energies and weights
