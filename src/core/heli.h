@@ -88,7 +88,7 @@ public:
 		if(exp)
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, !exp);
+			//m_Bc2 = get_bc2(m_T, !exp);
 		}
 		else
 		{
@@ -123,8 +123,8 @@ public:
 private:
 	t_real m_eps = 1e-5;
 	t_real m_B = 0.2, m_B_theo = 25.;
-	t_real m_T = 20., m_T_theo = -1000.;
-	t_real m_Bc2 = 0.6, m_Bc2_theo = 45.;
+	t_real m_T = 28.5, m_T_theo = -1000.;
+	t_real m_Bc2 = 0.3, m_Bc2_theo = 45.;
 
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<int> m_idx2[3], m_idx3[4];

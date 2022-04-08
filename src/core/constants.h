@@ -85,6 +85,7 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 	}
 	else
 	{
+		// Warning: For our sample, these values are not fully accurate at high T.
 		t_real p1[] = { 5.63617388e-01, 5.52570801e-02,  2.20736277e+01, 7.39287474e-02, -5.32767610e-04 };
 		t_real p2[] = { 0.07075453, -0.08217821, 30.00000534, 9.19469462,  0.38951838 };
 
