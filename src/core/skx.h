@@ -34,6 +34,7 @@ template<class t_real=double, class t_cplx = std::complex<t_real>, int ORDER=4>
 class Skx : public MagSystem<t_real, t_cplx, (ORDER+1)*ORDER/2>, public MagDynamics<t_real, t_cplx>
 {
 public:
+	static constexpr int SIZE = 2*ORDER + 1; // size of [-ORDER, ORDER] range
 	static constexpr int ORDER_FOURIER = (ORDER+1)*ORDER/2;
 
 	using t_mat = ublas::matrix<t_real>;
@@ -113,9 +114,7 @@ public:
 
 
 protected:
-	std::tuple<t_mat_cplx, t_mat_cplx> GetMCrossMFluct(
-		int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql) const;
-		std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
 
 

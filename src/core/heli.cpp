@@ -23,19 +23,7 @@
 #include <iostream>
 
 #include "heli.h"
-
-
-// instantiation
-#ifdef DEF_HELI_ORDER
-	#pragma message("Heli Order: " __TL2_STRCONV(DEF_HELI_ORDER))
-	template class Heli<double, std::complex<double>, DEF_HELI_ORDER>;
-
-	#ifdef __HACK_FULL_INST__
-		template Heli<double, std::complex<double>, DEF_HELI_ORDER>::Heli();
-		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetG(double, double, double);
-		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetCoords(double, double, double, double, double, double);
-	#endif
-#endif
+#include "heli_inst.cxx"
 
 
 /**
@@ -45,9 +33,9 @@ template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
 {
 	for(int i=0; i<2; ++i)
-		m_idx2[i].reserve(ORDER * (ORDER*2+1));
+		m_idx2[i].reserve(SIZE * ORDER);
 	for(int i=0; i<3; ++i)
-		m_idx3[i].reserve(ORDER * (ORDER*2+1) * (ORDER*2+1));
+		m_idx3[i].reserve(SIZE * SIZE * ORDER);
 
 	for(int k=-ORDER; k<=ORDER; ++k)
 	{
@@ -181,7 +169,6 @@ template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
 {
-	constexpr int SIZE = 2*ORDER+1;
 	constexpr t_cplx imag = t_cplx(0, 1);
 	static const std::vector<t_real> empty;
 
@@ -221,7 +208,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	t_mat_cplx Mx = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 
-	for(int pos=0; pos<int(SIZE); ++pos)
+	for(int pos=0; pos<SIZE; ++pos)
 	{
 		// M-cross matrix
 		if(pos > 0)
@@ -233,7 +220,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		Mx(3*pos + 0, 3*pos + 0) = -imag*Brel;
 		Mx(3*pos + 1, 3*pos + 1) = imag*Brel;
 
-		if(pos < int(SIZE)-1)
+		if(pos < SIZE-1)
 		{
 			Mx(3*pos + 0, 3*(pos+1) + 2) = imag*Brel2;
 			Mx(3*pos + 2, 3*(pos+1) + 1) = -imag*Brel2;
@@ -259,9 +246,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 			fluct(3*pos + 1, 3*(pos-2) + 0) = Brel2 * Brel2 * 88./3.;
 		if(pos > 0)
 			fluct(3*pos + 1, 3*(pos-1) + 2) = fluct(3*pos + 2, 3*(pos-1) + 0) = Brel * Brel2 * 88./3.;
-		if(pos < int(SIZE)-1)
+		if(pos < SIZE-1)
 			fluct(3*pos + 0, 3*(pos+1) + 2) = fluct(3*pos + 2, 3*(pos+1) + 1) = Brel * Brel2 * 88./3.;
-		if(pos < int(SIZE)-2)
+		if(pos < SIZE-2)
 			fluct(3*pos + 0, 3*(pos+2) + 1) = Brel2 * Brel2 * 88./3.;
 	}
 

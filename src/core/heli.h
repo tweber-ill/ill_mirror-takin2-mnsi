@@ -43,7 +43,9 @@ template<class t_real=double, class t_cplx = std::complex<t_real>, int ORDER=4>
 class Heli : public MagSystem<t_real, t_cplx, ORDER>, public MagDynamics<t_real, t_cplx>
 {
 public:
+	static constexpr int SIZE = 2*ORDER+1; // size of [-ORDER, ORDER] range
 	static constexpr int ORDER_FOURIER = ORDER;
+
 	using t_mat = ublas::matrix<t_real>;
 	using t_vec = ublas::vector<t_real>;
 	using t_quat = boost::math::quaternion<t_real>;

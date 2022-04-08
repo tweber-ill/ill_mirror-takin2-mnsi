@@ -12,16 +12,7 @@
  */
 
 #include "fp.h"
-
-
-// instantiation
-template class FP<double, std::complex<double>>;
-#ifdef __HACK_FULL_INST__
-	template FP<double, std::complex<double>>::FP();
-	template void FP<double, std::complex<double>>::SetG(double, double, double);
-	template void FP<double, std::complex<double>>::SetCoords(double, double, double, double, double, double);
-#endif
-
+#include "fp_inst.cxx"
 
 
 template<class t_real, class t_cplx>

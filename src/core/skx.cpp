@@ -20,19 +20,7 @@
 #include <iostream>
 
 #include "skx.h"
-
-
-// instantiation
-#ifdef DEF_SKX_ORDER
-	#pragma message("Skx Order: " __TL2_STRCONV(DEF_SKX_ORDER))
-	template class Skx<double, std::complex<double>, DEF_SKX_ORDER>;
-
-	#ifdef __HACK_FULL_INST__
-		template Skx<double, std::complex<double>, DEF_SKX_ORDER>::Skx();
-		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetG(double, double, double);
-		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(double, double, double, double, double, double);
-	#endif
-#endif
+#include "skx_inst.cxx"
 
 
 /**
@@ -43,9 +31,9 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 {
 	tl2::inverse(m_Bmat, m_Binv); // xtal B matrix
 
-	m_allpeaks_rlu.reserve((2*ORDER+1) * (2*ORDER+1));
-	m_peaks60rlu.reserve((ORDER+1) * ORDER);
-	m_peaks60lab.reserve((ORDER+1) * ORDER);
+	m_allpeaks_rlu.reserve(SIZE * SIZE);
+	m_peaks60rlu.reserve(SIZE * SIZE / 6);
+	m_peaks60lab.reserve(SIZE * SIZE / 6);
 
 	for(int h=-ORDER; h<=ORDER; ++h)
 	{
@@ -237,35 +225,34 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 		m_fourier.pop_back();
 
 	// generate full fourier coefficients
-	m_M = tl2::make_mat<ublas::matrix<t_vec_cplx>>(
-		2*ORDER+1, 2*ORDER+1, tl2::make_vec<t_vec_cplx>({0, 0, 0}));
+	m_M = tl2::make_mat<ublas::matrix<t_vec_cplx>>(SIZE, SIZE, tl2::make_vec<t_vec_cplx>({0, 0, 0}));
 	m_M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
 	t_mat rotLab = tl2::unit_m<t_mat>(2);
 	const t_mat rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
 
-	for(int ipk=0; ipk<6; ++ipk)
+	for(int rot_idx=0; rot_idx<6; ++rot_idx)
 	{
 		rotLab = tl2::prod_mm(rotLab, rot60);
 		t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
 
-		for(std::size_t ihx=0; ihx<m_peaks60rlu.size(); ++ihx)
+		for(std::size_t peak_idx=0; peak_idx<m_peaks60rlu.size(); ++peak_idx)
 		{
-			const t_vec &vec = m_peaks60rlu[ihx];
-			t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
+			const t_vec &vec = m_peaks60rlu[peak_idx];
+			const t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
 			const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
 
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>({ 0., 0. });
 			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
 			{
-				fourier[0] = m_peaks60lab[ihx][1] * m_fourier[ihx+1][1];
-				fourier[1] = m_peaks60lab[ihx][0] * m_fourier[ihx+1][0];
+				fourier[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
+				fourier[1] = m_peaks60lab[peak_idx][0] * m_fourier[peak_idx+1][0];
 				fourier = tl2::prod_mv(rotLab, fourier);
 			}
 
 			fourier.resize(3, true);
-			fourier[2] = m_fourier[ihx+1][2];
+			fourier[2] = m_fourier[peak_idx+1][2];
 
 			get_comp(m_M, hk[0], hk[1]) = fourier;
 		}
@@ -274,15 +261,24 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 
 /**
- * cross-product and fluctuation matrices
+ * energies and spectral weights
  */
 template<class t_real, class t_cplx, int ORDER>
-std::tuple<typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx, typename Skx<t_real, t_cplx, ORDER>::t_mat_cplx>
-Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
-	int Gh, int Gk, t_real qh, t_real qk, t_real ql) const
+std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
+	int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
+	t_real minE, t_real maxE) const
 {
-	constexpr int SIZE = 2*ORDER + 1;
-	const int MAXORDER = ORDER + std::max(std::abs(Gh), std::abs(Gk));
+	if(tl2::float_equal<t_real>(qh, 0., m_eps) &&
+		tl2::float_equal<t_real>(qk, 0., m_eps) &&
+		tl2::float_equal<t_real>(ql, 0., m_eps))
+	{
+		qh += m_eps; qk += m_eps; ql += m_eps;
+	}
+
+	ql = -ql;
+
+	const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
 	const int MAXSIZE = 2*MAXORDER + 1;
 
 	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
@@ -292,12 +288,11 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 
 	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
 	{
-		const t_vec_cplx& vecM = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
-		t_mat_cplx skew = tl2::skew<t_mat_cplx>(vecM);
-
 		get_comp(*Mx, SIZE,
 			m_idx2[0][i].first, m_idx2[0][i].second,
-			m_idx2[1][i].first, m_idx2[1][i].second) = skew;
+			m_idx2[1][i].first, m_idx2[1][i].second) =
+				tl2::skew<t_mat_cplx>(
+					get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second));
 	}
 
 	// fluctuation matrix
@@ -353,7 +348,7 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
 	}
 
-	auto mk_2dim = [MAXSIZE, MAXORDER, Gh, Gk](const decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [MAXSIZE, MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
 		std::vector<int> pks1(MAXSIZE);
 		std::iota(pks1.begin(), pks1.begin()+MAXORDER+1, 0);       // 0, 1, ..., MAXORDER
@@ -377,8 +372,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 			{
 				const t_mat_cplx& comp = get_flat_comp(
 					arr, SIZE, MAXSIZE, ORDER,
-					pks[idx1].first + Gh, pks[idx1].second + Gk,
-					pks[idx2].first + Gh, pks[idx2].second + Gk);
+					pks[idx1].first + Ghmag, pks[idx1].second + Gkmag,
+					pks[idx2].first + Ghmag, pks[idx2].second + Gkmag);
 
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
@@ -387,30 +382,8 @@ Skx<t_real, t_cplx, ORDER>::GetMCrossMFluct(
 		return mat;
 	};
 
-	return std::make_tuple(mk_2dim(*Mx), mk_2dim(*Fluc));
-}
-
-
-/**
- * energies and spectral weights
- */
-template<class t_real, class t_cplx, int ORDER>
-std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
-	int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
-	t_real minE, t_real maxE) const
-{
-	if(tl2::float_equal<t_real>(qh, 0., m_eps) &&
-		tl2::float_equal<t_real>(qk, 0., m_eps) &&
-		tl2::float_equal<t_real>(ql, 0., m_eps))
-	{
-		qh += m_eps; qk += m_eps; ql += m_eps;
-	}
-
-	ql = -ql;
-
-	t_mat_cplx Mx2d, Fluc2d;
-	std::tie(Mx2d, Fluc2d) = GetMCrossMFluct(Ghmag, Gkmag, qh, qk, ql);
+	t_mat_cplx Mx2d = mk_2dim(*Mx);
+	t_mat_cplx Fluc2d = mk_2dim(*Fluc);
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
@@ -423,8 +396,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(
 
 
 /**
- * rotates field and pinning to internal conventions
- * ([001] and [100], respectively])
+ * rotates field and pinning to internal conventions ([001] and [100], respectively])
  */
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetCoords(
