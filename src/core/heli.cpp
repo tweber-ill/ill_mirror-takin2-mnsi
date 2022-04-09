@@ -44,7 +44,7 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 			for(int i=1; i<=ORDER; ++i)
 			{
 				// unrolled indices for three loops
-				int l = -i-j-k;
+				int l = - i - j - k;
 				if(std::abs(l) <= ORDER)
 				{
 					m_idx3[0].push_back(i);
@@ -54,7 +54,7 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 				}
 
 				// unrolled indices for two loops
-				int m = -i-j;
+				int m = - i - j;
 				if(k == 0 && std::abs(m) <= ORDER)
 				{
 					m_idx2[0].push_back(i);
@@ -73,8 +73,7 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
 {
-	const auto& m = m_fourier;
-	const t_vec_cplx& m0 = m[0];
+	const t_vec_cplx& m0 = m_fourier[0];
 	const auto m0_sq = tl2::inner(m0, m0);
 
 	// dipolar interaction
@@ -89,7 +88,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 	for(std::size_t i=1; i<=ORDER; ++i)
 	{
-		const t_vec_cplx& mi = m[i];
+		const t_vec_cplx& mi = m_fourier[i];
 		t_vec_cplx mj = tl2::conjugate_vec(mi);
 		const auto m_sq = tl2::inner(mi, mj);
 
@@ -116,18 +115,18 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	// phi^4
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(m, m_idx2[0][i]);
-		const auto& m2 = get_comp(m, m_idx2[1][i]);
-		const auto& m3 = get_comp(m, m_idx2[2][i]);
+		const auto& m1 = get_comp(m_fourier, m_idx2[0][i]);
+		const auto& m2 = get_comp(m_fourier, m_idx2[1][i]);
+		const auto& m3 = get_comp(m_fourier, m_idx2[2][i]);
 
 		cF += 2. * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(m, m_idx3[0][i]);
-		const auto& m2 = get_comp(m, m_idx3[1][i]);
-		const auto& m3 = get_comp(m, m_idx3[2][i]);
-		const auto& m4 = get_comp(m, m_idx3[3][i]);
+		const auto& m1 = get_comp(m_fourier, m_idx3[0][i]);
+		const auto& m2 = get_comp(m_fourier, m_idx3[1][i]);
+		const auto& m3 = get_comp(m_fourier, m_idx3[2][i]);
+		const auto& m4 = get_comp(m_fourier, m_idx3[3][i]);
 
 		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}

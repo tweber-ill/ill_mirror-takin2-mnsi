@@ -32,8 +32,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	tl2::inverse(m_Bmat, m_Binv); // xtal B matrix
 
 	m_allpeaks_rlu.reserve(SIZE * SIZE);
-	m_peaks60rlu.reserve(SIZE * SIZE / 6);
-	m_peaks60lab.reserve(SIZE * SIZE / 6);
+	m_peaks60rlu.reserve(ORDER_FOURIER);
+	m_peaks60lab.reserve(ORDER_FOURIER);
 
 	for(int h=-ORDER; h<=ORDER; ++h)
 	{
@@ -66,13 +66,13 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 	for(std::size_t k=0; k<m_allpeaks_rlu.size(); ++k)
 	{
-		int pk_k_h = int(std::round(m_allpeaks_rlu[k][0]));
-		int pk_k_k = int(std::round(m_allpeaks_rlu[k][1]));
+		int pk_k_h = lattidx(m_allpeaks_rlu[k][0]);
+		int pk_k_k = lattidx(m_allpeaks_rlu[k][1]);
 
 		for(std::size_t j=0; j<m_allpeaks_rlu.size(); ++j)
 		{
-			int pk_j_h = int(std::round(m_allpeaks_rlu[j][0]));
-			int pk_j_k = int(std::round(m_allpeaks_rlu[j][1]));
+			int pk_j_h = lattidx(m_allpeaks_rlu[j][0]);
+			int pk_j_k = lattidx(m_allpeaks_rlu[j][1]);
 
 			// unrolled indices for two loops
 			int l_h2 = pk_j_h - pk_k_h;
@@ -88,8 +88,8 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			// unrolled indices for three loops
 			for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
 			{
-				int pk_i_h = int(std::round(m_allpeaks_rlu[i][0]));
-				int pk_i_k = int(std::round(m_allpeaks_rlu[i][1]));
+				int pk_i_h = lattidx(m_allpeaks_rlu[i][0]);
+				int pk_i_k = lattidx(m_allpeaks_rlu[i][1]);
 
 				int l_h3 = pk_i_h - pk_j_h - pk_k_h;
 				int l_k3 = pk_i_k - pk_j_k - pk_k_k;
@@ -143,7 +143,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	const t_real mult = 2.;   // 2 * top 180 degree peaks
 	for(const t_vec& q_rlu : m_allpeaks_rlu)
 	{
-		const int hk[2] = {int(std::round(q_rlu[0])), int(std::round(q_rlu[1]))};
+		const int hk[2] = { lattidx(q_rlu[0]), lattidx(q_rlu[1]) };
 
 		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
 		const t_real q_sq = tl2::inner(q, q);
@@ -235,13 +235,12 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	for(int rot_idx=0; rot_idx<6; ++rot_idx)
 	{
 		rotLab = tl2::prod_mm(rotLab, rot60);
-		t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
+		const t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
 
 		for(std::size_t peak_idx=0; peak_idx<m_peaks60rlu.size(); ++peak_idx)
 		{
-			const t_vec &vec = m_peaks60rlu[peak_idx];
-			const t_vec pk_rlu = tl2::prod_mv(rotRlu, vec);
-			const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
+			const t_vec pk_rlu = tl2::prod_mv(rotRlu, m_peaks60rlu[peak_idx]);
+			const int hk[2] = { lattidx(pk_rlu[0]), lattidx(pk_rlu[1]) };
 
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>({ 0., 0. });
 			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
@@ -333,7 +332,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 			}
 		}
 
-		const int hk[2] = {int(std::round(pk_rlu[0])), int(std::round(pk_rlu[1]))};
+		const int hk[2] = { lattidx(pk_rlu[0]), lattidx(pk_rlu[1]) };
 		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
 	}
 
@@ -343,16 +342,15 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 
 	auto mk_2dim = [MAXSIZE, MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
-		std::vector<int> pks1(MAXSIZE);
-		std::iota(pks1.begin(), pks1.begin()+MAXORDER+1, 0);       // 0, 1, ..., MAXORDER
-		std::iota(pks1.begin()+MAXORDER+1, pks1.end(), -MAXORDER); // -MAXORDER, -MAXORDER+1, ..., -1
-
 		std::vector<std::pair<int, int>> pks;
 		pks.reserve(MAXSIZE*MAXSIZE);
-		for(int k : pks1)
+		for(int k_idx=0; k_idx<MAXSIZE; ++k_idx)
 		{
-			for(int h : pks1)
+			// lattice index sequence: 0, 1, ..., MAXORDER, -MAXORDER, -MAXORDER+1, ..., -1
+			int k = (k_idx <= MAXORDER) ? k_idx : k_idx-2*MAXORDER-1;
+			for(int h_idx=0; h_idx<MAXSIZE; ++h_idx)
 			{
+				int h = (h_idx <= MAXORDER) ? h_idx : h_idx-2*MAXORDER-1;
 				if(std::abs(h-k) <= MAXORDER)
 					pks.emplace_back(std::make_pair(h, k));
 			}

@@ -34,8 +34,8 @@ template<class t_real=double, class t_cplx = std::complex<t_real>, int ORDER=4>
 class Skx : public MagSystem<t_real, t_cplx, (ORDER+1)*ORDER/2>, public MagDynamics<t_real, t_cplx>
 {
 public:
-	static constexpr int SIZE = 2*ORDER + 1; // size of [-ORDER, ORDER] range
-	static constexpr int ORDER_FOURIER = (ORDER+1)*ORDER/2;
+	static constexpr int SIZE = 2*ORDER + 1;                // size of [-ORDER, ORDER] range
+	static constexpr int ORDER_FOURIER = (ORDER+1)*ORDER/2; // number of peaks in 60 degree segment
 
 	using t_mat = ublas::matrix<t_real>;
 	using t_vec = ublas::vector<t_real>;

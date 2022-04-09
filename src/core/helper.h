@@ -126,7 +126,7 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 
 template<class t_arr>
 const typename t_arr::value_type& get_flat_comp(
-	const t_arr& arr, int ORGSIZE, int MAXSIZE, int ORDER,
+	const t_arr& arr, int ARRSIZE, int MAXSIZE, int ORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
 	// negative indices
@@ -136,26 +136,26 @@ const typename t_arr::value_type& get_flat_comp(
 	if(idx4 < 0) idx4 = MAXSIZE + idx4;
 
 	static const typename t_arr::value_type zero{};
-	const int diffsize = MAXSIZE-ORGSIZE;
+	const int diffsize = MAXSIZE-ARRSIZE;
 
 	if(idx1 >= ORDER && (idx1 < MAXSIZE-ORDER-1 || idx1 < diffsize)) return zero;
 	if(idx2 >= ORDER && (idx2 < MAXSIZE-ORDER-1 || idx2 < diffsize)) return zero;
 	if(idx3 >= ORDER && (idx3 < MAXSIZE-ORDER-1 || idx3 < diffsize)) return zero;
 	if(idx4 >= ORDER && (idx4 < MAXSIZE-ORDER-1 || idx4 < diffsize)) return zero;
 
-	if(idx1 < ORDER && idx1 >= ORGSIZE) return zero;
-	if(idx2 < ORDER && idx2 >= ORGSIZE) return zero;
-	if(idx3 < ORDER && idx3 >= ORGSIZE) return zero;
-	if(idx4 < ORDER && idx4 >= ORGSIZE) return zero;
+	if(idx1 < ORDER && idx1 >= ARRSIZE) return zero;
+	if(idx2 < ORDER && idx2 >= ARRSIZE) return zero;
+	if(idx3 < ORDER && idx3 >= ARRSIZE) return zero;
+	if(idx4 < ORDER && idx4 >= ARRSIZE) return zero;
 
 	if(idx1 >= ORDER) idx1 -= diffsize;
 	if(idx2 >= ORDER) idx2 -= diffsize;
 	if(idx3 >= ORDER) idx3 -= diffsize;
 	if(idx4 >= ORDER) idx4 -= diffsize;
 
-	return arr[idx1*ORGSIZE*ORGSIZE*ORGSIZE +
-		idx2*ORGSIZE*ORGSIZE +
-		idx3*ORGSIZE +
+	return arr[idx1*ARRSIZE*ARRSIZE*ARRSIZE +
+		idx2*ARRSIZE*ARRSIZE +
+		idx3*ARRSIZE +
 		idx4];
 }
 
@@ -239,7 +239,7 @@ t_mat get_chiralpol(int which)
 
 
 /**
- * calculate energies and weights from Landau-Lifshitz Mcross and fluctuation matrices
+ * calculate energies and weights from Landau-Lifshitz M-cross and fluctuation matrices
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -356,6 +356,16 @@ void avoid_G(t_real& qh, t_real& qk, t_real& ql, t_real eps)
 		qk += eps;
 		ql += eps;
 	}
+}
+
+
+/**
+ * get the next lattice miller index
+ */
+template<class t_int = int, class t_real = double>
+t_int lattidx(t_real h)
+{
+	return static_cast<t_int>(std::round(h));
 }
 
 
