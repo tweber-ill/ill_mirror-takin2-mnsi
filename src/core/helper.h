@@ -62,6 +62,20 @@ get_comp(t_mat &mat, int idx1, int idx2)
 
 
 /**
+ * 2-dim tensor indexing including negative values
+ */
+template<class t_arr>
+typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
+	int idx1, int idx2)
+{
+	if(idx1 < 0) idx1 = SIZE + idx1;
+	if(idx2 < 0) idx2 = SIZE + idx2;
+
+	return arr[idx1*SIZE + idx2];
+}
+
+
+/**
  * 4-dim tensor indexing including negative values
  */
 template<class t_arr>

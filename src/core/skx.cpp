@@ -268,8 +268,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 	t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
 {
 	avoid_G(qh, qk, ql, m_eps);
-	ql = -ql;
-	const t_vec q_lab = tl2::prod_mv(m_Bmat, tl2::make_vec<t_vec>({ qh, qk }));
+	const t_vec q_lab = tl2::make_vec<t_vec>({ qh, qk, -ql });
 
 	// M-cross tensor
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
@@ -304,10 +303,9 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 
 	for(const t_vec &pk_rlu : m_allpeaks_rlu)
 	{
-		const t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-		t_vec Q = pk_lab + q_lab;
-		Q.resize(3, true);
-		Q[2] = ql;
+		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
+		pk_lab.resize(3, true); pk_lab[2] = 0.;
+		const t_vec Q = pk_lab + q_lab;
 		const t_real Q_sq = tl2::inner(Q, Q);
 
 		auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
@@ -427,7 +425,7 @@ template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real maxE) const
 {
-	t_vec Qrlu = tl2::make_vec<t_vec>( {h, k, l} );
+	t_vec Qrlu = tl2::make_vec<t_vec>({ h, k, l });
 	t_vec qrlu = Qrlu - m_Grlu;
 	t_vec qkh = qrlu / g_kh_rlu_29K<t_real>;
 
@@ -460,5 +458,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 
 	Gmagrlu += *iterClosest;
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
-	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]), qmagrlu[0], qmagrlu[1], _l, minE, maxE);
+	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
+
+	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]), qmaglab[0], qmaglab[1], _l, minE, maxE);
 }
