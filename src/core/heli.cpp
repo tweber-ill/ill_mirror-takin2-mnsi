@@ -197,8 +197,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	const t_real Brel = m_B / m_Bc2;
 	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
 
-	t_mat_cplx Mx = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
-	t_mat_cplx fluct = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+	t_mat_cplx Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+	t_mat_cplx Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 
 	for(int pk=0; pk<SIZE; ++pk)
 	{
@@ -207,19 +207,19 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		const t_real q2 = qxy2 + qz*qz;
 
 		// M-cross matrix
-		Mx(3*pk + 0, 3*pk + 0) = -imag*Brel;
-		Mx(3*pk + 1, 3*pk + 1) = imag*Brel;
+		Mx2d(3*pk + 0, 3*pk + 0) = -imag*Brel;
+		Mx2d(3*pk + 1, 3*pk + 1) = imag*Brel;
 
 		if(pk > 0)
 		{
-			Mx(3*pk + 2, 3*(pk-1) + 0) = imag*Brel2;
-			Mx(3*pk + 1, 3*(pk-1) + 2) = -imag*Brel2;
+			Mx2d(3*pk + 2, 3*(pk-1) + 0) = imag*Brel2;
+			Mx2d(3*pk + 1, 3*(pk-1) + 2) = -imag*Brel2;
 		}
 
 		if(pk < SIZE-1)
 		{
-			Mx(3*pk + 0, 3*(pk+1) + 2) = imag*Brel2;
-			Mx(3*pk + 2, 3*(pk+1) + 1) = -imag*Brel2;
+			Mx2d(3*pk + 0, 3*(pk+1) + 2) = imag*Brel2;
+			Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*Brel2;
 		}
 
 		// fluctuation matrix
@@ -230,31 +230,31 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 			return g_chi<t_real>/q_sq * q;
 		};
 
-		fluct(3*pk + 0, 3*pk + 0) = 0.5*get_dip(qxy2, q2) + 2.*_c1*qz + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel2*Brel2;
-		fluct(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
-		fluct(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - _c1) * std::sqrt(2) * hx;
+		Fluc2d(3*pk + 0, 3*pk + 0) = 0.5*get_dip(qxy2, q2) + 2.*_c1*qz + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel2*Brel2;
+		Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
+		Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - _c1) * std::sqrt(2) * hx;
 
-		fluct(3*pk + 1, 3*pk + 0) = std::conj(fluct(3*pk + 0, 3*pk + 1));
-		fluct(3*pk + 1, 3*pk + 1) = fluct(3*pk + 0, 3*pk + 0) - 4.*_c1*qz;
-		fluct(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + _c1) * std::sqrt(2.) * std::conj(hx);
+		Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
+		Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*_c1*qz;
+		Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + _c1) * std::sqrt(2.) * std::conj(hx);
 
-		fluct(3*pk + 2, 3*pk + 0) = std::conj(fluct(3*pk + 0, 3*pk + 2));
-		fluct(3*pk + 2, 3*pk + 1) = std::conj(fluct(3*pk + 1, 3*pk + 2));
-		fluct(3*pk + 2, 3*pk + 2) = get_dip(qz*qz, q2) + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel*Brel;
+		Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
+		Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
+		Fluc2d(3*pk + 2, 3*pk + 2) = get_dip(qz*qz, q2) + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel*Brel;
 
 		if(pk > 1)
-			fluct(3*pk + 1, 3*(pk-2) + 0) = 88./3.*Brel2*Brel2;
+			Fluc2d(3*pk + 1, 3*(pk-2) + 0) = 88./3.*Brel2*Brel2;
 		if(pk > 0)
-			fluct(3*pk + 1, 3*(pk-1) + 2) = fluct(3*pk + 2, 3*(pk-1) + 0) = 88./3.*Brel*Brel2;
+			Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = 88./3.*Brel*Brel2;
 		if(pk < SIZE-1)
-			fluct(3*pk + 0, 3*(pk+1) + 2) = fluct(3*pk + 2, 3*(pk+1) + 1) = 88./3.*Brel*Brel2;
+			Fluc2d(3*pk + 0, 3*(pk+1) + 2) = Fluc2d(3*pk + 2, 3*(pk+1) + 1) = 88./3.*Brel*Brel2;
 		if(pk < SIZE-2)
-			fluct(3*pk + 0, 3*(pk+2) + 1) = 88./3.*Brel2*Brel2;
+			Fluc2d(3*pk + 0, 3*(pk+2) + 1) = 88./3.*Brel2*Brel2;
 	}
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-		Mx * g_g<t_real>, fluct,
+		Mx2d * g_g<t_real>, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
 		g_muB<t_real> * m_Bc2, g_g<t_real>,
 		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
@@ -308,8 +308,10 @@ template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real maxE) const
 {
-	t_vec Qvec = tl2::make_vec<t_vec>({ h, k, l });
-	t_vec qvec = tl2::quat_vec_prod(m_rotCoord, Qvec) - tl2::quat_vec_prod(m_rotCoord, m_Grlu);
-	qvec /= g_kh_rlu<t_real>(m_T);
-	return GetSpecWeights(qvec[0], qvec[1], qvec[2], minE, maxE);
+	t_vec Qrlu = tl2::make_vec<t_vec>({ h, k, l });
+	t_vec qrlu = Qrlu - m_Grlu;
+	t_vec qkh = qrlu / g_kh_rlu<t_real>(m_T);
+	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
+
+	return GetSpecWeights(qkh[0], qkh[1], qkh[2], minE, maxE);
 }
