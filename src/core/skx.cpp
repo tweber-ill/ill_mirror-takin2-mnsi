@@ -69,9 +69,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			continue;
 
 		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-		t_real pk_len = tl2::veclen(pk_lab);
-		if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
-			pk_lab /= pk_len;
+		pk_lab /= tl2::veclen(pk_lab);
 
 		m_peaks60rlu.emplace_back(std::move(pk_rlu));
 		m_peaks60lab.emplace_back(std::move(pk_lab));
