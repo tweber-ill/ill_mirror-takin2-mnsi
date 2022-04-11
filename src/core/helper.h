@@ -34,7 +34,7 @@ std::tuple<T, T, T> split_vec3d(const ublas::vector<T>& vec)
  * index sequence including negative indices: 0, 1, ..., ORDER, -ORDER, -ORDER+1, ..., -1
  */
 template<class t_int = int>
-int abs_to_rel_idx(int h_idx, int ORDER)
+t_int abs_to_rel_idx(t_int h_idx, t_int ORDER)
 {
 	return (h_idx <= ORDER) ? h_idx : h_idx-2*ORDER-1;
 }
@@ -44,7 +44,7 @@ int abs_to_rel_idx(int h_idx, int ORDER)
  * array indexing including negative indices
  */
 template<class t_int = int>
-int rel_to_abs_idx(int h, int ORDER)
+t_int rel_to_abs_idx(t_int h, t_int ORDER)
 {
 	return (h >= 0) ? h : ORDER + h;
 }

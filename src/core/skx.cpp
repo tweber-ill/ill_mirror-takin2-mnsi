@@ -32,12 +32,12 @@ static std::vector<t_vec> gen_peaks(const int ORDER)
 	std::vector<t_vec> pks;
 	pks.reserve(SIZE*SIZE);
 
-	for(int k_idx=0; k_idx<SIZE; ++k_idx)
+	for(int h_idx=0; h_idx<SIZE; ++h_idx)
 	{
-		int k = abs_to_rel_idx(k_idx, ORDER);
-		for(int h_idx=0; h_idx<SIZE; ++h_idx)
+		int h = abs_to_rel_idx(h_idx, ORDER);
+		for(int k_idx=0; k_idx<SIZE; ++k_idx)
 		{
-			int h = abs_to_rel_idx(h_idx, ORDER);
+			int k = abs_to_rel_idx(k_idx, ORDER);
 			if(std::abs(h-k) > ORDER)
 				continue;
 			pks.emplace_back(tl2::make_vec<t_vec>(
@@ -63,19 +63,18 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	// peaks in 60 degree segment
 	m_peaks60rlu.reserve(ORDER_FOURIER);
 	m_peaks60lab.reserve(ORDER_FOURIER);
-	for(int h=1; h<=ORDER; ++h)
+	for(const t_vec& pk_rlu : m_allpeaks_rlu)
 	{
-		for(int k=0; k<h; ++k)
-		{
-			t_vec pk_rlu = tl2::make_vec<t_vec>({ t_real(h), t_real(k) });
-			t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-			t_real pk_len = tl2::veclen(pk_lab);
-			if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
-				pk_lab /= pk_len;
+		if(!(pk_rlu[0] > pk_rlu[1] && pk_rlu[1] >= 0))
+			continue;
 
-			m_peaks60rlu.emplace_back(std::move(pk_rlu));
-			m_peaks60lab.emplace_back(std::move(pk_lab));
-		}
+		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
+		t_real pk_len = tl2::veclen(pk_lab);
+		if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
+			pk_lab /= pk_len;
+
+		m_peaks60rlu.emplace_back(std::move(pk_rlu));
+		m_peaks60lab.emplace_back(std::move(pk_lab));
 	}
 
 	for(int i=0; i<2; ++i)
