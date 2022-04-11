@@ -171,22 +171,23 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	constexpr t_cplx imag = t_cplx(0, 1);
 
 	avoid_G(qh, qk, ql, m_eps);
-	const t_vec qvec = tl2::make_vec<t_vec>({ qh, qk, -ql });
-	const t_cplx hx = qvec[0] - imag*qvec[1];
+	ql = -ql;
+	const t_cplx hx = qh - imag*qk;
 
 	constexpr t_real A1 = g_hoc<t_real>;
 	constexpr t_real A2 = A1*A1;
 	constexpr t_real A3 = A2*A1;
+	constexpr t_real interact = 88.;
 
-	static const t_real _c1 = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
+	static const t_real Dqmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
 		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A1 + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
-	static const t_real _c2 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
-		imag*std::pow(3.,1./6.)*(std::sqrt(3.)-imag) *
+	static const t_real Aqmin4 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
+		imag*std::pow(3., 1./6.)*(std::sqrt(3.)-imag) *
 		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.), 2.) /
 		(24.*std::pow(2., 1./3.) * A1*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
-	static const t_real _c3 = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
+	static const t_real pitch_qmin = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
 		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A1))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) -
 		A1*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) +
 		std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))) /
@@ -194,32 +195,31 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A1 - imag*std::pow(3., 1./6) *
 		(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.)))).real();
 
-	const t_real Brel = m_B / m_Bc2;
-	const t_real Brel2 = std::sqrt(0.5 - 0.5*Brel*Brel);
+	const t_real M_amp = m_B / m_Bc2;
+	const t_real heli_amp = std::sqrt(0.5 - 0.5*M_amp*M_amp);
 
 	t_mat_cplx Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 	t_mat_cplx Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 
 	for(int pk=0; pk<SIZE; ++pk)
 	{
-		const t_real qz = qvec[2] + t_real(pk) - t_real(ORDER);
-		const t_real qxy2 = qvec[0]*qvec[0] + qvec[1]*qvec[1];
-		const t_real q2 = qxy2 + qz*qz;
+		const t_real qz = ql + t_real(pk) - t_real(ORDER);
+		const t_real q2 = qh*qh + qk*qk + qz*qz;
 
 		// M-cross matrix
-		Mx2d(3*pk + 0, 3*pk + 0) = -imag*Brel;
-		Mx2d(3*pk + 1, 3*pk + 1) = imag*Brel;
+		Mx2d(3*pk + 0, 3*pk + 0) = -imag*M_amp;
+		Mx2d(3*pk + 1, 3*pk + 1) = imag*M_amp;
 
 		if(pk > 0)
 		{
-			Mx2d(3*pk + 2, 3*(pk-1) + 0) = imag*Brel2;
-			Mx2d(3*pk + 1, 3*(pk-1) + 2) = -imag*Brel2;
+			Mx2d(3*pk + 2, 3*(pk-1) + 0) = imag*heli_amp;
+			Mx2d(3*pk + 1, 3*(pk-1) + 2) = -imag*heli_amp;
 		}
 
 		if(pk < SIZE-1)
 		{
-			Mx2d(3*pk + 0, 3*(pk+1) + 2) = imag*Brel2;
-			Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*Brel2;
+			Mx2d(3*pk + 0, 3*(pk+1) + 2) = imag*heli_amp;
+			Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*heli_amp;
 		}
 
 		// fluctuation matrix
@@ -230,26 +230,28 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 			return g_chi<t_real>/q_sq * q;
 		};
 
-		Fluc2d(3*pk + 0, 3*pk + 0) = 0.5*get_dip(qxy2, q2) + 2.*_c1*qz + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel2*Brel2;
+		Fluc2d(3*pk + 0, 3*pk + 0) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*heli_amp*heli_amp
+			+ 0.5*get_dip(qh*qh + qk*qk, q2) + 2.*Dqmin*qz;
 		Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
-		Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - _c1) * std::sqrt(2) * hx;
+		Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - Dqmin) * std::sqrt(2) * hx;
 
 		Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
-		Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*_c1*qz;
-		Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + _c1) * std::sqrt(2.) * std::conj(hx);
+		Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*Dqmin*qz;
+		Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
 
 		Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
 		Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
-		Fluc2d(3*pk + 2, 3*pk + 2) = get_dip(qz*qz, q2) + q2 + _c2*q2*q2 + _c3 + 88./3.*Brel*Brel;
+		Fluc2d(3*pk + 2, 3*pk + 2) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*M_amp*M_amp
+			+ get_dip(qz*qz, q2);
 
-		if(pk > 1)
-			Fluc2d(3*pk + 1, 3*(pk-2) + 0) = 88./3.*Brel2*Brel2;
 		if(pk > 0)
-			Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = 88./3.*Brel*Brel2;
+			Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
 		if(pk < SIZE-1)
-			Fluc2d(3*pk + 0, 3*(pk+1) + 2) = Fluc2d(3*pk + 2, 3*(pk+1) + 1) = 88./3.*Brel*Brel2;
+			Fluc2d(3*pk + 2, 3*(pk+1) + 1) = Fluc2d(3*pk + 0, 3*(pk+1) + 2) = interact/3.*M_amp*heli_amp;
+		if(pk > 1)
+			Fluc2d(3*pk + 1, 3*(pk-2) + 0) = interact/3.*heli_amp*heli_amp;
 		if(pk < SIZE-2)
-			Fluc2d(3*pk + 0, 3*(pk+2) + 1) = 88./3.*Brel2*Brel2;
+			Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact/3.*heli_amp*heli_amp;
 	}
 
 	// energies and weights
