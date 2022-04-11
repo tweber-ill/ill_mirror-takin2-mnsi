@@ -31,6 +31,26 @@ std::tuple<T, T, T> split_vec3d(const ublas::vector<T>& vec)
 
 
 /**
+ * index sequence including negative indices: 0, 1, ..., ORDER, -ORDER, -ORDER+1, ..., -1
+ */
+template<class t_int = int>
+int abs_to_rel_idx(int h_idx, int ORDER)
+{
+	return (h_idx <= ORDER) ? h_idx : h_idx-2*ORDER-1;
+}
+
+
+/**
+ * array indexing including negative indices
+ */
+template<class t_int = int>
+int rel_to_abs_idx(int h, int ORDER)
+{
+	return (h >= 0) ? h : ORDER + h;
+}
+
+
+/**
  * array indexing including negative values
  */
 template<class t_arr>
@@ -39,9 +59,8 @@ std::conditional_t<std::is_const_v<t_arr>,
 	typename t_arr::value_type&>
 get_comp(t_arr &arr, int idx)
 {
-	if(idx >= 0) return arr[idx];
-
-	return arr[arr.size() + idx];
+	idx = rel_to_abs_idx(idx, static_cast<int>(arr.size()));
+	return arr[idx];
 }
 
 
@@ -54,9 +73,8 @@ std::conditional_t<std::is_const_v<t_mat>,
 	typename t_mat::value_type&>
 get_comp(t_mat &mat, int idx1, int idx2)
 {
-	if(idx1 < 0) idx1 = int(mat.size1()) + idx1;
-	if(idx2 < 0) idx2 = int(mat.size2()) + idx2;
-
+	idx1 = rel_to_abs_idx(idx1, static_cast<int>(mat.size1()));
+	idx2 = rel_to_abs_idx(idx2, static_cast<int>(mat.size2()));
 	return mat(idx1, idx2);
 }
 
@@ -68,8 +86,8 @@ template<class t_arr>
 typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 	int idx1, int idx2)
 {
-	if(idx1 < 0) idx1 = SIZE + idx1;
-	if(idx2 < 0) idx2 = SIZE + idx2;
+	idx1 = rel_to_abs_idx(idx1, SIZE);
+	idx2 = rel_to_abs_idx(idx2, SIZE);
 
 	return arr[idx1*SIZE + idx2];
 }
@@ -82,10 +100,10 @@ template<class t_arr>
 typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 	int idx1, int idx2, int idx3, int idx4)
 {
-	if(idx1 < 0) idx1 = SIZE + idx1;
-	if(idx2 < 0) idx2 = SIZE + idx2;
-	if(idx3 < 0) idx3 = SIZE + idx3;
-	if(idx4 < 0) idx4 = SIZE + idx4;
+	idx1 = rel_to_abs_idx(idx1, SIZE);
+	idx2 = rel_to_abs_idx(idx2, SIZE);
+	idx3 = rel_to_abs_idx(idx3, SIZE);
+	idx4 = rel_to_abs_idx(idx4, SIZE);
 
 	return arr[idx1*SIZE*SIZE*SIZE +
 		idx2*SIZE*SIZE +
@@ -101,11 +119,11 @@ template<class t_arr>
 typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 	int idx1, int idx2, int idx3, int idx4, int idx5)
 {
-	if(idx1 < 0) idx1 = SIZE + idx1;
-	if(idx2 < 0) idx2 = SIZE + idx2;
-	if(idx3 < 0) idx3 = SIZE + idx3;
-	if(idx4 < 0) idx4 = SIZE + idx4;
-	if(idx5 < 0) idx5 = SIZE + idx5;
+	idx1 = rel_to_abs_idx(idx1, SIZE);
+	idx2 = rel_to_abs_idx(idx2, SIZE);
+	idx3 = rel_to_abs_idx(idx3, SIZE);
+	idx4 = rel_to_abs_idx(idx4, SIZE);
+	idx5 = rel_to_abs_idx(idx5, SIZE);
 
 	return arr[idx1*SIZE*SIZE*SIZE*SIZE +
 		idx2*SIZE*SIZE*SIZE +
@@ -122,12 +140,12 @@ template<class t_arr>
 typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 	int idx1, int idx2, int idx3, int idx4, int idx5, int idx6)
 {
-	if(idx1 < 0) idx1 = SIZE + idx1;
-	if(idx2 < 0) idx2 = SIZE + idx2;
-	if(idx3 < 0) idx3 = SIZE + idx3;
-	if(idx4 < 0) idx4 = SIZE + idx4;
-	if(idx5 < 0) idx5 = SIZE + idx5;
-	if(idx6 < 0) idx6 = SIZE + idx6;
+	idx1 = rel_to_abs_idx(idx1, SIZE);
+	idx2 = rel_to_abs_idx(idx2, SIZE);
+	idx3 = rel_to_abs_idx(idx3, SIZE);
+	idx4 = rel_to_abs_idx(idx4, SIZE);
+	idx5 = rel_to_abs_idx(idx5, SIZE);
+	idx6 = rel_to_abs_idx(idx6, SIZE);
 
 	return arr[idx1*SIZE*SIZE*SIZE*SIZE*SIZE +
 		idx2*SIZE*SIZE*SIZE*SIZE +
@@ -140,14 +158,16 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 
 template<class t_arr>
 const typename t_arr::value_type& get_flat_comp(
-	const t_arr& arr, int ARRSIZE, int MAXSIZE, int ORDER,
+	const t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
+	const int MAXSIZE = 2*MAXORDER + 1;
+
 	// negative indices
-	if(idx1 < 0) idx1 = MAXSIZE + idx1;
-	if(idx2 < 0) idx2 = MAXSIZE + idx2;
-	if(idx3 < 0) idx3 = MAXSIZE + idx3;
-	if(idx4 < 0) idx4 = MAXSIZE + idx4;
+	idx1 = rel_to_abs_idx(idx1, MAXSIZE);
+	idx2 = rel_to_abs_idx(idx2, MAXSIZE);
+	idx3 = rel_to_abs_idx(idx3, MAXSIZE);
+	idx4 = rel_to_abs_idx(idx4, MAXSIZE);
 
 	static const typename t_arr::value_type zero{};
 	const int diffsize = MAXSIZE-ARRSIZE;

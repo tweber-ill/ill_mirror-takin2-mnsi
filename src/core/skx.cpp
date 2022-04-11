@@ -23,6 +23,32 @@
 #include "skx_inst.cxx"
 
 
+template<class t_vec>
+static std::vector<t_vec> gen_peaks(const int ORDER)
+{
+	using t_val = typename t_vec::value_type;
+
+	const int SIZE = 2*ORDER + 1;
+	std::vector<t_vec> pks;
+	pks.reserve(SIZE*SIZE);
+
+	for(int k_idx=0; k_idx<SIZE; ++k_idx)
+	{
+		int k = abs_to_rel_idx(k_idx, ORDER);
+		for(int h_idx=0; h_idx<SIZE; ++h_idx)
+		{
+			int h = abs_to_rel_idx(h_idx, ORDER);
+			if(std::abs(h-k) > ORDER)
+				continue;
+			pks.emplace_back(tl2::make_vec<t_vec>(
+				{ static_cast<t_val>(h), static_cast<t_val>(k) }));
+		}
+	}
+
+	return pks;
+}
+
+
 /**
  * constructor
  */
@@ -31,31 +57,24 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 {
 	tl2::inverse(m_Bmat, m_Binv); // xtal B matrix
 
-	m_allpeaks_rlu.reserve(SIZE * SIZE);
+	// 360 degree peaks
+	m_allpeaks_rlu = gen_peaks<t_vec>(ORDER);
+
+	// peaks in 60 degree segment
 	m_peaks60rlu.reserve(ORDER_FOURIER);
 	m_peaks60lab.reserve(ORDER_FOURIER);
-
-	for(int h=-ORDER; h<=ORDER; ++h)
+	for(int h=1; h<=ORDER; ++h)
 	{
-		for(int k=-ORDER; k<=ORDER; ++k)
+		for(int k=0; k<h; ++k)
 		{
 			t_vec pk_rlu = tl2::make_vec<t_vec>({ t_real(h), t_real(k) });
 			t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
+			t_real pk_len = tl2::veclen(pk_lab);
+			if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
+				pk_lab /= pk_len;
 
-			// all peaks
-			if(std::abs(h-k) <= t_real(ORDER))
-				m_allpeaks_rlu.push_back(pk_rlu);
-
-			// 60 degree peak segments
-			if(h>=0 && k>=0 && k<h)
-			{
-				t_real pk_len = tl2::veclen(pk_lab);
-				if(!tl2::float_equal<t_real>(pk_len, 0., m_eps))
-					pk_lab /= pk_len;
-
-				m_peaks60rlu.emplace_back(std::move(pk_rlu));
-				m_peaks60lab.emplace_back(std::move(pk_lab));
-			}
+			m_peaks60rlu.emplace_back(std::move(pk_rlu));
+			m_peaks60lab.emplace_back(std::move(pk_lab));
 		}
 	}
 
@@ -336,23 +355,10 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 
 	// M-cross and fluctuation matrix
 	const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
-	const int MAXSIZE = 2*MAXORDER + 1;
 
-	auto mk_2dim = [MAXSIZE, MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
+	auto mk_2dim = [MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
-		std::vector<std::pair<int, int>> pks;
-		pks.reserve(MAXSIZE*MAXSIZE);
-		for(int k_idx=0; k_idx<MAXSIZE; ++k_idx)
-		{
-			// lattice index sequence: 0, 1, ..., MAXORDER, -MAXORDER, -MAXORDER+1, ..., -1
-			int k = (k_idx <= MAXORDER) ? k_idx : k_idx-2*MAXORDER-1;
-			for(int h_idx=0; h_idx<MAXSIZE; ++h_idx)
-			{
-				int h = (h_idx <= MAXORDER) ? h_idx : h_idx-2*MAXORDER-1;
-				if(std::abs(h-k) <= MAXORDER)
-					pks.emplace_back(std::make_pair(h, k));
-			}
-		}
+		std::vector<t_vec_int> pks = gen_peaks<t_vec_int>(MAXORDER);
 
 		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*pks.size(), 3*pks.size());
 		for(std::size_t idx1=0; idx1<pks.size(); ++idx1)
@@ -360,9 +366,9 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 			for(std::size_t idx2=0; idx2<pks.size(); ++idx2)
 			{
 				const t_mat_cplx& comp = get_flat_comp(
-					arr, SIZE, MAXSIZE, ORDER,
-					pks[idx1].first + Ghmag, pks[idx1].second + Gkmag,
-					pks[idx2].first + Ghmag, pks[idx2].second + Gkmag);
+					arr, SIZE, ORDER, MAXORDER,
+					pks[idx1][0] + Ghmag, pks[idx1][1] + Gkmag,
+					pks[idx2][0] + Ghmag, pks[idx2][1] + Gkmag);
 
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
@@ -436,13 +442,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	t_vec Qmagrlu = tl2::prod_mv(m_Binv, qkh);
 	t_vec Gmagrlu = tl2::make_vec<t_vec>({ std::round(Qmagrlu[0]), std::round(Qmagrlu[1]) });
 
-	static const std::vector<t_vec> sats =
-	{
-		tl2::make_vec<t_vec>({0, 0}),
-		tl2::make_vec<t_vec>({0, -1}), tl2::make_vec<t_vec>({0, +1}),
-		tl2::make_vec<t_vec>({-1, 0}), tl2::make_vec<t_vec>({+1, 0}),
-		tl2::make_vec<t_vec>({-1, -1}), tl2::make_vec<t_vec>({+1, +1}),
-	};
+	const std::vector<t_vec> sats = gen_peaks<t_vec>(1);
 
 	auto iterClosest = std::min_element(sats.begin(), sats.end(),
 		[&Gmagrlu, &Qmagrlu, this](const t_vec& sat1, const t_vec& sat2) -> bool

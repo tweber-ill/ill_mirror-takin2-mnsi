@@ -42,6 +42,7 @@ public:
 	using t_quat = boost::math::quaternion<t_real>;
 	using t_mat_cplx = ublas::matrix<t_cplx>;
 	using t_vec_cplx = ublas::vector<t_cplx>;
+	using t_vec_int = ublas::vector<int>;
 
 
 public:
@@ -111,6 +112,11 @@ public:
 
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
 	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
+
+	const std::vector<t_vec>& GetPeaks60(bool rlu = true)
+	{
+		return rlu ? m_peaks60rlu : m_peaks60lab;
+	}
 
 
 protected:
