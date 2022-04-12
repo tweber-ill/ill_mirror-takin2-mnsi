@@ -23,6 +23,9 @@
 #include "skx_inst.cxx"
 
 
+/**
+ * generates skyrmion satellite peaks up to a given order
+ */
 template<class t_vec>
 static std::vector<t_vec> gen_peaks(const int ORDER)
 {
