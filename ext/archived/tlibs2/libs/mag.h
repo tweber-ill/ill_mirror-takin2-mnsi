@@ -39,6 +39,7 @@
 
 #include "math17.h"
 
+//#define TL2_MAG_CHECKS
 
 // default optimisation flags
 #ifndef MX_IS_HERM
@@ -46,10 +47,6 @@
 #endif
 #ifndef MXX_IS_DIAG
 	#define MXX_IS_DIAG 1
-#endif
-#ifndef INTERACTMAT_IS_HERM
-	// warning: setting this to "1" leads to false low-q eigenvectors!
-	#define INTERACTMAT_IS_HERM 0
 #endif
 
 
@@ -81,9 +78,14 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 {
 	constexpr t_cplx imag = t_cplx(0,1);
 
+#ifdef TL2_MAG_CHECKS
+	if(!tl2::is_skew_hermitian(Mx, eps))
+		tl2::log_warn("Mx is not skew-hermitian!");
+#endif
+
 	// calculate Mx eigenvalues
-	std::vector<t_vec_cplx> Mxevecs;
 	std::vector<t_cplx> Mxevals;
+	std::vector<t_vec_cplx> Mxevecs;
 	{
 #if MX_IS_HERM == 1
 		std::vector<t_real> _Mxevals;
@@ -91,6 +93,15 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 			throw std::runtime_error("Mx eigenvector determination failed!");
 		for(t_real d : _Mxevals)
 			Mxevals.emplace_back(t_cplx(0., d));
+
+	#ifdef TL2_MAG_CHECKS
+		std::vector<t_cplx> Mxevals2;
+		std::vector<t_vec_cplx> Mxevecs2;
+		eigenvec_cplx<t_real>(Mx, Mxevecs2, Mxevals2, true);
+
+		if(!check_eigensys_cplx<t_mat_cplx, t_vec_cplx>(Mx, Mxevals, Mxevecs, Mxevals2, Mxevecs2, eps))
+			tl2::log_warn("Mx eigensystem is not correct!");
+	#endif
 #else
 		if(!eigenvec_cplx<t_real>(Mx, Mxevecs, Mxevals, true))
 			throw std::runtime_error("Mx eigenvector determination failed!");
@@ -142,25 +153,23 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 #else
 	t_mat_cplx Mxx = prod_mm(Mx, MxEvecs);
 	Mxx = imag * prod_mm(MxEvecsH, Mxx);
+
+	#ifdef TL2_MAG_CHECKS
+		if(!tl2::is_diagonal_cplx(Mxx, eps))
+			tl2::log_warn("Mxx is not diagonal!");
+	#endif
 #endif
 
-	// Landau-Lifshitz: d/dt dM = -Mx B_mean, B_mean = -chi^(-1) * dM
-	// E = EVals{ i Mx chi^(-1) }
-	// chi_dyn^(-1) = i*E*Mx^(-1) + chi^(-1)
-	// Mx*chi_dyn^(-1) = i*E + Mx*chi^(-1)
+	// Landau-Lifshitz: d/dt dM = -g*Mx B_mean, B_mean = -chi^(-1) * dM
+	// E = EVals{ i g*Mx chi^(-1) }
+	// chi_dyn^(-1) = i*E/g*Mx^(-1) + chi^(-1)
+	// Mx*chi_dyn^(-1) = i*E/g + Mx*chi^(-1)
 	t_mat_cplx Interactmat = prod_mm(Mxx, invsuscept);
+
 	std::vector<t_vec_cplx> Interactevecs;
 	std::vector<t_cplx> Interactevals;
-#if INTERACTMAT_IS_HERM == 1
-	std::vector<t_real> _Interactevals;
-	if(!eigenvecsel_herm<t_real>(Interactmat, Interactevecs, _Interactevals, true, -1., -2., eps))
-		throw std::runtime_error("Mxx eigenvector determination failed!");
-	for(t_real d : _Interactevals)
-		Interactevals.emplace_back(t_cplx(d, 0.));
-#else
 	if(!eigenvec_cplx<t_real>(Interactmat, Interactevecs, Interactevals, true))
-		throw std::runtime_error("Mxx eigenvector determination failed!");
-#endif
+		throw std::runtime_error("Interactmat eigenvector determination failed!");
 
 	std::vector<t_mat_cplx> Interactemats;
 	Interactemats.reserve(Interactevals.size());
@@ -180,7 +189,6 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 	return std::make_tuple(Interactevals, Interactevecs, Interactemats);
 }
-
 
 
 /**

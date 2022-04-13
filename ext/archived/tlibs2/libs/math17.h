@@ -1796,7 +1796,7 @@ template<class matrix_type = ublas::matrix<double>,
 	class value_type = typename matrix_type::value_type>
 matrix_type diag_matrix(std::size_t N, const value_type& val)
 {
-	matrix_type mat(N, N);
+	matrix_type mat = unit_m<matrix_type>(N);
 
 	for(std::size_t i=0; i<N; ++i)
 		mat(i, i) = val;
@@ -2969,6 +2969,90 @@ bool is_symmetric(const t_mat& mat, t_real eps = get_epsilon<t_real>())
 }
 
 
+template<class t_mat=ublas::matrix<std::complex<double>>,
+	class t_cplx = underlying_value_type_t<t_mat>,
+	class t_real = underlying_value_type_t<t_cplx>>
+bool is_hermitian(const t_mat& mat, t_real eps = get_epsilon<t_real>())
+{
+	if(mat.size1() != mat.size2())
+		return false;
+
+	for(std::size_t i=0; i<mat.size1(); ++i)
+		for(std::size_t j=i+1; j<mat.size2(); ++j)
+			if(!float_equal(mat(i,j).real(), mat(j,i).real(), eps) ||
+				!float_equal(mat(i,j).imag(), -mat(j,i).imag(), eps))
+				return false;
+
+	return true;
+}
+
+
+template<class t_mat=ublas::matrix<std::complex<double>>,
+	class t_cplx = underlying_value_type_t<t_mat>,
+	class t_real = underlying_value_type_t<t_cplx>>
+bool is_skew_hermitian(const t_mat& mat, t_real eps = get_epsilon<t_real>())
+{
+	if(mat.size1() != mat.size2())
+		return false;
+
+	for(std::size_t i=0; i<mat.size1(); ++i)
+		for(std::size_t j=i+1; j<mat.size2(); ++j)
+			if(!float_equal(mat(i,j).real(), -mat(j,i).real(), eps) ||
+				!float_equal(mat(i,j).imag(), mat(j,i).imag(), eps))
+				return false;
+
+	return true;
+}
+
+
+template<class t_mat=ublas::matrix<double>, class t_real=underlying_value_type_t<t_mat>>
+bool is_diagonal(const t_mat& mat, t_real eps = get_epsilon<t_real>())
+{
+	if(mat.size1() != mat.size2())
+		return false;
+
+	for(std::size_t i=0; i<mat.size1(); ++i)
+	{
+		for(std::size_t j=0; j<mat.size2(); ++j)
+		{
+			if(i == j)
+				continue;
+
+			if(!float_equal(mat(i,j), t_real(0.), eps))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+
+template<class t_mat=ublas::matrix<std::complex<double>>,
+	class t_cplx = underlying_value_type_t<t_mat>,
+	class t_real = underlying_value_type_t<t_cplx>>
+bool is_diagonal_cplx(const t_mat& mat, t_real eps = get_epsilon<t_real>())
+{
+	if(mat.size1() != mat.size2())
+		return false;
+
+	for(std::size_t i=0; i<mat.size1(); ++i)
+	{
+		for(std::size_t j=0; j<mat.size2(); ++j)
+		{
+			if(i == j)
+				continue;
+
+			if(!float_equal(mat(i,j).real(), t_real(0.), eps) ||
+				!float_equal(mat(i,j).imag(), t_real(0.), eps))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+
+
 // -----------------------------------------------------------------------------
 template<class T, LinalgType ty=get_linalg_type<T>::value> struct apply_fkt_impl {};
 
@@ -3098,6 +3182,98 @@ get_minmax(const T& t)
 
 
 // -----------------------------------------------------------------------------
+
+
+/**
+ * reorders a vector according to a permutation
+ */
+template<class t_vec, class t_perm = std::vector<std::size_t>>
+t_vec reorder(const t_vec& vec, const t_perm& perm)
+{
+	t_vec vec_new;
+	vec_new.reserve(vec.size());
+
+	for(std::size_t i=0; i<vec.size(); ++i)
+		vec_new.push_back(vec[perm[i]]);
+
+	return vec_new;
+}
+
+
+/**
+ * checks if two eigensystems are identical
+ */
+template<class t_mat = ublas::matrix<std::complex<double>>,
+	class t_vec = ublas::vector<std::complex<double>>,
+	typename t_cplx = typename t_vec::value_type,
+	typename t_real = typename t_cplx::value_type>
+	bool check_eigensys_cplx(const t_mat& M,
+		const std::vector<t_cplx>& evals1, const std::vector<t_vec>& evecs1,
+		const std::vector<t_cplx>& evals2, const std::vector<t_vec>& evecs2,
+		t_real eps = 1e-6)
+{
+	if(evals1.size() != evals2.size() || evecs1.size() != evecs2.size())
+		return false;
+
+	std::vector<std::size_t> order1(evals1.size());
+	for(std::size_t i=0; i<evals1.size(); ++i)
+		order1[i] = i;
+
+	std::vector<std::size_t> order2 = order1;
+
+	std::stable_sort(order1.begin(), order1.end(),
+		[&evals1](std::size_t i, std::size_t j) -> bool
+		{
+			const t_cplx& c1 = evals1[i];
+			const t_cplx& c2 = evals1[j];
+
+			//return c1.real() < c2.real();
+			return c1.imag() < c2.imag();
+		});
+
+	std::stable_sort(order2.begin(), order2.end(),
+		[&evals2](std::size_t i, std::size_t j) -> bool
+		{
+			const t_cplx& c1 = evals2[i];
+			const t_cplx& c2 = evals2[j];
+
+			//return c1.real() < c2.real();
+			return c1.imag() < c2.imag();
+		});
+
+	auto _evals1 = reorder(evals1, order1);
+	auto _evecs1 = reorder(evecs1, order1);
+	auto _evals2 = reorder(evals2, order2);
+	auto _evecs2 = reorder(evecs2, order2);
+
+	for(std::size_t i=0; i<_evals1.size(); ++i)
+	{
+		if(!float_equal(_evals1[i].real(), _evals2[i].real(), eps) ||
+			!float_equal(_evals1[i].imag(), _evals2[i].imag(), eps))
+			return false;
+
+		if(_evecs1[i].size() != _evecs2[i].size())
+			return false;
+
+		t_vec chk1a = prod_mv(M, _evecs1[i]);
+		t_vec chk2a = prod_mv(M, _evecs2[i]);
+
+		t_vec chk1b = _evals1[i] * _evecs1[i];
+		t_vec chk2b = _evals2[i] * _evecs2[i];
+
+		for(std::size_t j=0; j<chk1a.size(); ++j)
+		{
+			if(!float_equal(chk1a[j].real(), chk1b[j].real(), eps) ||
+				!float_equal(chk1a[j].imag(), chk1b[j].imag(), eps))
+				return false;
+			if(!float_equal(chk2a[j].real(), chk2b[j].real(), eps) ||
+				!float_equal(chk2a[j].imag(), chk2b[j].imag(), eps))
+				return false;
+		}
+	}
+
+	return true;
+}
 
 
 /**
