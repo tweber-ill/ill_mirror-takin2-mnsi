@@ -3222,23 +3222,26 @@ template<class t_mat = ublas::matrix<std::complex<double>>,
 	std::vector<std::size_t> order2 = order1;
 
 	std::stable_sort(order1.begin(), order1.end(),
-		[&evals1](std::size_t i, std::size_t j) -> bool
+		[&evals1, eps](std::size_t i, std::size_t j) -> bool
 		{
 			const t_cplx& c1 = evals1[i];
 			const t_cplx& c2 = evals1[j];
 
-			//return c1.real() < c2.real();
-			return c1.imag() < c2.imag();
+			if(float_equal(c1.real(), c2.real(), eps))
+				return c1.imag() < c2.imag();
+			else
+				return c1.real() < c2.real();
 		});
 
 	std::stable_sort(order2.begin(), order2.end(),
-		[&evals2](std::size_t i, std::size_t j) -> bool
+		[&evals2, eps](std::size_t i, std::size_t j) -> bool
 		{
 			const t_cplx& c1 = evals2[i];
 			const t_cplx& c2 = evals2[j];
 
-			//return c1.real() < c2.real();
-			return c1.imag() < c2.imag();
+			if(float_equal(c1.real(), c2.real(), eps))
+				return c1.imag() < c2.imag();
+			return c1.real() < c2.real();
 		});
 
 	auto _evals1 = reorder(evals1, order1);
