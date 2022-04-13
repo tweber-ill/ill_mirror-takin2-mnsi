@@ -1790,6 +1790,22 @@ matrix_type diag_matrix(const cont_type& lst)
 
 
 /**
+ * diagonal matrix
+ */
+template<class matrix_type = ublas::matrix<double>,
+	class value_type = typename matrix_type::value_type>
+matrix_type diag_matrix(std::size_t N, const value_type& val)
+{
+	matrix_type mat(N, N);
+
+	for(std::size_t i=0; i<N; ++i)
+		mat(i, i) = val;
+
+	return mat;
+}
+
+
+/**
  * vector of diagonal matrix elements
  */
 template<class t_vec = ublas::vector<double>,

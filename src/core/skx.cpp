@@ -309,15 +309,11 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		const t_vec_cplx& vecM1 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
 		const t_vec_cplx& vecM2 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
 
-		t_mat_cplx mat = 4. * tl2::outer(vecM1, vecM2);
-		t_cplx m1m2 = 2. * tl2::inner(vecM1, vecM2);
-		for(int d=0; d<3; ++d)
-			mat(d,d) += m1m2;
-
+		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) + 4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
 		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE,
 			m_idx3[0][i].first, m_idx3[0][i].second,
 			m_idx3[1][i].first, m_idx3[1][i].second);
-		assign_or_add(fluccomp, 2.*mat);
+		assign_or_add(fluccomp, mat);
 	}
 
 	for(const t_vec &pk_rlu : m_allpeaks_rlu)
