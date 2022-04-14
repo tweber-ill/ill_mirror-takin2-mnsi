@@ -93,7 +93,7 @@ static void calc_disp(char dyntype,
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(-1000., false);
-	dyn->SetB(25., false);	// BC2 = 45.028487
+	dyn->SetB(dyn->GetBC2(false)/2., false);  // BC2 = 45.028487 for T_theo = -1000
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetG(G[0], G[1], G[2]);
@@ -106,6 +106,10 @@ static void calc_disp(char dyntype,
 		F = magsys->F();
 		std::cout << "Ground state F = " << F << "." << std::endl;
 	}
+
+	std::cout << "Bc2_theo = " << dyn->GetBC2(false)
+		<< ", Bc2_exp = " << dyn->GetBC2(true)
+		<< "." << std::endl;
 
 
 	auto calc_spectrum = [dyntype, &dyn, &G, T, &qparadir, &qperpdir, &qperp, bSwapQParaQPerp]

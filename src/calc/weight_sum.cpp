@@ -48,8 +48,9 @@ void calc_disp(
 	heli.SetT(-1000., false);
 	heli.SetT(g_T, true);
 
-	skx.SetB(25., false);
-	heli.SetB(25., false);
+	t_real bc2 = skx.GetBC2(false);
+	skx.SetB(bc2/2., false);
+	heli.SetB(bc2/2., false);
 	heli.SetB(0.17, true);
 
 	skx.SetFilterZeroWeight(1);

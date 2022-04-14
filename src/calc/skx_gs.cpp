@@ -130,11 +130,12 @@ int main()
 		skx.SetFourier(fourier);
 	}
 
-	skx.SetT(-1000., false);
-	skx.SetB(25., false);
+	const t_real T_theo = -1000;
+	skx.SetT(T_theo, false);
+	skx.SetB(skx.GetBC2(false)/2., false);
 	const auto& peaks60 = skx.GetPeaks60(true);
 
-	std::cout << "Bc2 = " << get_bc2<t_real>(-1000.) << std::endl;
+	std::cout << "Bc2 = " << get_bc2<t_real>(T_theo) << std::endl;
 
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;

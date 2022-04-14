@@ -183,7 +183,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	auto mag = this->copyCastSys();
 
 	std::vector<t_real> Ts, Bs;
-	for(t_real T = -20000; T < 0; T += 250.)
+	for(t_real T = -1000; T < 0; T += 500.)
 		Ts.push_back(T);
 	for(t_real B = 0; B < 200; B += 2.5)
 		Bs.push_back(B);

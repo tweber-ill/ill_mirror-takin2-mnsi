@@ -55,7 +55,7 @@ static void calc_weight(char dyntype,
 
 	dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
 	dyn->SetT(-1000., false);
-	dyn->SetB(25., false);
+	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetFilterZeroWeight(1);

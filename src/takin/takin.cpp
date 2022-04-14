@@ -101,7 +101,7 @@ SqwMod::SqwMod()
 	tl2::log_info("--------------------------------------------------------------------------------");
 
 	m_skx.SetT(-1000., false);
-	m_skx.SetB(25., false);
+	m_skx.SetB(m_skx.GetBC2(false)/2., false);
 	m_skx.SetT(29., true);
 	m_fp.SetT(29., true);
 	m_fp.SetB(0.35, true);
