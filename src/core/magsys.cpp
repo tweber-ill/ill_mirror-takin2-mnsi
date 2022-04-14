@@ -303,7 +303,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 			<< "func1(x, amp1, ex1) w lines lw 2, "
 			<< "func2(x, amp2) lw 2\n\n";
 
-		(*ofstrGplBc2) << "msg = sprintf(\"\nModel 1:\n\tamp = %.8f\n\tex = %.8f\n\nModel 2:\n\tamp = %.8f\n\", amp1, ex1, amp2)\n";
+		(*ofstrGplBc2) << "msg = sprintf(\"\\nModel 1:\\n\\tamp = %.8f\\n\\tex = %.8f\\n\\nModel 2:\\n\\tamp = %.8f\\n\", amp1, ex1, amp2)\n";
 		(*ofstrGplBc2) << "print(msg)\n";
 	}
 
