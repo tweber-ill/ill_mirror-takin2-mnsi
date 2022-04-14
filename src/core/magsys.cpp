@@ -183,7 +183,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	auto mag = this->copyCastSys();
 
 	std::vector<t_real> Ts, Bs;
-	for(t_real T = -1000; T < 0; T += 500.)
+	for(t_real T = -20000; T < 0; T += 250.)
 		Ts.push_back(T);
 	for(t_real B = 0; B < 200; B += 2.5)
 		Bs.push_back(B);
@@ -268,8 +268,10 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 
 	if(ofstrGplBc2)
 	{
+		// data
 		std::ostringstream ostrData;
 		ostrData.precision(ofstrGplBc2->precision());
+		ostrData << "$data << ENDDATA\n";
 		for(std::size_t T_idx=0; T_idx<Ts.size(); ++T_idx)
 		{
 			t_real T = Ts[T_idx];
@@ -283,21 +285,26 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 			ostrData << std::setw(16) << mean << " ";
 			ostrData << std::setw(16) << dev << "\n";
 		}
-		ostrData << "e\n";
+		ostrData << "ENDDATA\n";
+		(*ofstrGplBc2) << ostrData.str() << "\n";
 
 		// fit
-		(*ofstrGplBc2) << "amp = 1\nex = 0.5\n";
-		(*ofstrGplBc2) << "func(T) = amp * (-T)**ex\n\n";
-
-		(*ofstrGplBc2) << "fit func(x) \"-\" u 1:2:3 yerr via amp, ex\n";
-		(*ofstrGplBc2) << ostrData.str() << "\n";
+		(*ofstrGplBc2) << "func1(T, amp, ex) = amp * (-T)**ex\n";
+		(*ofstrGplBc2) << "func2(T, amp) = 2 * amp * sqrt(-0.5 - 0.5*T)\n\n";
+		(*ofstrGplBc2) << "amp1 = 1\nex1 = 0.5\n";
+		(*ofstrGplBc2) << "amp2 = 1\n\n";
+		(*ofstrGplBc2) << "fit func1(x, amp1, ex1) \"$data\" u 1:2:3 yerr via amp1, ex1\n";
+		(*ofstrGplBc2) << "fit func2(x, amp2) \"$data\" u 1:2:3 yerr via amp2\n\n";
 
 		// plot
 		(*ofstrGplBc2) << "set xlabel \"T\"\nset ylabel \"Bc2\"\n";
 		(*ofstrGplBc2) << "set autosc xfix\nset autosc yfix\n\n";
+		(*ofstrGplBc2) << "plot \"$data\" u 1:2:3 w yerrorbars pt 7, "
+			<< "func1(x, amp1, ex1) w lines lw 2, "
+			<< "func2(x, amp2) lw 2\n\n";
 
-		(*ofstrGplBc2) << "plot \"-\" u 1:2:3 w yerrorbars pt 7, func(x) w lines lw 2, 2*sqrt(-0.5 - 0.5*x) lw 2\n";
-		(*ofstrGplBc2) << ostrData.str();
+		(*ofstrGplBc2) << "msg = sprintf(\"\nModel 1:\n\tamp = %.8f\n\tex = %.8f\n\nModel 2:\n\tamp = %.8f\n\", amp1, ex1, amp2)\n";
+		(*ofstrGplBc2) << "print(msg)\n";
 	}
 
 	return true;

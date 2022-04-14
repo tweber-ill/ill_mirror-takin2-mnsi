@@ -73,13 +73,15 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 {
 	if(use_theo_units)
 	{
-		const t_real amp = 1.42925;		// scaling
-		const t_real ex = 0.499501;		// critical exponent
+		// calculated with "heliphase"
+		const t_real amp1 = 1.58911199; // scaling
+		const t_real ex1 = 0.49960519;  // critical exponent
+		const t_real amp2 = 1.11957625;
 
 		if(T >= 0.) return 0.;
-		//return amp * std::pow(-T, ex);
 
-		return g_g<t_real> * std::sqrt(-0.5 - 0.5*T);
+		//return amp1 * std::pow(-T, ex1);
+		return g_g<t_real> * amp2 * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
 	{

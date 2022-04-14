@@ -142,7 +142,7 @@ private:
 	t_real m_T = -1000;
 	t_real m_Bc2 = 0;
 	t_real m_Bc2_exp = 0.3;   // fixed, measured Bc2, which is more accurate at this T than the general curve
-	bool m_fixed_bc2 = true;
+	bool m_fixed_bc2 = false;
 
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<std::pair<int, int>> m_idx2[3], m_idx3[4];
