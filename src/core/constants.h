@@ -85,15 +85,25 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 	}
 	else
 	{
-		t_real p1[] = { 5.63617388e-01, 5.52570801e-02,  2.20736277e+01, 7.39287474e-02, -5.32767610e-04 };
-		t_real p2[] = { 0.07075453, -0.08217821, 30.00000534, 9.19469462,  0.38951838 };
+		const t_real p1[] = { 0.473163, 0.0257403, 16.8606, 0.274611, 4.67147e-05 };
+		const t_real p2[] = { 0.50892, 0.139686, 28.3493, 0.23784, 0.00781078 };
+		const t_real p3[] = { 0.453534, 0.153873, 30.679, 4.70025, 1.36435 };
 
-		const t_real *p = (T<=20 ? p1 : p2);
-		t_real Tc = p[2];
-		t_real tau = (Tc-T) / Tc;
+		const t_real *p = p1;
+		if(T <= 11.3)
+			p = p1;
+		else if(T > 11.3 && T < 27.)
+			p = p2;
+		else if(T >= 27.)
+			p = p3;
 
-		if(T >= Tc) return 0.;
-		return p[0]*std::pow(tau, p[1]) * (1. + p[3]*std::pow(tau, p[4]));
+		const t_real Tc = p[2];
+		const t_real tau = (Tc-T) / Tc;
+		if(T >= Tc)
+			return 0.;
+
+		return p[0]*std::pow(tau, p[1]) *
+			(1. + p[3]*std::pow(tau, p[4]));
 	}
 }
 
