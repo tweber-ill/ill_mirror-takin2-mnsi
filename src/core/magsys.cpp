@@ -185,7 +185,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	std::vector<t_real> Ts, Bs;
 	for(t_real T = -20000; T < 0; T += 250.)
 		Ts.push_back(T);
-	for(t_real B = 0; B < 200; B += 2.5)
+	for(t_real B = 0; B < 200; B += 1.0)
 		Bs.push_back(B);
 
 
@@ -225,9 +225,10 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 			const std::string labState = "state_" + tl2::var_to_str(iState);
 			ofstr << "\t<" << labState << ">\n";
 
+			const t_real ang_min = 0.01;
 			t_real ang = std::atan2(std::abs(2.*fourier[1][0]),
 				std::abs(fourier[0][2]));
-			if(ok && ang < tl2::pi<t_real>/4. && ang > 0.01)
+			if(ok && tl2::is_in_angular_range<t_real>(ang_min, tl2::pi<t_real>/4.-ang_min, ang))
 			{
 				t_real Bc2 = B / std::cos(ang);
 				Bc2s[T_idx].push_back(Bc2);
