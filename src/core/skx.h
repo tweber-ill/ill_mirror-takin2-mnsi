@@ -64,10 +64,7 @@ public:
 	{
 		if(exp)
 		{
-			if(!m_fixed_bc2)
-				m_Bc2_exp = get_bc2(T, !exp);
-			else
-				tl2::log_warn("Bc2 scale is fixed for skx.");
+			m_Bc2_exp = get_bc2(T, !exp);
 		}
 		else
 		{
@@ -75,8 +72,6 @@ public:
 			m_Bc2 = get_bc2(m_T, !exp);
 		}
 	}
-
-	void SetFixedBc2(bool b) { m_fixed_bc2 = b; }
 
 	virtual t_real GetBC2(bool exp=true) const override
 	{
@@ -141,8 +136,7 @@ private:
 	t_real m_B = 0;
 	t_real m_T = -1000;
 	t_real m_Bc2 = 0;
-	t_real m_Bc2_exp = 0.3;
-	bool m_fixed_bc2 = false;
+	t_real m_Bc2_exp = 0.322;
 
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<std::pair<int, int>> m_idx2[3], m_idx3[4];
