@@ -27,8 +27,8 @@ int main()
 
         heli.SetFourier(fourier);
         heli.SetT(-1000, false);
-        heli.SetB(25, false);
-	//std::cout << "Bc2 = " << get_bc2<t_real>(-1000.) << std::endl;
+        //heli.SetB(25, false);
+	heli.SetB(heli.GetBC2(false)/2., false);
 
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;

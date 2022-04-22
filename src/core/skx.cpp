@@ -32,8 +32,7 @@ static std::vector<t_vec> gen_peaks(const int ORDER)
 	using t_val = typename t_vec::value_type;
 
 	const int SIZE = 2*ORDER + 1;
-	std::vector<t_vec> pks;
-	pks.reserve(SIZE*SIZE);
+	std::vector<t_vec> pks; pks.reserve(SIZE*SIZE);
 
 	for(int h_idx=0; h_idx<SIZE; ++h_idx)
 	{
@@ -47,7 +46,6 @@ static std::vector<t_vec> gen_peaks(const int ORDER)
 				{ static_cast<t_val>(h), static_cast<t_val>(k) }));
 		}
 	}
-
 	return pks;
 }
 
@@ -78,46 +76,38 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 		m_peaks60lab.emplace_back(std::move(pk_lab));
 	}
 
-	for(int i=0; i<2; ++i)
-		m_idx2[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 	for(int i=0; i<3; ++i)
-		m_idx3[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
-
-	for(std::size_t k=0; k<m_allpeaks_rlu.size(); ++k)
 	{
-		int pk_k_h = lattidx(m_allpeaks_rlu[k][0]);
-		int pk_k_k = lattidx(m_allpeaks_rlu[k][1]);
+		if(i<2) m_idx2[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
+		m_idx3[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
+	}
 
-		for(std::size_t j=0; j<m_allpeaks_rlu.size(); ++j)
+	for(const auto& pk_k : m_allpeaks_rlu)
+	{
+		for(const auto& pk_j : m_allpeaks_rlu)
 		{
-			int pk_j_h = lattidx(m_allpeaks_rlu[j][0]);
-			int pk_j_k = lattidx(m_allpeaks_rlu[j][1]);
-
 			// unrolled indices for two loops
-			int l_h2 = pk_j_h - pk_k_h;
-			int l_k2 = pk_j_k - pk_k_k;
+			int l_h2 = lattidx(pk_j[0]) - lattidx(pk_k[0]);
+			int l_k2 = lattidx(pk_j[1]) - lattidx(pk_k[1]);
 			if(std::abs(l_h2) <= ORDER && std::abs(l_k2) <= ORDER
 				&& std::abs(l_h2-l_k2) <= ORDER)
 			{
-				m_idx2[0].emplace_back(std::make_pair(pk_j_h, pk_j_k));
-				m_idx2[1].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+				m_idx2[0].emplace_back(std::make_pair(lattidx(pk_j[0]), lattidx(pk_j[1])));
+				m_idx2[1].emplace_back(std::make_pair(lattidx(pk_k[0]), lattidx(pk_k[1])));
 				m_idx2[2].emplace_back(std::make_pair(l_h2, l_k2));
 			}
 
 			// unrolled indices for three loops
-			for(std::size_t i=0; i<m_allpeaks_rlu.size(); ++i)
+			for(const auto& pk_i : m_allpeaks_rlu)
 			{
-				int pk_i_h = lattidx(m_allpeaks_rlu[i][0]);
-				int pk_i_k = lattidx(m_allpeaks_rlu[i][1]);
-
-				int l_h3 = pk_i_h - pk_j_h - pk_k_h;
-				int l_k3 = pk_i_k - pk_j_k - pk_k_k;
+				int l_h3 = lattidx(pk_i[0]) - lattidx(pk_j[0]) - lattidx(pk_k[0]);
+				int l_k3 = lattidx(pk_i[1]) - lattidx(pk_j[1]) - lattidx(pk_k[1]);
 				if(std::abs(l_h3) <= ORDER && std::abs(l_k3) <= ORDER
 					&& std::abs(l_h3-l_k3) <= ORDER)
 				{
-					m_idx3[0].emplace_back(std::make_pair(pk_i_h, pk_i_k));
-					m_idx3[1].emplace_back(std::make_pair(pk_j_h, pk_j_k));
-					m_idx3[2].emplace_back(std::make_pair(pk_k_h, pk_k_k));
+					m_idx3[0].emplace_back(std::make_pair(lattidx(pk_i[0]), lattidx(pk_i[1])));
+					m_idx3[1].emplace_back(std::make_pair(lattidx(pk_j[0]), lattidx(pk_j[1])));
+					m_idx3[2].emplace_back(std::make_pair(lattidx(pk_k[0]), lattidx(pk_k[1])));
 					m_idx3[3].emplace_back(std::make_pair(l_h3, l_k3));
 				}
 			}
@@ -170,7 +160,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		if(!is_peak_in_top_half(q, q_sq))
 			continue;
 
-		t_vec_cplx qc = tl2::make_vec<t_vec_cplx>({q[0], q[1], 0.});
+		t_vec_cplx qc = tl2::make_vec<t_vec_cplx>({ q[0], q[1], 0. });
 		const t_vec_cplx& m = get_comp(m_M, hk[0], hk[1]);
 		t_vec_cplx mj = tl2::conjugate_vec(m);
 		const t_cplx m_sq = tl2::inner(m, mj);
@@ -264,8 +254,8 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>({ 0., 0. });
 			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
 			{
-				fourier[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
 				fourier[1] = m_peaks60lab[peak_idx][0] * m_fourier[peak_idx+1][0];
+				fourier[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
 				fourier = tl2::prod_mv(rotLab, fourier);
 			}
 
@@ -309,7 +299,8 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		const t_vec_cplx& vecM1 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
 		const t_vec_cplx& vecM2 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
 
-		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) + 4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
+		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
+			4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
 		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE,
 			m_idx3[0][i].first, m_idx3[0][i].second,
 			m_idx3[1][i].first, m_idx3[1][i].second);
@@ -333,7 +324,6 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		t_mat_cplx mat(3,3);
 		for(int i=0; i<3; ++i)  // diagonal
 			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq /*+ g_hoc<t_real>*Q_sq*Q_sq*/;
-
 		for(int i=0; i<2; ++i)  // off-diagonal
 		{
 			for(int j=i+1; j<3; ++j)
@@ -369,7 +359,6 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
 			}
 		}
-
 		return mat;
 	};
 

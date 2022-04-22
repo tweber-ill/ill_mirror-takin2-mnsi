@@ -25,6 +25,8 @@
 #include "heli.h"
 #include "heli_inst.cxx"
 
+//#define __HELI_INDIRECT_CALC
+
 
 /**
  * constructor
@@ -32,19 +34,20 @@
 template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
 {
-	for(int i=0; i<2; ++i)
-		m_idx2[i].reserve(SIZE * ORDER);
 	for(int i=0; i<3; ++i)
-		m_idx3[i].reserve(SIZE * SIZE * ORDER);
+	{
+		if(i<2) m_idx2[i].reserve(SIZE * SIZE);
+		m_idx3[i].reserve(SIZE * SIZE * SIZE);
+	}
 
 	for(int k=-ORDER; k<=ORDER; ++k)
 	{
 		for(int j=-ORDER; j<=ORDER; ++j)
 		{
-			for(int i=1; i<=ORDER; ++i)
+			for(int i=-ORDER; i<=ORDER; ++i)
 			{
 				// unrolled indices for three loops
-				int l = - i - j - k;
+				int l = i - j - k;
 				if(std::abs(l) <= ORDER)
 				{
 					m_idx3[0].push_back(i);
@@ -54,7 +57,7 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 				}
 
 				// unrolled indices for two loops
-				int m = - i - j;
+				int m = i - j;
 				if(k == 0 && std::abs(m) <= ORDER)
 				{
 					m_idx2[0].push_back(i);
@@ -86,9 +89,13 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	// phi^4
 	cF += m0_sq*m0_sq;
 
+	const t_real mult = 2.;   // 2 * top peaks
+	//for(int i=-ORDER; i<=ORDER; ++i)
 	for(std::size_t i=1; i<=ORDER; ++i)
 	{
-		const t_vec_cplx& mi = m_fourier[i];
+		//if(i <= 0) continue;
+
+		const t_vec_cplx& mi = get_comp(m_fourier, i);
 		t_vec_cplx mj = tl2::conjugate_vec(mi);
 		const auto m_sq = tl2::inner(mi, mj);
 
@@ -96,39 +103,45 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		const t_real q_sq = q*q;
 
 		// dipolar interaction
-		cF += 2. * g_chi<t_real> * mi[2]*mj[2];
+		cF += mult * g_chi<t_real> * mi[2]/**q*/ * mj[2]/**q / q_sq*/;
 
-		// dmi
-		cF += -4. * t_cplx(0, 1) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
+		// dmi, mi * ([0,0,q] x mj) = mi * (-q*mj[1], q*mj[0], 0])
+		cF += -2. * mult * t_cplx(0, 1) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
 		// phi^2
-		cF += 2. * m_sq * q_sq;
-		cF += 2. * (m_T_theo + 1.) * m_sq;
+		cF += mult * m_sq * q_sq;
+		cF += mult * (m_T_theo + 1.) * m_sq;
 
 		// phi^4
-		cF += 2. * m0_sq * m_sq;
+		cF += mult * m0_sq * m_sq;
 
 		// high-order correction
-		cF += 2. * g_hoc<t_real> * m_sq * q_sq*q_sq;
+		cF += mult * g_hoc<t_real> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(m_fourier, m_idx2[0][i]);
+		int h = -m_idx2[0][i];
+		if(h <= 0) continue;
+
+		const auto& m1 = get_comp(m_fourier, h);
 		const auto& m2 = get_comp(m_fourier, m_idx2[1][i]);
 		const auto& m3 = get_comp(m_fourier, m_idx2[2][i]);
 
-		cF += 2. * tl2::inner(m0, m1) * tl2::inner(m2, m3);
+		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
-		const auto& m1 = get_comp(m_fourier, m_idx3[0][i]);
+		int h = -m_idx3[0][i];
+		if(h <= 0) continue;
+
+		const auto& m1 = get_comp(m_fourier, h);
 		const auto& m2 = get_comp(m_fourier, m_idx3[1][i]);
 		const auto& m3 = get_comp(m_fourier, m_idx3[2][i]);
 		const auto& m4 = get_comp(m_fourier, m_idx3[3][i]);
 
-		cF += 2. * tl2::inner(m1, m2) * tl2::inner(m3, m4);
+		cF += mult * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
 
 	// zeeman shift
@@ -150,7 +163,7 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &four
 			_fourier[1] = std::conj(_fourier[0]);
 	}
 
-	while(m_fourier.size() < ORDER_FOURIER+1)
+	while(m_fourier.size() <= ORDER_FOURIER)
 		m_fourier.emplace_back(tl2::make_vec<t_vec_cplx>({0., 0., 0.}));
 	while(m_fourier.size() > ORDER_FOURIER+1)
 		m_fourier.pop_back();
@@ -174,6 +187,86 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	ql = -ql;
 	const t_cplx hx = qh - imag*qk;
 
+#ifdef __HELI_INDIRECT_CALC
+	// M-cross tensor
+	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
+
+	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
+	{
+		get_comp(*Mx, SIZE, m_idx2[0][i], m_idx2[1][i]) =
+			tl2::skew<t_mat_cplx>(get_comp(m_fourier, m_idx2[2][i]));
+	}
+
+	// fluctuation tensor
+	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
+
+	for(std::size_t i=0; i<m_idx3[3].size(); ++i)
+	{
+		const t_vec_cplx& vecM1 = get_comp(m_fourier, m_idx3[2][i]);
+		const t_vec_cplx& vecM2 = get_comp(m_fourier, m_idx3[3][i]);
+
+		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
+			4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
+
+		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE, m_idx3[0][i], m_idx3[1][i]);
+		assign_or_add(fluccomp, mat);
+	}
+
+	for(int h_idx=0; h_idx<SIZE; ++h_idx)
+	//for(int pk_kh=-ORDER; pk_kh<=ORDER; ++pk_kh)
+	{
+		int pk_kh = abs_to_rel_idx(h_idx, ORDER);
+		t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
+		const t_real Q_sq = tl2::inner(Q, Q);
+
+		auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+		{
+			if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
+				return 0.;
+			return g_chi<t_real>/Q_sq * Qi*Qj;
+		};
+
+		t_mat_cplx mat(3, 3);
+		for(int i=0; i<3; ++i)  // diagonal
+			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo + Q_sq + g_hoc<t_real>*Q_sq*Q_sq;
+		for(int i=0; i<2; ++i)  // off-diagonal
+		{
+			for(int j=i+1; j<3; ++j)
+			{
+				int k = 3 - i - j;                // third index in {0,1,2}
+				t_real sign = (k==1 ? 1. : -1.);  // - + -
+				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
+				mat(j, i) = std::conj(mat(i, j));
+			}
+		}
+
+		assign_or_add(get_comp(*Fluc, SIZE, pk_kh, pk_kh), 2.*mat);
+	}
+
+	// M-cross and fluctuation matrix
+	auto mk_2dim = [](const decltype(*Mx)& arr) -> t_mat_cplx
+	{
+		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*SIZE, 3*SIZE);
+		for(int h_idx=0; h_idx<SIZE; ++h_idx)
+		{
+			int h = abs_to_rel_idx(h_idx, ORDER);
+
+			for(int k_idx=0; k_idx<SIZE; ++k_idx)
+			{
+				int k = abs_to_rel_idx(k_idx, ORDER);
+
+				const t_mat_cplx& comp = get_comp(arr, SIZE, h, k);
+				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
+			}
+		}
+		return mat;
+	};
+
+	t_mat_cplx Mx2d = mk_2dim(*Mx) / m_Bc2_theo;
+	t_mat_cplx Fluc2d = mk_2dim(*Fluc);
+	const t_real w_scale = 1.;
+
+#else
 	constexpr t_real A1 = g_hoc<t_real>;
 	constexpr t_real A2 = A1*A1;
 	constexpr t_real A3 = A2*A1;
@@ -200,6 +293,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 	t_mat_cplx Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 	t_mat_cplx Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+	const t_real w_scale = g_g<t_real>;
 
 	for(int pk=0; pk<SIZE; ++pk)
 	{
@@ -253,12 +347,13 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		if(pk < SIZE-2)
 			Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact/3.*heli_amp*heli_amp;
 	}
+#endif
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d * g_g<t_real>, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
-		g_muB<t_real> * m_Bc2, g_g<t_real>,
+		g_muB<t_real> * m_Bc2, w_scale,
 		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, 3*ORDER);
 }
@@ -270,7 +365,12 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-	bool bInChiralBase = true;
+#ifdef __HELI_INDIRECT_CALC
+	const bool bInChiralBase = false;
+#else
+	const bool bInChiralBase = true;
+#endif
+
 	m_Grlu = tl2::make_vec<t_vec>({h,k,l});
 
 	t_vec _G = m_Grlu / tl2::veclen(m_Grlu);
