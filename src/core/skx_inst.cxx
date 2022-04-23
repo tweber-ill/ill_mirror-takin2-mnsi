@@ -16,3 +16,8 @@
 		template void Skx<double, std::complex<double>, DEF_SKX_ORDER>::SetCoords(double, double, double, double, double, double);
 	#endif
 #endif
+
+
+#ifndef SKX_USE_HOC
+	#define SKX_USE_HOC 0
+#endif

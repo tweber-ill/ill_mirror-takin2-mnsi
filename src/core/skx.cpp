@@ -9,7 +9,7 @@
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
  *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
- *	  This present version started as a C++ port of that Python implementation by M. Kugler and G. Brandl,
+ *	  This present version started as a C++ port of M. Kugler's and G. Bandl's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
  * @license GPLv2 (see 'LICENSE' file)
  */
@@ -180,7 +180,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += mult * m0_sq * m_sq;
 
 		// high-order correction
-		//cF += mult * g_hoc<t_real> * m_sq * q_sq*q_sq;
+		cF += mult * g_hoc_b<t_real, SKX_USE_HOC> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
@@ -323,7 +323,8 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 
 		t_mat_cplx mat(3,3);
 		for(int i=0; i<3; ++i)  // diagonal
-			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq /*+ g_hoc<t_real>*Q_sq*Q_sq*/;
+			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq
+				+ g_hoc_b<t_real, SKX_USE_HOC>*Q_sq*Q_sq;
 		for(int i=0; i<2; ++i)  // off-diagonal
 		{
 			for(int j=i+1; j<3; ++j)

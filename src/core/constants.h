@@ -12,6 +12,11 @@
 #include "tlibs2/libs/units.h"
 
 
+#ifndef BC2_HAS_DIPOLAR
+	#define BC2_HAS_DIPOLAR 1
+#endif
+
+
 /**
  * constants
  * The values are from the theoretical models by. M. Garst and J. Waizner:
@@ -28,6 +33,7 @@ template<class t_real = double> constexpr t_real g_muB
 	= static_cast<t_real>(tl2::muB<t_real>/tl2::meV<t_real>*tl2::tesla<t_real>);
 template<class t_real = double> constexpr t_real g_chi = 0.34;
 template<class t_real = double> constexpr t_real g_hoc = -0.0073;
+template<class t_real = double, bool use_hoc=1> constexpr t_real g_hoc_b = use_hoc ? g_hoc<t_real> : 0.;
 template<class t_real = double> constexpr t_real g_a = 4.558;
 template<class t_real = double> constexpr t_real g_g = -tl2::g_e<t_real>;
 template<class t_real = double> constexpr t_real g_kh_A_29K = 0.039;
@@ -73,13 +79,18 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 {
 	if(use_theo_units)
 	{
+		if(T >= 0.) return 0.;
+
 		// calculated with "heliphase"
 		const t_real amp1 = 1.58786033; // scaling
 		const t_real ex1 = 0.49965808;  // critical exponent
-		const t_real amp2 = 1.11966394;
-		if(T >= 0.) return 0.;
-
 		//return amp1 * std::pow(-T, ex1);
+
+#if BC2_HAS_DIPOLAR != 0
+		const t_real amp2 = 1.11966394;
+#else
+		const t_real amp2 = 1.;
+#endif
 		return g_g<t_real> * amp2 * std::sqrt(-0.5 - 0.5*T);
 	}
 	else

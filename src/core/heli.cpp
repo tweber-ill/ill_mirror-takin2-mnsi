@@ -10,7 +10,7 @@
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
  *	- The 2015 and 2016 Python optimised implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
- *	  This present version started as a C++ port of that Python implementation by G. Brandl and M. Kugler,
+ *	  This present version started as a C++ port of G. Brandl's and M. Kugler's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
  *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model,
  *	  that also included improvements to the helimagnon code, which we ported to C++ in the present version.
@@ -25,7 +25,7 @@
 #include "heli.h"
 #include "heli_inst.cxx"
 
-//#define __HELI_INDIRECT_CALC
+//#define __HELI_DIRECT_CALC
 
 
 /**
@@ -40,12 +40,18 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 		m_idx3[i].reserve(SIZE * SIZE * SIZE);
 	}
 
-	for(int k=-ORDER; k<=ORDER; ++k)
+	for(int k_idx=0; k_idx<SIZE; ++k_idx)
 	{
-		for(int j=-ORDER; j<=ORDER; ++j)
+		int k = abs_to_rel_idx(k_idx, ORDER);
+
+		for(int j_idx=0; j_idx<SIZE; ++j_idx)
 		{
-			for(int i=-ORDER; i<=ORDER; ++i)
+			int j = abs_to_rel_idx(j_idx, ORDER);
+
+			for(int i_idx=0; i_idx<SIZE; ++i_idx)
 			{
+				int i = abs_to_rel_idx(i_idx, ORDER);
+
 				// unrolled indices for three loops
 				int l = i - j - k;
 				if(std::abs(l) <= ORDER)
@@ -116,7 +122,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += mult * m0_sq * m_sq;
 
 		// high-order correction
-		cF += mult * g_hoc<t_real> * m_sq * q_sq*q_sq;
+		cF += mult * g_hoc_b<t_real, HELI_USE_HOC> * m_sq * q_sq*q_sq;
 	}
 
 	// phi^4
@@ -185,9 +191,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
-	const t_cplx hx = qh - imag*qk;
 
-#ifdef __HELI_INDIRECT_CALC
+#ifdef __HELI_DIRECT_CALC
 	// M-cross tensor
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
 
@@ -213,9 +218,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	}
 
 	for(int h_idx=0; h_idx<SIZE; ++h_idx)
-	//for(int pk_kh=-ORDER; pk_kh<=ORDER; ++pk_kh)
 	{
 		int pk_kh = abs_to_rel_idx(h_idx, ORDER);
+
 		t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
 		const t_real Q_sq = tl2::inner(Q, Q);
 
@@ -228,7 +233,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 
 		t_mat_cplx mat(3, 3);
 		for(int i=0; i<3; ++i)  // diagonal
-			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo + Q_sq + g_hoc<t_real>*Q_sq*Q_sq;
+			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo +
+				Q_sq + g_hoc_b<t_real, HELI_USE_HOC>*Q_sq*Q_sq;
 		for(int i=0; i<2; ++i)  // off-diagonal
 		{
 			for(int j=i+1; j<3; ++j)
@@ -241,6 +247,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		}
 
 		assign_or_add(get_comp(*Fluc, SIZE, pk_kh, pk_kh), 2.*mat);
+		//assign_or_add((*Fluc)[SIZE * h_idx + h_idx], 2.*mat);
 	}
 
 	// M-cross and fluctuation matrix
@@ -267,6 +274,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	const t_real w_scale = 1.;
 
 #else
+	const t_cplx hx = qh - imag*qk;
 	constexpr t_real A1 = g_hoc<t_real>;
 	constexpr t_real A2 = A1*A1;
 	constexpr t_real A3 = A2*A1;
@@ -365,7 +373,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-#ifdef __HELI_INDIRECT_CALC
+#ifdef __HELI_DIRECT_CALC
 	const bool bInChiralBase = false;
 #else
 	const bool bInChiralBase = true;

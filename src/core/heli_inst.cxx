@@ -16,3 +16,8 @@
 		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetCoords(double, double, double, double, double, double);
 	#endif
 #endif
+
+
+#ifndef HELI_USE_HOC
+	#define HELI_USE_HOC 0
+#endif

@@ -112,8 +112,8 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 			[](const t_cplx& x, const t_cplx& y) -> bool
 			{ return std::abs(x.imag()) < std::abs(y.imag()); });
 
-		std::vector<t_vec_cplx> Mxevecs_new;
-		std::vector<t_cplx> Mxevals_new;
+		std::vector<t_vec_cplx> Mxevecs_new; Mxevecs_new.reserve(Mxevecs.size());
+		std::vector<t_cplx> Mxevals_new; Mxevals_new.reserve(Mxevals.size());
 
 		for(std::size_t elem=0; elem<Mxevals.size(); ++elem)
 		{

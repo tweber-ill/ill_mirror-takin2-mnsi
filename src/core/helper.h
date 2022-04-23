@@ -44,9 +44,9 @@ t_int abs_to_rel_idx(t_int h_idx, t_int ORDER)
  * array indexing including negative indices
  */
 template<class t_int = int>
-t_int rel_to_abs_idx(t_int h, t_int ORDER)
+t_int rel_to_abs_idx(t_int h, t_int SIZE)
 {
-	return (h >= 0) ? h : ORDER + h;
+	return (h >= 0) ? h : SIZE + h;
 }
 
 
@@ -75,6 +75,7 @@ get_comp(t_mat &mat, int idx1, int idx2)
 {
 	idx1 = rel_to_abs_idx(idx1, static_cast<int>(mat.size1()));
 	idx2 = rel_to_abs_idx(idx2, static_cast<int>(mat.size2()));
+
 	return mat(idx1, idx2);
 }
 
@@ -238,9 +239,6 @@ t_mat get_chiralbasismat()
 template<class t_mat = ublas::matrix<std::complex<double>>>
 t_mat get_polmat(int which)
 {
-	//using t_cplx = typename t_mat::value_type;
-	//constexpr t_cplx j = t_cplx(0,1);
-
 	// all channels
 	if(which < 1 || which > 3) return tl2::unit_m<t_mat>(3);
 

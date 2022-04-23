@@ -9,7 +9,7 @@
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
  *	- The 2016 Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
- *	  This present version started as a C++ port of that Python implementation by M. Kugler and G. Brandl,
+ *	  This present version started as a C++ port of M. Kugler's and G. Brandl's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
  * @license GPLv2 (see 'LICENSE' file)
  */
