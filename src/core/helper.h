@@ -36,7 +36,8 @@ std::tuple<T, T, T> split_vec3d(const ublas::vector<T>& vec)
 template<class t_int = int>
 t_int abs_to_rel_idx(t_int h_idx, t_int ORDER)
 {
-	return (h_idx <= ORDER) ? h_idx : h_idx-2*ORDER-1;
+	const t_int SIZE = 2*ORDER + 1;
+	return (h_idx <= ORDER) ? h_idx : h_idx-SIZE;
 }
 
 

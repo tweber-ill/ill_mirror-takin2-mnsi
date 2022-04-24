@@ -35,6 +35,8 @@
 	#define DEF_HELI_ORDER 7
 #endif
 
+//#define __HELI_DIRECT_CALC
+
 
 /**
  * helix
@@ -141,9 +143,15 @@ private:
 
 	std::vector<t_mat_cplx> m_polMat =
 	{{
+#ifdef __HELI_DIRECT_CALC
+		get_chiralpol<t_mat_cplx>(1),   // SF1
+		get_chiralpol<t_mat_cplx>(2),   // SF2
+		get_chiralpol<t_mat_cplx>(3)    // NSF
+#else
 		get_polmat<t_mat_cplx>(2),	// SF1
 		get_polmat<t_mat_cplx>(1),	// SF2
 		get_polmat<t_mat_cplx>(3)	// NSF
+#endif
 	}};
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;

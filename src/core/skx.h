@@ -128,8 +128,8 @@ private:
 
 	// B matrix with 120 deg between (100) and (010), Q_lab = B*Q_rlu
 	t_mat m_Bmat = tl2::make_mat<t_mat>({
-		{1, std::cos(tl2::d2r<t_real>(120))},
-		{0, std::sin(tl2::d2r<t_real>(120))}
+		{ 1, std::cos(tl2::d2r<t_real>(120)) },
+		{ 0, std::sin(tl2::d2r<t_real>(120)) }
 	});
 	t_mat m_Binv{};
 

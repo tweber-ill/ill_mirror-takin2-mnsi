@@ -238,12 +238,9 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 	m_M(0,0) = m_fourier[0];
 
 	// generate all skx fourier components
-	t_mat rotLab = tl2::unit_m<t_mat>(2);
-	const t_mat rot60 = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60));
-
 	for(int rot_idx=0; rot_idx<6; ++rot_idx)
 	{
-		rotLab = tl2::prod_mm(rotLab, rot60);
+		const t_mat rotLab = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60*rot_idx));
 		const t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
 
 		for(std::size_t peak_idx=0; peak_idx<m_peaks60rlu.size(); ++peak_idx)
@@ -348,16 +345,16 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		std::vector<t_vec_int> pks = gen_peaks<t_vec_int>(MAXORDER);
 
 		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*pks.size(), 3*pks.size());
-		for(std::size_t idx1=0; idx1<pks.size(); ++idx1)
+		for(std::size_t h_idx=0; h_idx<pks.size(); ++h_idx)
 		{
-			for(std::size_t idx2=0; idx2<pks.size(); ++idx2)
+			for(std::size_t k_idx=0; k_idx<pks.size(); ++k_idx)
 			{
 				const t_mat_cplx& comp = get_flat_comp(
 					arr, SIZE, ORDER, MAXORDER,
-					pks[idx1][0] + Ghmag, pks[idx1][1] + Gkmag,
-					pks[idx2][0] + Ghmag, pks[idx2][1] + Gkmag);
+					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
+					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
 
-				tl2::submatrix_copy(mat, comp, idx1*3, idx2*3);
+				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
 			}
 		}
 		return mat;
@@ -384,13 +381,13 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 	t_real Bx, t_real By, t_real Bz,
 	t_real Pinx, t_real Piny, t_real Pinz)
 {
-	t_vec B = tl2::make_vec<t_vec>( {Bx, By, Bz} );
-	t_vec _Pin = tl2::make_vec<t_vec>( {Pinx, Piny, Pinz} );
+	t_vec B = tl2::make_vec<t_vec>({ Bx, By, Bz });
+	t_vec _Pin = tl2::make_vec<t_vec>({ Pinx, Piny, Pinz });
 
-	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>( {0, 0, 1} ));
+	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>({ 0, 0, 1 }));
 
 	t_vec Pin = tl2::quat_vec_prod(quatB, _Pin);
-	t_quat quatPin = tl2::rotation_quat(Pin, tl2::make_vec<t_vec>( {1, 0, 0} ));
+	t_quat quatPin = tl2::rotation_quat(Pin, tl2::make_vec<t_vec>({ 1, 0, 0 }));
 
 	m_rotCoord = quatPin * quatB;
 }
@@ -402,7 +399,7 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-	m_Grlu = tl2::make_vec<t_vec>({h, k, l});
+	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
 
 	t_vec G = m_Grlu / tl2::veclen(m_Grlu);
 	G = tl2::quat_vec_prod(m_rotCoord, G);
