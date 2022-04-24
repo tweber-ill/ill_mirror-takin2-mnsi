@@ -51,7 +51,7 @@ static std::vector<t_vec> gen_peaks(const int ORDER)
 
 
 /**
- * constructor
+ * constructor, precalculate loop indices
  */
 template<class t_real, class t_cplx, int ORDER>
 Skx<t_real, t_cplx, ORDER>::Skx()
@@ -221,6 +221,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm)
 {
+	m_fourier.reserve(ORDER_FOURIER+1);
 	m_fourier = fourier;
 	if(symm) // symmetrise
 	{

@@ -66,7 +66,7 @@ LIBDEFS = -fPIC
 DEFS = -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
 	-DNO_MINIMISATION -DNO_REDEFINITIONS \
 	-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 -DBC2_HAS_DIPOLAR=0 \
-	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI
+	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI -DHELI_DIRECT_CALC
 INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 # -----------------------------------------------------------------------------
 

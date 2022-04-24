@@ -35,11 +35,11 @@
 	#define DEF_HELI_ORDER 7
 #endif
 
-//#define __HELI_DIRECT_CALC
+//#define HELI_DIRECT_CALC
 
 
 /**
- * helix
+ * helical dynamics
  */
 template<class t_real=double, class t_cplx = std::complex<t_real>, int ORDER=4>
 class Heli : public MagSystem<t_real, t_cplx, ORDER>, public MagDynamics<t_real, t_cplx>
@@ -143,7 +143,7 @@ private:
 
 	std::vector<t_mat_cplx> m_polMat =
 	{{
-#ifdef __HELI_DIRECT_CALC
+#ifdef HELI_DIRECT_CALC
 		get_chiralpol<t_mat_cplx>(1),   // SF1
 		get_chiralpol<t_mat_cplx>(2),   // SF2
 		get_chiralpol<t_mat_cplx>(3)    // NSF
@@ -153,6 +153,7 @@ private:
 		get_polmat<t_mat_cplx>(3)	// NSF
 #endif
 	}};
+
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
 };

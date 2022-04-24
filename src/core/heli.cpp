@@ -27,7 +27,7 @@
 
 
 /**
- * constructor
+ * constructor, precalculate loop indices
  */
 template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
@@ -88,11 +88,8 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	cF += m0_sq*m0_sq;
 
 	const t_real mult = 2.;   // 2 * top peaks
-	//for(int i=-ORDER; i<=ORDER; ++i)
-	for(std::size_t i=1; i<=ORDER; ++i)
+	for(int i=/*-ORDER*/ 1; i<=ORDER; ++i)
 	{
-		//if(i <= 0) continue;
-
 		const t_vec_cplx& mi = get_comp(m_fourier, i);
 		t_vec_cplx mj = tl2::conjugate_vec(mi);
 		const auto m_sq = tl2::inner(mi, mj);
@@ -154,7 +151,9 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm)
 {
+	m_fourier.reserve(SIZE);
 	m_fourier = fourier;
+
 	if(symm) // symmetrise
 	{
 		for(t_vec_cplx& _fourier : m_fourier)
@@ -184,7 +183,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
 
-#ifdef __HELI_DIRECT_CALC
+#ifdef HELI_DIRECT_CALC
 	// M-cross tensor
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
 
@@ -353,7 +352,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 		Mx2d * g_g<t_real>, Fluc2d,
 		m_bProjNeutron, m_projNeutron, m_polMat,
 		g_muB<t_real> * m_Bc2, w_scale,
-		minE, maxE, m_eveps, /*m_evlimit*/ -1., m_weighteps,
+		minE, maxE, m_eveps, -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, mxrowbegin);
 }
 
@@ -364,10 +363,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-#ifdef __HELI_DIRECT_CALC
-	const bool bInChiralBase = false;
-#else
-	const bool bInChiralBase = true;
+	bool bInChiralBase = true;
+#ifdef HELI_DIRECT_CALC
+	bInChiralBase = false;
 #endif
 
 	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });

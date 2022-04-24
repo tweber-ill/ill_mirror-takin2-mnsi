@@ -26,7 +26,7 @@
 
 
 /**
- * FP
+ * field-polarised dynamics
  */
 template<class t_real=double, class t_cplx = std::complex<t_real>>
 class FP : public MagDynamics<t_real, t_cplx>
