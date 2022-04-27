@@ -35,7 +35,7 @@
 	#define DEF_HELI_ORDER 7
 #endif
 
-//#define HELI_DIRECT_CALC
+#define HELI_DIRECT_CALC
 
 
 /**

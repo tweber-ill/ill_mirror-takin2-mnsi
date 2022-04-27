@@ -136,7 +136,7 @@ if(show_scans != 0) {
 
 
 # weight factor
-weight_raw(w)         = sqrt(w) * 2.5
+weight_raw(w)         = (w > 5.) ? 5. : sqrt(w) * 2.5
 weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
 weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
 
