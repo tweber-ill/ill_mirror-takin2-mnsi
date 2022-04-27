@@ -32,7 +32,7 @@ int main()
 	std::vector<ublas::vector<t_cplx>> fourier{
 		tl2::make_vec<ublas::vector<t_cplx>>({0, 0, m_scale}),
 		// helical order => Re{M} perp. Im{M}
-		tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) /*/ std::sqrt(2)*/ * m_scale,
+		tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) / std::sqrt(2) * m_scale,
  	};
 
 	heli.SetFourier(fourier);
