@@ -183,174 +183,188 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
 
-#ifdef HELI_DIRECT_CALC
-	// M-cross tensor
-	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
+	t_mat_cplx Mx2d, Fluc2d;
+	t_real w_scale = 1.;
+	std::size_t mxrowbegin = 0;
+	std::vector<t_mat_cplx> polMat(3);
 
-	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
+	if(!m_explicitcalc)
 	{
-		const t_vec_cplx& vecM = get_comp(m_fourier, m_idx2[2][i]);
-		get_comp(*Mx, SIZE, m_idx2[0][i], m_idx2[1][i]) =
-			tl2::skew<t_mat_cplx>(vecM);
-	}
+		// M-cross tensor
+		auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
 
-	// fluctuation tensor
-	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
-
-	for(std::size_t i=0; i<m_idx3[3].size(); ++i)
-	{
-		const t_vec_cplx& vecM1 = get_comp(m_fourier, m_idx3[2][i]);
-		const t_vec_cplx& vecM2 = get_comp(m_fourier, m_idx3[3][i]);
-
-		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
-			4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
-		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE, m_idx3[0][i], m_idx3[1][i]);
-		assign_or_add(fluccomp, mat);
-	}
-
-	for(int pk_kh=-ORDER; pk_kh<=ORDER; ++pk_kh)
-	{
-		t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
-		const t_real Q_sq = tl2::inner(Q, Q);
-
-		auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+		for(std::size_t i=0; i<m_idx2[2].size(); ++i)
 		{
-			if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
-				return 0.;
-			return g_chi<t_real>/Q_sq * Qi*Qj;
+			const t_vec_cplx& vecM = get_comp(m_fourier, m_idx2[2][i]);
+			get_comp(*Mx, SIZE, m_idx2[0][i], m_idx2[1][i]) =
+				tl2::skew<t_mat_cplx>(vecM);
+		}
+
+		// fluctuation tensor
+		auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
+
+		for(std::size_t i=0; i<m_idx3[3].size(); ++i)
+		{
+			const t_vec_cplx& vecM1 = get_comp(m_fourier, m_idx3[2][i]);
+			const t_vec_cplx& vecM2 = get_comp(m_fourier, m_idx3[3][i]);
+
+			t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
+				4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
+			t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE, m_idx3[0][i], m_idx3[1][i]);
+			assign_or_add(fluccomp, mat);
+		}
+
+		for(int pk_kh=-ORDER; pk_kh<=ORDER; ++pk_kh)
+		{
+			t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
+			const t_real Q_sq = tl2::inner(Q, Q);
+
+			auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+			{
+				if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
+					return 0.;
+				return g_chi<t_real>/Q_sq * Qi*Qj;
+			};
+
+			t_mat_cplx mat(3, 3);
+			for(int i=0; i<3; ++i)  // diagonal
+				mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo +
+					Q_sq + g_hoc_b<t_real, HELI_USE_HOC>*Q_sq*Q_sq;
+			for(int i=0; i<2; ++i)  // off-diagonal
+			{
+				for(int j=i+1; j<3; ++j)
+				{
+					int k = 3 - i - j;                // third index in {0,1,2}
+					t_real sign = (k==1 ? 1. : -1.);  // - + -
+					mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
+					mat(j, i) = std::conj(mat(i, j));
+				}
+			}
+
+			assign_or_add(get_comp(*Fluc, SIZE, pk_kh, pk_kh), 2.*mat);
+		}
+
+		// M-cross and fluctuation matrix
+		auto mk_2dim = [](const decltype(*Mx)& arr) -> t_mat_cplx
+		{
+			t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*SIZE, 3*SIZE);
+			for(int h_idx=0; h_idx<SIZE; ++h_idx)
+			{
+				int h = abs_to_rel_idx(h_idx, ORDER);
+
+				for(int k_idx=0; k_idx<SIZE; ++k_idx)
+				{
+					int k = abs_to_rel_idx(k_idx, ORDER);
+
+					const t_mat_cplx& comp = get_comp(arr, SIZE, h, k);
+					tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
+				}
+			}
+			return mat;
 		};
 
-		t_mat_cplx mat(3, 3);
-		for(int i=0; i<3; ++i)  // diagonal
-			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo +
-				Q_sq + g_hoc_b<t_real, HELI_USE_HOC>*Q_sq*Q_sq;
-		for(int i=0; i<2; ++i)  // off-diagonal
-		{
-			for(int j=i+1; j<3; ++j)
-			{
-				int k = 3 - i - j;                // third index in {0,1,2}
-				t_real sign = (k==1 ? 1. : -1.);  // - + -
-				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
-				mat(j, i) = std::conj(mat(i, j));
-			}
-		}
-
-		assign_or_add(get_comp(*Fluc, SIZE, pk_kh, pk_kh), 2.*mat);
+		Mx2d = mk_2dim(*Mx) / m_Bc2_theo;
+		Fluc2d = mk_2dim(*Fluc);
+		w_scale = 1.;
+		mxrowbegin = 0;
+		polMat[0] = get_chiralpol<t_mat_cplx>(1);   // SF1
+		polMat[1] = get_chiralpol<t_mat_cplx>(2);   // SF2
+		polMat[2] = get_chiralpol<t_mat_cplx>(3);   // NSF
 	}
-
-	// M-cross and fluctuation matrix
-	auto mk_2dim = [](const decltype(*Mx)& arr) -> t_mat_cplx
+	else
 	{
-		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*SIZE, 3*SIZE);
-		for(int h_idx=0; h_idx<SIZE; ++h_idx)
-		{
-			int h = abs_to_rel_idx(h_idx, ORDER);
+		const t_cplx hx = qh - imag*qk;
+		constexpr t_real A1 = g_hoc<t_real>;
+		constexpr t_real A2 = A1*A1;
+		constexpr t_real A3 = A2*A1;
+		constexpr t_real interact = 88.;
 
-			for(int k_idx=0; k_idx<SIZE; ++k_idx)
+		static const t_real Dqmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
+			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
+			(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A1 + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
+			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
+		static const t_real Aqmin4 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
+			imag*std::pow(3., 1./6.)*(std::sqrt(3.)-imag) *
+			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.), 2.) /
+			(24.*std::pow(2., 1./3.) * A1*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
+		static const t_real pitch_qmin = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
+			(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A1))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) -
+			A1*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) +
+			std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))) /
+			(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) *
+			(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A1 - imag*std::pow(3., 1./6) *
+			(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.)))).real();
+
+		const t_real M_amp = m_B / m_Bc2;
+		const t_real heli_amp = std::sqrt(0.5 - 0.5*M_amp*M_amp);
+
+		Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+		Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
+		w_scale = g_g<t_real>;
+		mxrowbegin = 3*ORDER;
+
+		for(int pk=0; pk<SIZE; ++pk)
+		{
+			const t_real qz = ql + t_real(pk) - t_real(ORDER);
+			const t_real q2 = qh*qh + qk*qk + qz*qz;
+
+			// M-cross matrix
+			Mx2d(3*pk + 0, 3*pk + 0) = -imag*M_amp;
+			Mx2d(3*pk + 1, 3*pk + 1) = imag*M_amp;
+
+			if(pk > 0)
 			{
-				int k = abs_to_rel_idx(k_idx, ORDER);
-
-				const t_mat_cplx& comp = get_comp(arr, SIZE, h, k);
-				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
+				Mx2d(3*pk + 2, 3*(pk-1) + 0) = imag*heli_amp;
+				Mx2d(3*pk + 1, 3*(pk-1) + 2) = -imag*heli_amp;
 			}
-		}
-		return mat;
-	};
 
-	t_mat_cplx Mx2d = mk_2dim(*Mx) / m_Bc2_theo;
-	t_mat_cplx Fluc2d = mk_2dim(*Fluc);
-	const t_real w_scale = 1.;
-	const std::size_t mxrowbegin = 0;
+			if(pk < SIZE-1)
+			{
+				Mx2d(3*pk + 0, 3*(pk+1) + 2) = imag*heli_amp;
+				Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*heli_amp;
+			}
 
-#else
-	const t_cplx hx = qh - imag*qk;
-	constexpr t_real A1 = g_hoc<t_real>;
-	constexpr t_real A2 = A1*A1;
-	constexpr t_real A3 = A2*A1;
-	constexpr t_real interact = 88.;
+			// fluctuation matrix
+			auto get_dip = [this](t_real q, t_real q_sq) -> t_real
+			{
+				if(tl2::float_equal<t_real>(q_sq, 0., m_eps))
+					return 0.;
+				return g_chi<t_real>/q_sq * q;
+			};
 
-	static const t_real Dqmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
-		(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A1 + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
-	static const t_real Aqmin4 = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
-		imag*std::pow(3., 1./6.)*(std::sqrt(3.)-imag) *
-		std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.), 2.) /
-		(24.*std::pow(2., 1./3.) * A1*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
-	static const t_real pitch_qmin = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
-		(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A1))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) -
-		A1*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) +
-		std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))) /
-		(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) *
-		(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A1 - imag*std::pow(3., 1./6) *
-		(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.)))).real();
+			Fluc2d(3*pk + 0, 3*pk + 0) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*heli_amp*heli_amp
+				+ 0.5*get_dip(qh*qh + qk*qk, q2) + 2.*Dqmin*qz;
+			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
+			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - Dqmin) * std::sqrt(2) * hx;
 
-	const t_real M_amp = m_B / m_Bc2;
-	const t_real heli_amp = std::sqrt(0.5 - 0.5*M_amp*M_amp);
+			Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
+			Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*Dqmin*qz;
+			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
 
-	t_mat_cplx Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
-	t_mat_cplx Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
-	const t_real w_scale = g_g<t_real>;
-	const std::size_t mxrowbegin = 3*ORDER;
+			Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
+			Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
+			Fluc2d(3*pk + 2, 3*pk + 2) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*M_amp*M_amp
+				+ get_dip(qz*qz, q2);
 
-	for(int pk=0; pk<SIZE; ++pk)
-	{
-		const t_real qz = ql + t_real(pk) - t_real(ORDER);
-		const t_real q2 = qh*qh + qk*qk + qz*qz;
-
-		// M-cross matrix
-		Mx2d(3*pk + 0, 3*pk + 0) = -imag*M_amp;
-		Mx2d(3*pk + 1, 3*pk + 1) = imag*M_amp;
-
-		if(pk > 0)
-		{
-			Mx2d(3*pk + 2, 3*(pk-1) + 0) = imag*heli_amp;
-			Mx2d(3*pk + 1, 3*(pk-1) + 2) = -imag*heli_amp;
+			if(pk > 0)
+				Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
+			if(pk < SIZE-1)
+				Fluc2d(3*pk + 2, 3*(pk+1) + 1) = Fluc2d(3*pk + 0, 3*(pk+1) + 2) = interact/3.*M_amp*heli_amp;
+			if(pk > 1)
+				Fluc2d(3*pk + 1, 3*(pk-2) + 0) = interact/3.*heli_amp*heli_amp;
+			if(pk < SIZE-2)
+				Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact/3.*heli_amp*heli_amp;
 		}
 
-		if(pk < SIZE-1)
-		{
-			Mx2d(3*pk + 0, 3*(pk+1) + 2) = imag*heli_amp;
-			Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*heli_amp;
-		}
-
-		// fluctuation matrix
-		auto get_dip = [this](t_real q, t_real q_sq) -> t_real
-		{
-			if(tl2::float_equal<t_real>(q_sq, 0., m_eps))
-				return 0.;
-			return g_chi<t_real>/q_sq * q;
-		};
-
-		Fluc2d(3*pk + 0, 3*pk + 0) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*heli_amp*heli_amp
-			+ 0.5*get_dip(qh*qh + qk*qk, q2) + 2.*Dqmin*qz;
-		Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
-		Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - Dqmin) * std::sqrt(2) * hx;
-
-		Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
-		Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*Dqmin*qz;
-		Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
-
-		Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
-		Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
-		Fluc2d(3*pk + 2, 3*pk + 2) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*M_amp*M_amp
-			+ get_dip(qz*qz, q2);
-
-		if(pk > 0)
-			Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
-		if(pk < SIZE-1)
-			Fluc2d(3*pk + 2, 3*(pk+1) + 1) = Fluc2d(3*pk + 0, 3*(pk+1) + 2) = interact/3.*M_amp*heli_amp;
-		if(pk > 1)
-			Fluc2d(3*pk + 1, 3*(pk-2) + 0) = interact/3.*heli_amp*heli_amp;
-		if(pk < SIZE-2)
-			Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact/3.*heli_amp*heli_amp;
+		polMat[0] = get_polmat<t_mat_cplx>(2); // SF1
+		polMat[1] = get_polmat<t_mat_cplx>(1); // SF2
+		polMat[2] = get_polmat<t_mat_cplx>(3); // NSF
 	}
-#endif
 
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d * g_g<t_real>, Fluc2d,
-		m_bProjNeutron, m_projNeutron, m_polMat,
+		m_bProjNeutron, m_projNeutron, polMat,
 		g_muB<t_real> * m_Bc2, w_scale,
 		minE, maxE, m_eveps, -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, mxrowbegin);
@@ -363,17 +377,13 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 template<class t_real, class t_cplx, int ORDER>
 void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 {
-	bool bInChiralBase = true;
-#ifdef HELI_DIRECT_CALC
-	bInChiralBase = false;
-#endif
-
 	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
 
 	t_vec _G = m_Grlu / tl2::veclen(m_Grlu);
 	_G = tl2::quat_vec_prod(m_rotCoord, _G);
 	t_vec_cplx G = _G;
 
+	bool bInChiralBase = m_explicitcalc;
 	if(bInChiralBase)
 	{
 		t_mat_cplx chiral = get_chiralbasismat<t_mat_cplx, t_vec_cplx>();

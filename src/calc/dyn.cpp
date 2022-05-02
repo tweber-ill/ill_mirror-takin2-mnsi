@@ -47,7 +47,8 @@ static void calc_disp(char dyntype,
 	t_real qperpdir_x, t_real qperpdir_y, t_real qperpdir_z, t_real qperp,
 	const char* pcFile, bool bSwapQParaQPerp=0,
 	t_real T=-1., t_real B=-1.,
-	t_real qrange = 0.125, t_real delta = 0.001)
+	t_real qrange = 0.125, t_real delta = 0.001,
+	bool explicit_calc = true)
 {
 	tl2::Stopwatch<t_real> timer;
 	timer.start();
@@ -74,6 +75,7 @@ static void calc_disp(char dyntype,
 	{
 		std::cout << "Calculating helical dispersion." << std::endl;
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
+		heli->SetExplicitCalc(explicit_calc);
 		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
 		print_groundstate(heli->GetFourier());
 		dyn = heli;
@@ -272,6 +274,7 @@ int main()
 	t_real qrange = 0.125;
 	t_real qdelta = 0.001;
 	int alongqpara = 0;
+	int explicit_calc = 1;
 
 	std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
 	std::cin >> dyntype; dyntype = std::tolower(dyntype);
@@ -289,6 +292,12 @@ int main()
 		std::cin >> B;
 		std::cout << "T = ";
 		std::cin >> T;
+
+		if(dyntype == 'h')
+		{
+			std::cout << "Explicit calculation? [1/0]: ";
+			std::cin >> explicit_calc;
+		}
 	}
 	else if(dyntype == 's')
 	{
@@ -305,8 +314,8 @@ int main()
 	calc_disp(dyntype, Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 		qperpx,qperpy,qperpz, qperp,
 		"dyn.dat", alongqpara==0,
-		T, B,
-		qrange, qdelta);
+		T, B, qrange, qdelta,
+		explicit_calc!=0);
 
 	return 0;
 }

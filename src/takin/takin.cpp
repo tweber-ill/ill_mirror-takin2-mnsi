@@ -102,14 +102,14 @@ SqwMod::SqwMod()
 
 	m_skx.SetT(-1000., false);
 	m_skx.SetB(m_skx.GetBC2(false)/2., false);
-	m_skx.SetT(29., true);
-	m_fp.SetT(29., true);
+	m_skx.SetT(28.5, true);
+	m_fp.SetT(28.5, true);
 	m_fp.SetB(0.35, true);
 	m_heli.SetT(-1000., false);
 	m_heli.SetB(25., false);
-	m_heli.SetT(29., true);
+	m_heli.SetT(28.5, true);
 	m_heli.SetB(0.35, true);
-	m_lf.SetT(29.);
+	m_lf.SetT(28.5);
 
 	m_heli.SetFourier(_get_heli_gs<t_vec_cplx>());
 	m_skx.SetFourier(_get_skx_gs<t_vec_cplx>());
@@ -216,6 +216,8 @@ std::vector<SqwMod::t_var> SqwMod::GetVars() const
 	vecVars.push_back(SqwBase::t_var{"B_dir", "vector", vec_to_str(m_vecB)});
 	vecVars.push_back(SqwBase::t_var{"Pin_dir", "vector", vec_to_str(m_vecPin)});
 
+	vecVars.push_back(SqwBase::t_var{"explicit_calc", "int", tl2::var_to_str(m_heli.GetExplicitCalc())});
+
 	vecVars.push_back(SqwBase::t_var{"lf_only", "int", tl2::var_to_str(m_ionlylf)});
 	vecVars.push_back(SqwBase::t_var{"lf_invcorrel", "real", tl2::var_to_str(m_lf.GetInvCorrel())});
 	vecVars.push_back(SqwBase::t_var{"lf_A", "real", tl2::var_to_str(m_lf.GetA())});
@@ -234,14 +236,38 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 		const std::string& strVar = std::get<0>(var);
 		const std::string& strVal = std::get<2>(var);
 
-		if(strVar == "proj_neutron") m_iProjNeutron = tl2::str_to_var<int>(strVal);
-		else if(strVar == "which_disp") m_iwhich_disp = tl2::str_to_var<int>(strVal);
-		else if(strVar == "E_range") m_dErange = tl2::str_to_var<t_real>(strVal);
-		else if(strVar == "bose_cutoff") m_dcut = tl2::str_to_var<t_real>(strVal);
-		else if(strVar == "sigma") m_dSigma = tl2::str_to_var<t_real>(strVal);
-		else if(strVar == "inc_amp") m_dIncAmp = tl2::str_to_var<decltype(m_dIncAmp)>(strVal);
-		else if(strVar == "inc_sigma") m_dIncSigma = tl2::str_to_var<decltype(m_dIncSigma)>(strVal);
-		else if(strVar == "S0") m_dS0 = tl2::str_to_var<decltype(m_dS0)>(strVal);
+		if(strVar == "proj_neutron")
+		{
+			m_iProjNeutron = tl2::str_to_var<int>(strVal);
+		}
+		else if(strVar == "which_disp")
+		{
+			m_iwhich_disp = tl2::str_to_var<int>(strVal);
+		}
+		else if(strVar == "E_range")
+		{
+			m_dErange = tl2::str_to_var<t_real>(strVal);
+		}
+		else if(strVar == "bose_cutoff")
+		{
+			m_dcut = tl2::str_to_var<t_real>(strVal);
+		}
+		else if(strVar == "sigma")
+		{
+			m_dSigma = tl2::str_to_var<t_real>(strVal);
+		}
+		else if(strVar == "inc_amp")
+		{
+			m_dIncAmp = tl2::str_to_var<decltype(m_dIncAmp)>(strVal);
+		}
+		else if(strVar == "inc_sigma")
+		{
+			m_dIncSigma = tl2::str_to_var<decltype(m_dIncSigma)>(strVal);
+		}
+		else if(strVar == "S0")
+		{
+			m_dS0 = tl2::str_to_var<decltype(m_dS0)>(strVal);
+		}
 		else if(strVar == "only_mode")
 		{
 			m_iOnlyMode = tl2::str_to_var<int>(strVal);
@@ -264,7 +290,10 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 			m_heli.SetB(m_dB, true);
 			m_skx.SetB(m_dB, true);
 		}
-		else if(strVar == "pol_chan") m_iPolChan = tl2::str_to_var<decltype(m_iPolChan)>(strVal);
+		else if(strVar == "pol_chan")
+		{
+			m_iPolChan = tl2::str_to_var<decltype(m_iPolChan)>(strVal);
+		}
 		else if(strVar == "G" || strVal == "proj_neutron")
 		{
 			m_vecG = str_to_vec<decltype(m_vecG)>(strVal);
@@ -303,6 +332,11 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 
 			m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2],
 				m_vecB[0],m_vecB[1],m_vecB[2]);
+		}
+
+		else if(strVar == "explicit_calc")
+		{
+			m_heli.SetExplicitCalc(tl2::str_to_var<int>(strVal) != 0);
 		}
 
 		else if(strVar == "lf_only")

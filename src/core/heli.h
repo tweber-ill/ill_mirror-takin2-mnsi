@@ -35,8 +35,6 @@
 	#define DEF_HELI_ORDER 7
 #endif
 
-//#define HELI_DIRECT_CALC
-
 
 /**
  * helical dynamics
@@ -114,6 +112,9 @@ public:
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 
+	bool GetExplicitCalc() const { return m_explicitcalc; }
+	void SetExplicitCalc(bool b) { m_explicitcalc = true; }
+
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
 
@@ -141,21 +142,10 @@ private:
 	t_vec m_Grlu{};
 	t_quat m_rotCoord{};
 
-	std::vector<t_mat_cplx> m_polMat =
-	{{
-#ifdef HELI_DIRECT_CALC
-		get_chiralpol<t_mat_cplx>(1),   // SF1
-		get_chiralpol<t_mat_cplx>(2),   // SF2
-		get_chiralpol<t_mat_cplx>(3)    // NSF
-#else
-		get_polmat<t_mat_cplx>(2),	// SF1
-		get_polmat<t_mat_cplx>(1),	// SF2
-		get_polmat<t_mat_cplx>(3)	// NSF
-#endif
-	}};
-
 	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
+
+	bool m_explicitcalc = true;
 };
 
 
