@@ -169,22 +169,14 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		if(!tl2::float_equal<t_real>(q_sq, 0., m_eps))
 			cF += mult * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
-		// dmi
-		cF += -2. * mult * t_cplx(0, 1) * tl2::inner(m, tl2::cross_3(qc, mj));
-
-		// phi^2
-		cF += mult * m_sq * q_sq;
-		cF += mult * (m_T + 1.) * m_sq;
-
-		// phi^4
-		cF += mult * m0_sq * m_sq;
-
-		// high-order correction
-		cF += mult * g_hoc_b<t_real, SKX_USE_HOC> * m_sq * q_sq*q_sq;
+		cF += -2. * mult * t_cplx(0, 1) * tl2::inner(m, tl2::cross_3(qc, mj)); // dmi
+		cF += mult * m_sq * q_sq;        // phi^2
+		cF += mult * (m_T + 1.) * m_sq;  // phi^2
+		cF += mult * m0_sq * m_sq;       // phi^4
+		cF += mult * g_hoc_b<t_real, SKX_USE_HOC> * m_sq * q_sq*q_sq; // high-order correction
 	}
 
-	// phi^4
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // phi^4
 	{
 		const int hk[2] = { -m_idx2[0][i].first, -m_idx2[0][i].second };
 		if(!is_hk_in_top_half(hk[0], hk[1]))
@@ -196,7 +188,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
-	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx3[0].size(); ++i)  // phi^4
 	{
 		const int hk[2] = { -m_idx3[0][i].first, -m_idx3[0][i].second };
 		if(!is_hk_in_top_half(hk[0], hk[1]))
@@ -249,18 +241,17 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 			const t_vec pk_rlu = tl2::prod_mv(rotRlu, m_peaks60rlu[peak_idx]);
 			const int hk[2] = { lattidx(pk_rlu[0]), lattidx(pk_rlu[1]) };
 
-			t_vec_cplx fourier = tl2::make_vec<t_vec_cplx>({ 0., 0. });
+			t_vec_cplx& M = get_comp(m_M, hk[0], hk[1]);
+			t_vec_cplx m(2);
+
 			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
 			{
-				fourier[1] = m_peaks60lab[peak_idx][0] * m_fourier[peak_idx+1][0];
-				fourier[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
-				fourier = tl2::prod_mv(rotLab, fourier);
+				m[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
+				m[1] = m_peaks60lab[peak_idx][0] * m_fourier[peak_idx+1][0];
+				m = tl2::prod_mv(rotLab, m);
 			}
 
-			fourier.resize(3, true);
-			fourier[2] = m_fourier[peak_idx+1][2];
-
-			get_comp(m_M, hk[0], hk[1]) = fourier;
+			M[0] = m[0]; M[1] = m[1]; M[2] = m_fourier[peak_idx+1][2];
 		}
 	}
 }
@@ -361,12 +352,9 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		return mat;
 	};
 
-	t_mat_cplx Mx2d = mk_2dim(*Mx);
-	t_mat_cplx Fluc2d = mk_2dim(*Fluc);
-
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-		Mx2d * g_g<t_real> / m_Bc2, Fluc2d,
+		mk_2dim(*Mx) * g_g<t_real> / m_Bc2, mk_2dim(*Fluc),
 		m_bProjNeutron, m_projNeutron, m_polMat,
 		g_muB<t_real> * m_Bc2_exp, 1.,
 		minE, maxE, m_eveps, m_evlimit, m_weighteps,
