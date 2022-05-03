@@ -19,17 +19,17 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1651488641.347463</timestamp>
+		<timestamp>1651571363.211425</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>tw</user>
 		<version>2.1.0</version>
 	</meta>
 	<monteconvo>
-		<E_from>3.000000e-01</E_from>
-		<E_to>-1.000000e+00</E_to>
+		<E_from>4.980000e-02</E_from>
+		<E_to>-5.752000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
-		<S_offs>0.7e-6</S_offs>
-		<S_scale>0.4e4</S_scale>
+		<S_offs>1e-6</S_offs>
+		<S_scale>1.25e3</S_scale>
 		<S_slope>0</S_slope>
 		<algo>1</algo>
 		<ana_foc>0</ana_foc>
@@ -38,25 +38,25 @@
 		<filter_col/>
 		<filter_val/>
 		<fixedk>0</fixedk>
-		<h_from>9.350000e-01</h_from>
-		<h_to>9.350000e-01</h_to>
+		<h_from>1.000000e+00</h_from>
+		<h_to>1.000000e+00</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>mira3010.taz</instr>
-		<k_from>9.350000e-01</k_from>
-		<k_to>9.350000e-01</k_to>
+		<instr>mira3030.taz</instr>
+		<k_from>1.000000e+00</k_from>
+		<k_to>1.000000e+00</k_to>
 		<k_to_2>1.070000e+00</k_to_2>
 		<kfix>1.240000e+00</kfix>
-		<l_from>0.000000e+00</l_from>
-		<l_to>0.000000e+00</l_to>
+		<l_from>-8.480000e-02</l_from>
+		<l_to>-8.490000e-02</l_to>
 		<l_to_2>0.000000e+00</l_to_2>
 		<mono_foc>0</mono_foc>
 		<neutron_count>250</neutron_count>
 		<sample_step_count>1</sample_step_count>
 		<scan_2d>0</scan_2d>
-		<scanfile>data/mlz_mira/exp_15633/data/15633_00042636.dat;data/mlz_mira/exp_15633/data/15633_00042650.dat;data/mlz_mira/exp_15633/data/15633_00042651.dat</scanfile>
+		<scanfile>data/mlz_mira/exp_15633/data/15633_00042656.dat</scanfile>
 		<sqw>skxmod</sqw>
-		<sqw_conf></sqw_conf>
+		<sqw_conf/>
 		<sqw_errors>
 			<B>0</B>
 			<B_dir>0</B_dir>
@@ -111,7 +111,7 @@
 			<T>28.5</T>
 			<bose_cutoff>0.001</bose_cutoff>
 			<explicit_calc>1</explicit_calc>
-			<inc_amp>45</inc_amp>
+			<inc_amp>12</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0.5</lf_gamma>
