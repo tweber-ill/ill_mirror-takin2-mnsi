@@ -73,7 +73,7 @@ public:
 		return exp ? m_Bc2 : 0.;
 	}
 
-	virtual void SetG(t_real h, t_real k, t_real l) override;
+	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) override;
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) override;
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 	virtual void SetFilterZeroWeight(bool b) override {}

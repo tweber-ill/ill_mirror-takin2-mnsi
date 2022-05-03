@@ -107,13 +107,13 @@ public:
 	using MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise;
 
 
-	virtual void SetG(t_real h, t_real k, t_real l) override;
+	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) override;
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) override;
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 
 	bool GetExplicitCalc() const { return m_explicitcalc; }
-	void SetExplicitCalc(bool b) { m_explicitcalc = true; }
+	void SetExplicitCalc(bool b) { m_explicitcalc = b; }
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;

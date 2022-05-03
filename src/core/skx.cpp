@@ -386,13 +386,16 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
  * set the lattice vector and orthogonal projector
  */
 template<class t_real, class t_cplx, int ORDER>
-void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
+void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l, bool only_proj)
 {
 	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
 
 	t_vec G = m_Grlu / tl2::veclen(m_Grlu);
 	G = tl2::quat_vec_prod(m_rotCoord, G);
 	m_projNeutron = tl2::unit_m<t_mat>(3) - tl2::outer<t_vec, t_mat>(G, G);
+
+	if(only_proj)
+		m_Grlu = tl2::make_vec<t_vec>({ 0., 0., 0. });
 }
 
 

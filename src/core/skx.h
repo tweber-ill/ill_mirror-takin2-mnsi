@@ -98,7 +98,7 @@ public:
 
 
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Pinx, t_real Piny, t_real Pinz) override;
-	virtual void SetG(t_real h, t_real k, t_real l) override;
+	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) override;
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 

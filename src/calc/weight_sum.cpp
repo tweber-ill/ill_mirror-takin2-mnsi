@@ -24,25 +24,27 @@ using t_vec_cplx = ublas::vector<t_cplx>;
 
 const t_real g_T = 28.5;
 const t_real g_eps = 1e-5;
+const t_real g_weight_eps = 1e-6;
 
 #define E_BINS 200
 #define NUM_ANGLES 512
 #define COL_SIZE 15
 
 
-void calc_disp(
-	t_real Gx, t_real Gy, t_real Gz,
-	t_real Bx, t_real By, t_real Bz,
-	t_real Px, t_real Py, t_real Pz,
-	t_real q, int iProj = 1)
+void calc_disp(const t_vec& Gvec,
+	const t_vec& Bvec, const t_vec& Pvec,
+	t_real q, bool bProj = true)
 {
+	t_vec Pperpvec = tl2::cross_3(Pvec, Bvec);
+	Pperpvec /= tl2::veclen(Pperpvec);
+
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
 	skx.SetFourier(_get_skx_gs<t_vec_cplx>());
 
-	skx.SetProjNeutron(iProj!=0);
-	heli.SetProjNeutron(iProj!=0);
+	skx.SetProjNeutron(bProj);
+	heli.SetProjNeutron(bProj);
 
 	skx.SetT(-1000., false);
 	heli.SetT(-1000., false);
@@ -56,21 +58,19 @@ void calc_disp(
 	skx.SetFilterZeroWeight(1);
 	heli.SetFilterZeroWeight(1);
 
-	skx.SetWeightEps(1e-6);
-	heli.SetWeightEps(1e-6);
+	skx.SetWeightEps(g_weight_eps);
+	heli.SetWeightEps(g_weight_eps);
 
-	skx.SetCoords(Bx,By,Bz, Px,Py,Pz);
-	heli.SetCoords(Bx,By,Bz);
+	skx.SetCoords(Bvec[0], Bvec[1], Bvec[2], Pvec[0], Pvec[1], Pvec[2]);
+	heli.SetCoords(Bvec[0], Bvec[1], Bvec[2]);
 
-	skx.SetG(Gx, Gy, Gz);
-	heli.SetG(Gx, Gy, Gz);
-
+	skx.SetG(Gvec[0], Gvec[1], Gvec[2]);
+	heli.SetG(Gvec[0], Gvec[1], Gvec[2]);
 
 	t_real Erange = 0.1;
 
-	t_real angle_offs = 90/180.*M_PI;
-	t_real angle_begin = -135/180.*M_PI + angle_offs;
-	t_real angle_end = 135/180.*M_PI + angle_offs;
+	t_real angle_begin = -45/180.*M_PI;
+	t_real angle_end = 180/180.*M_PI - 45/180.*M_PI;
 	t_real angle_delta = 2*M_PI/t_real(NUM_ANGLES);
 
 	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
@@ -101,23 +101,25 @@ void calc_disp(
 
 	for(t_real angle=angle_begin; angle<angle_end; angle+=angle_delta)
 	{
-		t_real Qx = q * cos(angle) + Gx;
-		t_real Qy = q * sin(angle) + Gy;
-		t_real Qz = Gz;
+		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));
+		t_vec Qvec = Gvec + qvec;
 
-		std::cout << "# angle: " << angle/M_PI*180. << ", Q = (" << Qx << ", " << Qy << ", " << Qz << ")" << std::endl;
+		skx.SetG(Qvec[0], Qvec[1], Qvec[2], true);
+		heli.SetG(Qvec[0], Qvec[1], Qvec[2], true);
+
+		std::cout << "# angle: " << angle/M_PI*180. << ", Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")" << std::endl;
 
 		{
-			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qx, Qy, Qz, -Erange, Erange);
+			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 			for(std::size_t i=0; i<Es.size(); ++i)
 			{
 				histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
 				histWeightsSF(Es[i], hist::weight(wsSF1[i]));
 
 				ofstr_raw << std::left << std::setw(COL_SIZE) << angle
-					<< " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
-					<< " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
-					<< " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
 					<< " " << std::left << std::setw(COL_SIZE) << Es[i]
 					<< " " << std::left << std::setw(COL_SIZE) << wsSF1[i]
 					<< " " << std::left << std::setw(COL_SIZE) << wsSF2[i]
@@ -127,16 +129,16 @@ void calc_disp(
 		}
 
 		{
-			auto [EsH, wsUnpolH, wsSF1H, wsSF2H, wsNSFH] = heli.GetDisp(Qx, Qy, Qz, -Erange, Erange);
+			auto [EsH, wsUnpolH, wsSF1H, wsSF2H, wsNSFH] = heli.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 			for(std::size_t i=0; i<EsH.size(); ++i)
 			{
 				histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
 				histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
 
 				ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
-					<< " " << std::left << std::setw(COL_SIZE) << (Qx-Gx)
-					<< " " << std::left << std::setw(COL_SIZE) << (Qy-Gy)
-					<< " " << std::left << std::setw(COL_SIZE) << (Qz-Gz)
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
+					<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
 					<< " " << std::left << std::setw(COL_SIZE) << EsH[i]
 					<< " " << std::left << std::setw(COL_SIZE) << wsSF1H[i]
 					<< " " << std::left << std::setw(COL_SIZE) << wsSF2H[i]
@@ -147,7 +149,7 @@ void calc_disp(
 	}
 
 
-	std::ofstream ofstrBinned("../data/weightbin.dat");
+	std::ofstream ofstrBinned("weightbin.dat");
 	ofstrBinned.precision(8);
 
 	ofstrBinned << std::left << std::setw(COL_SIZE) << "# E (meV)"
@@ -210,14 +212,16 @@ void calc_disp(
 
 int main()
 {
-	t_real Gx = 0., Gy = 0., Gz = 0.;	// around (000)
-	//t_real Gx = 1., Gy = 1., Gz = 0.;	// around (110)
-	int proj = 0;	// using the orthogonal 1-|Q><Q| projector
+	t_vec Gvec = tl2::make_vec<t_vec>({ 0., 0., 0. });
+	t_vec Pvec = tl2::make_vec<t_vec>({ 1., 1., 0. });
+	t_vec Bvec = tl2::make_vec<t_vec>({ 0., 0., 1. });
 
-	t_real Bx = 0., By = 0., Bz = 1.;
-	t_real Px = 1., Py = 1., Pz = 0.;
+	Pvec /= tl2::veclen(Pvec);
+	Bvec /= tl2::veclen(Bvec);
+
 	t_real q = 0.0123;
+	bool proj = true;	// using the orthogonal 1-|Q><Q| projector
 
-	calc_disp(Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, q, proj);
+	calc_disp(Gvec, Bvec, Pvec, q, proj);
 	return 0;
 }

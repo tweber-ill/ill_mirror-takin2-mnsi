@@ -375,7 +375,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
  * set the lattice vector and orthogonal projector
  */
 template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
+void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l, bool only_proj)
 {
 	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
 
@@ -395,6 +395,9 @@ void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l)
 
 	if(bInChiralBase)
 		m_projNeutron = tl2::conjugate_mat(m_projNeutron);
+
+	if(only_proj)
+		m_Grlu = tl2::make_vec<t_vec>({ 0., 0., 0. });
 }
 
 
