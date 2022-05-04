@@ -29,6 +29,7 @@ ifneq ($(mingw_build), 1)
 	LIBBOOSTSYS = -lboost_system
 	LIBBOOSTFILESYS = -lboost_filesystem
 	LIBBOOSTIO = -lboost_iostreams
+	LIBBOOSOPTS = -lboost_program_options
 
 	BIN_SUFFIX =
 else
@@ -42,6 +43,7 @@ else
 	LIBBOOSTSYS = -lboost_system-x64
 	LIBBOOSTFILESYS = -lboost_filesystem-x64
 	LIBBOOSTIO = -lboost_iostreams-x64
+	LIBBOOSOPTS = -lboost_program_options-x64
 
 	BIN_SUFFIX = .exe
 endif
@@ -151,7 +153,7 @@ bin/tof: src/takin/tof.o
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o \

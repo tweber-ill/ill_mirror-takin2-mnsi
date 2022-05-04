@@ -13,6 +13,10 @@
 #include <future>
 #include <memory>
 
+#include <boost/make_shared.hpp>
+#include <boost/program_options.hpp>
+namespace opts = boost::program_options;
+
 #ifndef __MINGW32__
 	#include <pwd.h>
 #endif
@@ -404,6 +408,7 @@ int main(int argc, char **argv)
 		<< "\tDispersion calculation tool,\n\t\tT. Weber <tweber@ill.fr>, August 2018.\n"
 		<< "--------------------------------------------------------------------------------\n\n";
 
+	// arguments for simple Q path calculation
 	char dyntype = 's';
 	t_real Gx = 1., Gy = 1., Gz = 0.;
 	t_real Bx = 1., By = 1., Bz = 0.;
@@ -418,6 +423,7 @@ int main(int argc, char **argv)
 	bool use_para_perp_calc = true;
 	std::string outfile = "dyn.dat";
 
+	// arguments for arbitrary Q path calculation
 	t_real qh_start = 0., qk_start = 0., ql_start = 0.;
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
 	std::size_t num_points = 256;
@@ -467,10 +473,138 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		std::string cfg = argv[1];
-		std::cout << "Using configuration file \"" << cfg << "\".\n" << std::endl;
+		try
+		{
+			opts::basic_command_line_parser<char> clparser(argc, argv);
+			opts::options_description args("program arguments");
 
-		// TODO: read in configuration parameters
+			bool show_help = false;
+			args.add(boost::make_shared<opts::option_description>(
+				"help", opts::bool_switch(&show_help),
+				"show program usage"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"verbose", opts::bool_switch(&use_para_perp_calc),
+				"use simple Q path calculation"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"dyntype", opts::value<decltype(dyntype)>(&dyntype),
+				"dispersion type [s/h/f]"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"explicit_calc", opts::bool_switch(&explicit_calc),
+				"use explicit calculation"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"along_qpara", opts::bool_switch(&alongqpara),
+				"calculate dispersion along q_parallel"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"outfile", opts::value<decltype(outfile)>(&outfile),
+				"output file name"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"Gx", opts::value<decltype(Gx)>(&Gx),
+				"lattice vector x component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Gy", opts::value<decltype(Gy)>(&Gy),
+				"lattice vector y component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Gz", opts::value<decltype(Gz)>(&Gz),
+				"lattice vector z component"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"Bx", opts::value<decltype(Bx)>(&Bx),
+				"magnetic field vector x component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"By", opts::value<decltype(By)>(&By),
+				"magnetic field vector y component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Bz", opts::value<decltype(Bz)>(&Bz),
+				"magnetic field vector z component"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"Px", opts::value<decltype(Px)>(&Px),
+				"pinning vector x component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Py", opts::value<decltype(Py)>(&Py),
+				"pinning vector y component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Pz", opts::value<decltype(Pz)>(&Pz),
+				"pinning vector z component"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"qperpx", opts::value<decltype(qperpx)>(&qperpx),
+				"perpendicular q direction x component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qperpy", opts::value<decltype(qperpy)>(&qperpy),
+				"perpendicular q direction y component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qperpz", opts::value<decltype(qperpz)>(&qperpz),
+				"perpendicular q direction z component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qperp", opts::value<decltype(qperp)>(&qperp),
+				"perpendicular q magnitude"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"qrange", opts::value<decltype(qrange)>(&qrange),
+				"parallel q range"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qdelta", opts::value<decltype(qdelta)>(&qdelta),
+				"parallel q delta"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"T", opts::value<decltype(T)>(&T),
+				"temperature"));
+			args.add(boost::make_shared<opts::option_description>(
+				"B", opts::value<decltype(B)>(&B),
+				"magnetic field magnitude"));
+
+
+			// arguments for arbitrary Q path calculation
+			args.add(boost::make_shared<opts::option_description>(
+				"num_points", opts::value<decltype(num_points)>(&num_points),
+				"number of points in Q path"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"qh_start", opts::value<decltype(qh_start)>(&qh_start),
+				"start reduced momentum transfer q_h"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qk_start", opts::value<decltype(qk_start)>(&qk_start),
+				"start reduced momentum transfer q_k"));
+			args.add(boost::make_shared<opts::option_description>(
+				"ql_start", opts::value<decltype(ql_start)>(&ql_start),
+				"start reduced momentum transfer q_l"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"qh_end", opts::value<decltype(qh_end)>(&qh_end),
+				"end reduced momentum transfer q_h"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qk_end", opts::value<decltype(qk_end)>(&qk_end),
+				"end reduced momentum transfer q_k"));
+			args.add(boost::make_shared<opts::option_description>(
+				"ql_end", opts::value<decltype(ql_end)>(&ql_end),
+				"end reduced momentum transfer q_l"));
+
+
+			clparser.options(args);
+			opts::basic_parsed_options<char> parsedopts = clparser.run();
+
+			opts::variables_map opts_map;
+			opts::store(parsedopts, opts_map);
+			opts::notify(opts_map);
+
+			if(show_help)
+			{
+				std::cout << args << std::endl;
+				return 0;
+			}
+		}
+		catch(const std::exception& ex)
+		{
+			std::cerr << ex.what() << std::endl;
+			return -1;
+		}
 	}
 
 
