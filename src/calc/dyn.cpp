@@ -10,11 +10,15 @@
 #include "core/fp.h"
 
 #include <fstream>
+#include <thread>
 #include <future>
 #include <memory>
 
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
+#include <boost/asio.hpp>
+
+namespace asio = boost::asio;
 namespace opts = boost::program_options;
 
 #ifndef __MINGW32__
@@ -207,8 +211,10 @@ static void calc_disp_para_perp(char dyntype,
 	insert_vals(val0, val2, std::make_index_sequence<std::tuple_size<decltype(val2)>::value>());
 	insert_vals(val0, val3, std::make_index_sequence<std::tuple_size<decltype(val3)>::value>());
 
-
 	timer.stop();
+
+
+	// write results
 	std::ofstream ofstr(outfile);
 	ofstr.precision(8);
 
@@ -272,8 +278,6 @@ static void calc_disp_para_perp(char dyntype,
 		}
 	}
 
-
-	timer.stop();
 	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
 	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
 }
@@ -332,22 +336,58 @@ static void calc_disp_path(char dyntype,
 		<< "." << std::endl;
 
 
-	auto calc_spectrum = [dyntype, &dyn, &G, T]
-		(std::size_t idx, t_real qh, t_real qk, t_real ql) -> auto
+	// thread pool
+	unsigned int num_threads = std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
+	asio::thread_pool pool(num_threads);
+	std::cout << "Calculating dispersion in " << num_threads << " threads." << std::endl;
+
+	// calculation task
+	using t_task = std::packaged_task<void()>;
+	std::vector<std::shared_ptr<t_task>> tasks;
+	tasks.reserve(num_points);
+
+	std::vector<t_real> allh(num_points), allk(num_points), alll(num_points);
+	std::vector<std::vector<t_real>> allEs(num_points),
+		allWsUnpol(num_points), allWsSF1(num_points),
+		allWsSF2(num_points), allWsNSF(num_points);
+
+	for(std::size_t pt_idx=0; pt_idx<num_points; ++pt_idx)
 	{
-		auto thisdyn = dyn->copyCastDyn();
+		t_vec q = qstart + t_real(pt_idx)/t_real(num_points-1) * (qend-qstart);
+		t_vec Q = G + q;
 
-		t_vec Q = G;
-		Q[0] += qh; Q[1] += qk; Q[2] += ql;
+		auto calc_spectrum = [&dyn, pt_idx, Q,
+			&allh, &allk, &alll, &allEs, &allWsUnpol,
+			&allWsSF1, &allWsSF2, &allWsNSF]()
+		{
+			auto thisdyn = dyn->copyCastDyn();
+			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = thisdyn->GetDisp(Q[0], Q[1], Q[2]);
 
-		// [Es, wsUnpol, wsSF1, wsSF2, wsNSF]
-		auto tup = thisdyn->GetDisp(Q[0], Q[1], Q[2]);
+			allh[pt_idx] = Q[0]; allk[pt_idx] = Q[1]; alll[pt_idx] = Q[2];
+			allEs[pt_idx] = Es;
+			allWsUnpol[pt_idx] = wsUnpol;
+			allWsSF1[pt_idx] = wsSF1;
+			allWsSF2[pt_idx] = wsSF2;
+			allWsNSF[pt_idx] = wsNSF;
+		};
 
-		return tup;
-	};
+		auto taskptr = std::make_shared<t_task>(calc_spectrum);
+		tasks.push_back(taskptr);
+		asio::post(pool, [taskptr]() { (*taskptr)(); });
+	}
 
+	for(std::size_t taskidx=0; taskidx<tasks.size(); ++taskidx)
+	{
+		tasks[taskidx]->get_future().get();
+		std::cout << "Calculation " << taskidx+1 << " of "
+			<< tasks.size() << " finished." << std::endl;
+	}
 
+	pool.join();
 	timer.stop();
+
+
+	// write results
 	std::ofstream ofstr(outfile);
 	ofstr.precision(8);
 
@@ -382,28 +422,21 @@ static void calc_disp_path(char dyntype,
 		<< std::setw(16) << "w_sf2" << " "
 		<< std::setw(16) << "w_nsf\n";
 
-	// TODO
-	/*for(std::size_t i=0; i<std::get<0>(val0).size(); ++i)
+	for(std::size_t i=0; i<num_points; ++i)
 	{
-		for(std::size_t j=0; j<std::get<3>(val0)[i].size(); ++j)
+		for(std::size_t j=0; j<allEs[i].size(); ++j)
 		{
-			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "       // h
-				<< std::setw(16) << std::get<1>(val0)[i] << " "     // k
-				<< std::setw(16) << std::get<2>(val0)[i] << " "     // l
-				<< std::setw(16) << std::get<3>(val0)[i][j] << " "  // E
-				<< std::setw(16) << std::get<4>(val0)[i][j] << " "  // w_unpol
-				<< std::setw(16) << std::get<5>(val0)[i][j] << " "  // w_sf1
-				<< std::setw(16) << std::get<6>(val0)[i][j] << " "  // w_sf2
-				<< std::setw(16) << std::get<7>(val0)[i][j] << " "  // w_nsf
-				<< std::setw(16) << std::get<8>(val0)[i] << " "     // q_para_kh
-				<< std::setw(16) << std::get<9>(val0)[i] << " "     // q_perp_kh
-				<< std::setw(16) << std::get<10>(val0)[i] << " "    // q_para_rlu
-				<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // q_perp_rlu
+			ofstr << std::setw(16) << allh[i] << " "             // h
+				<< std::setw(16) << allk[i] << " "           // k
+				<< std::setw(16) << alll[i] << " "           // l
+				<< std::setw(16) << allEs[i][j] << " "       // E
+				<< std::setw(16) << allWsUnpol[i][j] << " "  // w_unpol
+				<< std::setw(16) << allWsSF1[i][j] << " "    // w_sf1
+				<< std::setw(16) << allWsSF2[i][j] << " "    // w_sf2
+				<< std::setw(16) << allWsNSF[i][j] << "\n";  // w_nsf
 		}
-	}*/
+	}
 
-
-	timer.stop();
 	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
 	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
 }
