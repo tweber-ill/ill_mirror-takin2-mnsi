@@ -1,7 +1,7 @@
 #!/usr/local/bin/gnuplot -p
 
 #
-# plots dispersion curves
+# plots dispersion curves (using the output from the "dyn" program)
 # @author Tobias Weber <tweber@ill.fr>
 # @date august-2018
 # @license GPLv2 (see 'LICENSE' file)

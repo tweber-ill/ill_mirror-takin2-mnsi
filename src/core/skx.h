@@ -98,7 +98,12 @@ public:
 
 
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Pinx, t_real Piny, t_real Pinz) override;
-	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) override;
+
+	virtual void SetG(t_real h, t_real k, t_real l) override
+	{
+		m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
+	}
+
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 	virtual void SetFilterZeroWeight(bool b) override { m_filterzeroweight = b; }
 
@@ -106,7 +111,6 @@ public:
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
 
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
-	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
 
 	const std::vector<t_vec>& GetPeaks60(bool rlu = true)
 	{
@@ -116,7 +120,9 @@ public:
 
 protected:
 	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql, t_real minE=-1., t_real maxE=-2.) const;
+		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
+			const t_mat_cplx& projNeutron,
+			t_real minE=-1., t_real maxE=-2.) const;
 
 
 private:
@@ -156,7 +162,6 @@ private:
 		get_chiralpol<t_mat_cplx>(3)	// NSF
 	}};
 
-	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
 };
 

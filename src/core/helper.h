@@ -277,7 +277,7 @@ t_mat get_chiralpol(int which)
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
-	bool bProjNeutron, const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
+	const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
 	t_real E_scale_fac = 1., t_real w_scale_fac = 1., t_real minE = -1, t_real maxE = -2,
 	t_real eveps = 1e-6, t_real evlimit = 0.9995, t_real weighteps = 1e-6,
 	bool bfilterzeroweight = 0, int onlymode = -1, std::size_t MxsubMatRowBegin = 0)
@@ -299,6 +299,7 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		std::vector<EW> EWs;
 		EWs.reserve(numEVals);
 
+		bool bProjNeutron = true;
 		int iCurMode = 0;
 		for(std::size_t ieval=0; ieval<numEVals; ++ieval)
 		{

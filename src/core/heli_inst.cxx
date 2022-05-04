@@ -12,7 +12,6 @@
 
 	#ifdef __HACK_FULL_INST__
 		template Heli<double, std::complex<double>, DEF_HELI_ORDER>::Heli();
-		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetG(double, double, double, bool);
 		template void Heli<double, std::complex<double>, DEF_HELI_ORDER>::SetCoords(double, double, double, double, double, double);
 	#endif
 #endif

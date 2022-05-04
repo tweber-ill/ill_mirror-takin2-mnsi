@@ -21,23 +21,6 @@ FP<t_real, t_cplx>::FP()
 
 
 /**
- * set lattice vector and orthogonal projector
- */
-template<class t_real, class t_cplx>
-void FP<t_real, t_cplx>::SetG(t_real h, t_real k, t_real l, bool only_proj)
-{
-	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
-
-	t_vec G = m_Grlu / tl2::veclen(m_Grlu);
-	G = tl2::quat_vec_prod(m_rotCoord, G);
-	m_projNeutron = tl2::unit_m<t_mat>(3) - tl2::outer<t_vec, t_mat>(G, G);
-
-	if(only_proj)
-		m_Grlu = tl2::make_vec<t_vec>({ 0, 0, 0 });
-}
-
-
-/**
  * rotates field to internal [001] convention
  */
 template<class t_real, class t_cplx>
@@ -55,7 +38,8 @@ void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t
  */
 template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real maxE) const
+FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l,
+	t_real minE, t_real maxE) const
 {
 	constexpr auto imag = t_cplx(0,1);
 	const auto ident2 = tl2::unit_m<t_mat_cplx>(2);
@@ -63,15 +47,23 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 	const t_real dh0_shift = 0.007523;
 	const t_real dh0 = dh0_shift + (m_B - m_Bc2) / m_Bc2;	// for given g_hoc
 
-
+	// momentum transfer
 	t_vec Qvec = tl2::make_vec<t_vec>({ h, k, l });
 	t_vec qvec = tl2::quat_vec_prod(m_rotCoord, Qvec) - tl2::quat_vec_prod(m_rotCoord, m_Grlu);
 	qvec /= g_kh_rlu<t_real>(m_T);
 	qvec = -qvec;
 
+	// orthogonal 1-|Q><Q| projector for neutron scattering
+	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
+	if(m_bProjNeutron)
+	{
+		t_vec Qnorm = Qvec / tl2::veclen(Qvec);
+		Qnorm = tl2::quat_vec_prod(m_rotCoord, Qnorm);
+		projNeutron -= tl2::outer<t_vec, t_mat>(Qnorm, Qnorm);
+	}
+
 	t_real q=0., theta=0., phi=0.;
 	std::tie(q, phi, theta) = tl2::cart_to_sph(qvec[0], qvec[1], qvec[2]);
-
 
 	// eigensystems
 	auto get_evecs = [&qvec, &q, &dh0, &imag, &sigma, &ident2](t_real phi) -> auto
@@ -84,8 +76,7 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 		H += 2.*sigma[2] * qvec[2];
 		H += g_chi<t_real>/(2.*q*q) * tl2::make_mat<t_mat_cplx>(
 			{{ qm*qp, qm*qm },
-			{ qp*qp, qm*qp }
-		});
+			{ qp*qp, qm*qp } });
 
 
 		// eigenvectors and -values
@@ -110,7 +101,7 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 	 * G(x, x') = sum{j} |v_j'> <v_j| / E_j
 	 * with eigenvectors |v_j> and eigenvalues E_j.
 	 */
-	auto get_weights = [&imag](const t_vec_cplx& evec_phi, const t_vec_cplx& evec_mphi, const t_mat_cplx& projNeutron, bool bProjNeutron) -> auto
+	auto get_weights = [&imag, &projNeutron](const t_vec_cplx& evec_phi, const t_vec_cplx& evec_mphi) -> auto
 	{
 		t_mat_cplx kernel = tl2::outer<t_vec_cplx, t_mat_cplx>(evec_phi, evec_mphi);
 		t_mat_cplx weight(3,3);
@@ -129,15 +120,10 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 			}
 		}
 
-
 		// magnetic neutron scattering projections
 		t_mat_cplx neutron_weight = weight;
-		if(bProjNeutron)
-		{
-			neutron_weight = tl2::prod_mm(weight, projNeutron);
-			neutron_weight = tl2::prod_mm(projNeutron, neutron_weight);
-		}
-
+		neutron_weight = tl2::prod_mm(weight, projNeutron);
+		neutron_weight = tl2::prod_mm(projNeutron, neutron_weight);
 
 		// polarisation projections
 		t_mat_cplx matSF1 = tl2::prod_mm(get_chiralpol<t_mat_cplx>(1), neutron_weight);
@@ -162,8 +148,8 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t_real ma
 		return std::make_tuple(empty, empty, empty, empty, empty);
 	}
 
-	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights(evecs_phi[0], evecs_mphi[0], m_projNeutron, m_bProjNeutron);
-	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs_phi[1], evecs_mphi[1], m_projNeutron, m_bProjNeutron);
+	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights(evecs_phi[0], evecs_mphi[0]);
+	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs_phi[1], evecs_mphi[1]);
 
 
 	std::vector<t_real> Es = { evals_phi[0]*g_g<t_real>*g_muB<t_real>*m_Bc2, evals_phi[1]*g_g<t_real>*g_muB<t_real>*m_Bc2 };

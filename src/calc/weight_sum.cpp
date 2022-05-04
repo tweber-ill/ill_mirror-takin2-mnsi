@@ -104,9 +104,6 @@ void calc_disp(const t_vec& Gvec,
 		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));
 		t_vec Qvec = Gvec + qvec;
 
-		skx.SetG(Qvec[0], Qvec[1], Qvec[2], true);
-		heli.SetG(Qvec[0], Qvec[1], Qvec[2], true);
-
 		std::cout << "# angle: " << angle/M_PI*180. << ", Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")" << std::endl;
 
 		{

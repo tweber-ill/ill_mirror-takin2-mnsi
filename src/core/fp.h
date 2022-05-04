@@ -73,7 +73,11 @@ public:
 		return exp ? m_Bc2 : 0.;
 	}
 
-	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) override;
+	virtual void SetG(t_real h, t_real k, t_real l) override
+	{
+		m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
+	}
+
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) override;
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
 	virtual void SetFilterZeroWeight(bool b) override {}
@@ -81,7 +85,6 @@ public:
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
 
-	const t_mat_cplx& GetNeutronProjOp() const { return m_projNeutron; }
 
 private:
 	t_real m_Bc2 = 0.55;
@@ -91,7 +94,6 @@ private:
 	t_vec m_Grlu{};
 	t_quat m_rotCoord{};
 
-	t_mat_cplx m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	bool m_bProjNeutron = true;
 };
 

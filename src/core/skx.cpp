@@ -263,7 +263,8 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
-	t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
+	t_real qh, t_real qk, t_real ql, const t_mat_cplx& projNeutron,
+	t_real minE, t_real maxE) const
 {
 	avoid_G(qh, qk, ql, m_eps);
 	const t_vec q_lab = tl2::make_vec<t_vec>({ qh, qk, -ql });
@@ -355,8 +356,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		mk_2dim(*Mx) * g_g<t_real> / m_Bc2, mk_2dim(*Fluc),
-		m_bProjNeutron, m_projNeutron, m_polMat,
-		g_muB<t_real> * m_Bc2_exp, 1.,
+		projNeutron, m_polMat, g_muB<t_real> * m_Bc2_exp, 1.,
 		minE, maxE, m_eveps, m_evlimit, m_weighteps,
 		m_filterzeroweight, /*m_onlymode*/-1);
 }
@@ -383,23 +383,6 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 
 
 /**
- * set the lattice vector and orthogonal projector
- */
-template<class t_real, class t_cplx, int ORDER>
-void Skx<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l, bool only_proj)
-{
-	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
-
-	t_vec G = m_Grlu / tl2::veclen(m_Grlu);
-	G = tl2::quat_vec_prod(m_rotCoord, G);
-	m_projNeutron = tl2::unit_m<t_mat>(3) - tl2::outer<t_vec, t_mat>(G, G);
-
-	if(only_proj)
-		m_Grlu = tl2::make_vec<t_vec>({ 0., 0., 0. });
-}
-
-
-/**
  * query the dispersion
  */
 template<class t_real, class t_cplx, int ORDER>
@@ -409,6 +392,15 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	t_vec Qrlu = tl2::make_vec<t_vec>({ h, k, l });
 	t_vec qrlu = Qrlu - m_Grlu;
 	t_vec qkh = qrlu / g_kh_rlu_29K<t_real>;
+
+	// orthogonal 1-|Q><Q| projector for neutron scattering
+	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
+	if(m_bProjNeutron)
+	{
+		t_vec Qnorm = Qrlu / tl2::veclen(Qrlu);
+		Qnorm = tl2::quat_vec_prod(m_rotCoord, Qnorm);
+		projNeutron -= tl2::outer<t_vec, t_mat>(Qnorm, Qnorm);
+	}
 
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
 	t_real _l = qkh[2];
@@ -435,5 +427,6 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
 
-	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]), qmaglab[0], qmaglab[1], _l, minE, maxE);
+	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]),
+		qmaglab[0], qmaglab[1], _l, projNeutron, minE, maxE);
 }

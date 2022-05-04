@@ -99,7 +99,7 @@ public:
 	MagDynamics() = default;
 	virtual ~MagDynamics() = default;
 
-	virtual void SetG(t_real h, t_real k, t_real l, bool only_proj=false) = 0;
+	virtual void SetG(t_real h, t_real k, t_real l) = 0;
 	virtual void SetProjNeutron(bool b) = 0;
 	virtual void SetFilterZeroWeight(bool b) = 0;
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) = 0;

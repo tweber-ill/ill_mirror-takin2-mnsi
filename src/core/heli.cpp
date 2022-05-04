@@ -176,7 +176,8 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &four
  */
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_real minE, t_real maxE) const
+Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
+	const t_mat_cplx& projNeutron, t_real minE, t_real maxE) const
 {
 	constexpr t_cplx imag = t_cplx(0, 1);
 
@@ -364,40 +365,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql, t_r
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d * g_g<t_real>, Fluc2d,
-		m_bProjNeutron, m_projNeutron, polMat,
-		g_muB<t_real> * m_Bc2, w_scale,
+		projNeutron, polMat, g_muB<t_real> * m_Bc2, w_scale,
 		minE, maxE, m_eveps, -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, mxrowbegin);
-}
-
-
-/**
- * set the lattice vector and orthogonal projector
- */
-template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetG(t_real h, t_real k, t_real l, bool only_proj)
-{
-	m_Grlu = tl2::make_vec<t_vec>({ h, k, l });
-
-	t_vec _G = m_Grlu / tl2::veclen(m_Grlu);
-	_G = tl2::quat_vec_prod(m_rotCoord, _G);
-	t_vec_cplx G = _G;
-
-	bool bInChiralBase = m_explicitcalc;
-	if(bInChiralBase)
-	{
-		t_mat_cplx chiral = get_chiralbasismat<t_mat_cplx, t_vec_cplx>();
-		G = tl2::prod_mv<t_vec_cplx, t_mat_cplx>(chiral, G);
-	}
-
-	m_projNeutron = tl2::unit_m<t_mat_cplx>(3);
-	m_projNeutron -= tl2::outer_cplx<t_vec_cplx, t_mat_cplx>(G, G);
-
-	if(bInChiralBase)
-		m_projNeutron = tl2::conjugate_mat(m_projNeutron);
-
-	if(only_proj)
-		m_Grlu = tl2::make_vec<t_vec>({ 0., 0., 0. });
 }
 
 
@@ -425,5 +395,25 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 	t_vec qkh = qrlu / g_kh_rlu<t_real>(m_T);
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
 
-	return GetSpecWeights(qkh[0], qkh[1], qkh[2], minE, maxE);
+	bool bInChiralBase = m_explicitcalc;
+
+	// orthogonal 1-|Q><Q| projector for neutron scattering
+	t_mat_cplx projNeutron = tl2::unit_m<t_mat>(3);
+	if(m_projNeutron)
+	{
+		t_vec _Qnorm = Qrlu / tl2::veclen(Qrlu);
+		t_vec_cplx Qnorm = tl2::quat_vec_prod(m_rotCoord, _Qnorm);
+
+		if(bInChiralBase)
+		{
+			t_mat_cplx chiral = get_chiralbasismat<t_mat_cplx, t_vec_cplx>();
+			Qnorm = tl2::prod_mv<t_vec_cplx, t_mat_cplx>(chiral, Qnorm);
+		}
+
+		projNeutron -= tl2::outer<t_vec_cplx, t_mat_cplx>(Qnorm, Qnorm);
+	}
+	if(bInChiralBase)
+		projNeutron = tl2::conjugate_mat(projNeutron);
+
+	return GetSpecWeights(qkh[0], qkh[1], qkh[2], projNeutron, minE, maxE);
 }
