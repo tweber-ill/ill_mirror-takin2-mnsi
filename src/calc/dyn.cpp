@@ -484,7 +484,7 @@ int main(int argc, char **argv)
 				"show program usage"));
 
 			args.add(boost::make_shared<opts::option_description>(
-				"verbose", opts::bool_switch(&use_para_perp_calc),
+				"use_para_perp_calc", opts::bool_switch(&use_para_perp_calc),
 				"use simple Q path calculation"));
 
 			args.add(boost::make_shared<opts::option_description>(
