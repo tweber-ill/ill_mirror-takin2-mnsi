@@ -25,6 +25,7 @@ using t_real = double;
 using t_cplx = std::complex<t_real>;
 using t_vec = ublas::vector<t_real>;
 using t_vec_cplx = ublas::vector<t_cplx>;
+using t_mat = ublas::matrix<t_real>;
 
 #include "core/heli_default_gs.cxx"
 #include "core/skx_default_gs.cxx"
@@ -287,6 +288,7 @@ static void calc_disp_path(char dyntype,
 	t_real Px, t_real Py, t_real Pz,
 	t_real qh_start, t_real qk_start, t_real ql_start,
 	t_real qh_end, t_real qk_end, t_real ql_end,
+	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
 	t_real T=-1., t_real B=-1., bool explicit_calc = true)
 {
@@ -302,6 +304,13 @@ static void calc_disp_path(char dyntype,
 	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
 	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
 
+	t_vec qstart = tl2::make_vec<t_vec>({ qh_start, qk_start, ql_start });
+	t_vec qend = tl2::make_vec<t_vec>({ qh_end, qk_end, ql_end });
+
+	t_vec Rdir = tl2::make_vec<t_vec>({ Rx, Ry, Rz });
+	t_mat rot = tl2::rotation_matrix<t_mat, t_vec>(Rdir, Ralpha);
+	qstart = tl2::prod_mv(rot, qstart);
+	qend = tl2::prod_mv(rot, qend);
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(-1000., false);
@@ -309,7 +318,6 @@ static void calc_disp_path(char dyntype,
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetG(G[0], G[1], G[2]);
-
 
 	t_real F = 0.;
 	auto *magsys = dynamic_cast<HasF<t_real>*>(dyn.get());
@@ -426,6 +434,7 @@ int main(int argc, char **argv)
 	// arguments for arbitrary Q path calculation
 	t_real qh_start = 0., qk_start = 0., ql_start = 0.;
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
+	t_real Rx = 0., Ry = 0., Rz = 1., Ralpha = 0.;
 	std::size_t num_points = 256;
 
 
@@ -586,6 +595,19 @@ int main(int argc, char **argv)
 				"ql_end", opts::value<decltype(ql_end)>(&ql_end),
 				"end reduced momentum transfer q_l"));
 
+			args.add(boost::make_shared<opts::option_description>(
+				"Rx", opts::value<decltype(Rx)>(&Rx),
+				"q rotation axis x component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Ry", opts::value<decltype(Ry)>(&Ry),
+				"q rotation axis y component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Rz", opts::value<decltype(Rz)>(&Rz),
+				"q rotation axis z component"));
+			args.add(boost::make_shared<opts::option_description>(
+				"Ralpha", opts::value<decltype(Ralpha)>(&Ralpha),
+				"q rotation angle"));
+
 
 			clparser.options(args);
 			opts::basic_parsed_options<char> parsedopts = clparser.run();
@@ -625,6 +647,7 @@ int main(int argc, char **argv)
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 			qh_start, qk_start, ql_start,
 			qh_end, qk_end, ql_end,
+			Rx,Ry,Rz, Ralpha,
 			num_points, outfile,
 			T, B, explicit_calc);
 	}
