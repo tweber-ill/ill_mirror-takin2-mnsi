@@ -647,7 +647,7 @@ int main(int argc, char **argv)
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 			qh_start, qk_start, ql_start,
 			qh_end, qk_end, ql_end,
-			Rx,Ry,Rz, Ralpha,
+			Rx,Ry,Rz, tl2::d2r(Ralpha),
 			num_points, outfile,
 			T, B, explicit_calc);
 	}
