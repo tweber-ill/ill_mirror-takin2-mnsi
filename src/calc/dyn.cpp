@@ -26,6 +26,9 @@ using t_vec_cplx = ublas::vector<t_cplx>;
 #include "core/skx_default_gs.cxx"
 
 
+/**
+ * print ground state magnetisation
+ */
 static void print_groundstate(const std::vector<t_vec_cplx>& gs)
 {
 	std::cout << "Ground state:\n";
@@ -40,32 +43,16 @@ static void print_groundstate(const std::vector<t_vec_cplx>& gs)
 }
 
 
-static void calc_disp(char dyntype,
-	t_real Gx, t_real Gy, t_real Gz,
-	t_real Bx, t_real By, t_real Bz,
-	t_real Px, t_real Py, t_real Pz,
-	t_real qperpdir_x, t_real qperpdir_y, t_real qperpdir_z, t_real qperp,
-	const char* pcFile, bool bSwapQParaQPerp=0,
-	t_real T=-1., t_real B=-1.,
-	t_real qrange = 0.125, t_real delta = 0.001,
-	bool explicit_calc = true)
+/**
+ * create the dynamics module
+ */
+static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(char dyntype, bool explicit_calc = true)
 {
-	tl2::Stopwatch<t_real> timer;
-	timer.start();
-
-	constexpr auto imag = t_cplx(0, 1);
-	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
-	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
-	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
-	t_vec qparadir = Bdir / tl2::veclen(Bdir);
-	t_vec qperpdir = tl2::make_vec<t_vec>({ qperpdir_x, qperpdir_y, qperpdir_z });
-	qperpdir /= tl2::veclen(qperpdir);
-
 	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn;
 
 	if(dyntype == 's')
 	{
-		std::cout << "Calculating skyrmion dispersion." << std::endl;
+		//std::cout << "Calculating skyrmion dispersion." << std::endl;
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
 		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
 		print_groundstate(skx->GetFourier());
@@ -73,29 +60,64 @@ static void calc_disp(char dyntype,
 	}
 	else if(dyntype == 'h')
 	{
-		std::cout << "Calculating helical dispersion." << std::endl;
+		//std::cout << "Calculating helical dispersion." << std::endl;
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
 		heli->SetExplicitCalc(explicit_calc);
 		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
 		print_groundstate(heli->GetFourier());
 		dyn = heli;
-
 	}
 	else if(dyntype == 'f')
 	{
-		std::cout << "Calculating field-polarised dispersion." << std::endl;
+		//std::cout << "Calculating field-polarised dispersion." << std::endl;
 		dyn = std::make_shared<FP<t_real, t_cplx>>();
 	}
 	else
 	{
 		std::cerr << "Unknown dynamics type selected." << std::endl;
-		return;
+		return nullptr;
 	}
+
+	return dyn;
+}
+
+
+/**
+ * calculate the dispersion parallel and perpendicular to the field
+ */
+static void calc_disp_para_perp(char dyntype,
+	t_real Gx, t_real Gy, t_real Gz,
+	t_real Bx, t_real By, t_real Bz,
+	t_real Px, t_real Py, t_real Pz,
+	t_real qperpdir_x, t_real qperpdir_y, t_real qperpdir_z, t_real qperp,
+	const std::string& outfile, bool bSwapQParaQPerp=0,
+	t_real T=-1., t_real B=-1.,
+	t_real qrange = 0.125, t_real delta = 0.001,
+	bool explicit_calc = true)
+{
+	tl2::Stopwatch<t_real> timer;
+	timer.start();
+
+	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn = create_dyn(dyntype, explicit_calc);
+	if(!dyn)
+		return;
+
+	constexpr auto imag = t_cplx(0, 1);
+	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
+	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
+	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
+
+	// direction parallel to the field
+	t_vec qparadir = Bdir / tl2::veclen(Bdir);
+
+	// direction perpendicular to the field
+	t_vec qperpdir = tl2::make_vec<t_vec>({ qperpdir_x, qperpdir_y, qperpdir_z });
+	qperpdir /= tl2::veclen(qperpdir);
 
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(-1000., false);
-	dyn->SetB(dyn->GetBC2(false)/2., false);  // BC2 = 45.028487 for T_theo = -1000
+	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetG(G[0], G[1], G[2]);
@@ -182,7 +204,7 @@ static void calc_disp(char dyntype,
 
 
 	timer.stop();
-	std::ofstream ofstr(pcFile);
+	std::ofstream ofstr(outfile);
 	ofstr.precision(8);
 
 	ofstr << "#\n";
@@ -207,14 +229,9 @@ static void calc_disp(char dyntype,
 	ofstr << "# Bc2 = " << dyn->GetBC2(false) << "\n";
 	ofstr << "# Bc2_exp = " << dyn->GetBC2(true) << "\n";
 	ofstr << "# F = " << F << "\n";
+
 	if(bSwapQParaQPerp)
 		ofstr << "# WARNING: In the following, q_para_* and q_perp_* are swapped!\n";
-
-	// save commutator of projectors to determine channel mixing
-	/*ofstr << "# [Nrpoj, Polproj_sf1] = " << tl2::commutator<t_mat_cplx>(fp.GetNeutronProjOp(), get_chiralpol<t_mat_cplx>(1)) << "\n";
-	ofstr << "# [Nrpoj, Polproj_sf2] = " << tl2::commutator<t_mat_cplx>(fp.GetNeutronProjOp(), get_chiralpol<t_mat_cplx>(2)) << "\n";
-	ofstr << "# [Nrpoj, Polproj_nsf] = " << tl2::commutator<t_mat_cplx>(fp.GetNeutronProjOp(), get_chiralpol<t_mat_cplx>(3)) << "\n";*/
-
 	ofstr << "#\n";
 
 	ofstr
@@ -235,6 +252,129 @@ static void calc_disp(char dyntype,
 	{
 		for(std::size_t j=0; j<std::get<3>(val0)[i].size(); ++j)
 		{
+			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "       // 1: h
+				<< std::setw(16) << std::get<1>(val0)[i] << " "     // 2: k
+				<< std::setw(16) << std::get<2>(val0)[i] << " "     // 3: l
+				<< std::setw(16) << std::get<3>(val0)[i][j] << " "  // 4: E
+				<< std::setw(16) << std::get<4>(val0)[i][j] << " "  // 5: w_unpol
+				<< std::setw(16) << std::get<5>(val0)[i][j] << " "  // 6: w_sf1
+				<< std::setw(16) << std::get<6>(val0)[i][j] << " "  // 7: w_sf2
+				<< std::setw(16) << std::get<7>(val0)[i][j] << " "  // 8: w_nsf
+				<< std::setw(16) << std::get<8>(val0)[i] << " "     // 9: q_para_kh
+				<< std::setw(16) << std::get<9>(val0)[i] << " "     // 10: q_perp_kh
+				<< std::setw(16) << std::get<10>(val0)[i] << " "    // 11: q_para_rlu
+				<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // 12: q_perp_rlu
+		}
+	}
+
+
+	timer.stop();
+	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
+	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
+}
+
+
+/**
+ * calculate the dispersion along arbitrary paths of momentum transfer
+ */
+static void calc_disp_path(char dyntype,
+	t_real Gx, t_real Gy, t_real Gz,
+	t_real Bx, t_real By, t_real Bz,
+	t_real Px, t_real Py, t_real Pz,
+	t_real qh_start, t_real qk_start, t_real ql_start,
+	t_real qh_end, t_real qk_end, t_real ql_end,
+	std::size_t num_points, const std::string& outfile,
+	t_real T=-1., t_real B=-1., bool explicit_calc = true)
+{
+	tl2::Stopwatch<t_real> timer;
+	timer.start();
+
+	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn = create_dyn(dyntype, explicit_calc);
+	if(!dyn)
+		return;
+
+	constexpr auto imag = t_cplx(0, 1);
+	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
+	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
+	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
+
+
+	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
+	dyn->SetT(-1000., false);
+	dyn->SetB(dyn->GetBC2(false)/2., false);
+	dyn->SetT(T, true);
+	dyn->SetB(B, true);
+	dyn->SetG(G[0], G[1], G[2]);
+
+
+	t_real F = 0.;
+	auto *magsys = dynamic_cast<HasF<t_real>*>(dyn.get());
+	if(magsys)
+	{
+		F = magsys->F();
+		std::cout << "Ground state F = " << F << "." << std::endl;
+	}
+
+	std::cout << "Bc2_theo = " << dyn->GetBC2(false)
+		<< ", Bc2_exp = " << dyn->GetBC2(true)
+		<< "." << std::endl;
+
+
+	auto calc_spectrum = [dyntype, &dyn, &G, T]
+		(std::size_t idx, t_real qh, t_real qk, t_real ql) -> auto
+	{
+		auto thisdyn = dyn->copyCastDyn();
+
+		t_vec Q = G;
+		Q[0] += qh; Q[1] += qk; Q[2] += ql;
+
+		// [Es, wsUnpol, wsSF1, wsSF2, wsNSF]
+		auto tup = thisdyn->GetDisp(Q[0], Q[1], Q[2]);
+
+		return tup;
+	};
+
+
+	timer.stop();
+	std::ofstream ofstr(outfile);
+	ofstr.precision(8);
+
+	ofstr << "#\n";
+	ofstr << "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n";
+#ifndef __MINGW32__
+	ofstr << "# User: " << getpwuid(geteuid())->pw_name << "\n";
+#endif
+	ofstr << "# Calculation time: " << timer.GetDur() << " s.\n";
+	ofstr << "# Skx order: " << DEF_SKX_ORDER << "\n";
+	if(dyntype == 'h')
+	{
+		ofstr << "# Heli order: " << DEF_HELI_ORDER << "\n";
+		ofstr << "# kh_A = " << g_kh_A<t_real>(T) << "\n";
+		ofstr << "# kh_rlu = " << g_kh_rlu<t_real>(T) << "\n";
+	}
+	ofstr << "# G = " << G << "\n";
+	ofstr << "# Bdir = " << Bdir << "\n";
+	ofstr << "# Pdir = " << Pdir << "\n";
+	ofstr << "# Bc2 = " << dyn->GetBC2(false) << "\n";
+	ofstr << "# Bc2_exp = " << dyn->GetBC2(true) << "\n";
+	ofstr << "# F = " << F << "\n";
+	ofstr << "#\n";
+
+	ofstr
+		<< "#" << std::setw(15) << "h" << " "
+		<< std::setw(16) << "k" << " "
+		<< std::setw(16) << "l" << " "
+		<< std::setw(16) << "E" << " "
+		<< std::setw(16) << "w_unpol" << " "
+		<< std::setw(16) << "w_sf1" << " "
+		<< std::setw(16) << "w_sf2" << " "
+		<< std::setw(16) << "w_nsf\n";
+
+	// TODO
+	/*for(std::size_t i=0; i<std::get<0>(val0).size(); ++i)
+	{
+		for(std::size_t j=0; j<std::get<3>(val0)[i].size(); ++j)
+		{
 			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "       // h
 				<< std::setw(16) << std::get<1>(val0)[i] << " "     // k
 				<< std::setw(16) << std::get<2>(val0)[i] << " "     // l
@@ -248,16 +388,16 @@ static void calc_disp(char dyntype,
 				<< std::setw(16) << std::get<10>(val0)[i] << " "    // q_para_rlu
 				<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // q_perp_rlu
 		}
-	}
+	}*/
 
 
 	timer.stop();
 	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
-	std::cout << "Wrote \"" << pcFile << "\"" << std::endl;
+	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
 	std::cout
 		<< "--------------------------------------------------------------------------------\n"
@@ -273,49 +413,87 @@ int main()
 	t_real B = 0.17, T = 28.5;
 	t_real qrange = 0.125;
 	t_real qdelta = 0.001;
-	int alongqpara = 0;
-	int explicit_calc = 1;
+	bool alongqpara = false;
+	bool explicit_calc = true;
+	bool use_para_perp_calc = true;
+	std::string outfile = "dyn.dat";
 
-	std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
-	std::cin >> dyntype; dyntype = std::tolower(dyntype);
-	std::cout << "G = ";
-	std::cin >> Gx >> Gy >> Gz;
-	std::cout << "q_range = ";
-	std::cin >> qrange;
-	std::cout << "q_delta = ";
-	std::cin >> qdelta;
-	std::cout << "B = ";
-	std::cin >> Bx >> By >> Bz;
-	if(dyntype == 'h' || dyntype == 'f')
+	t_real qh_start = 0., qk_start = 0., ql_start = 0.;
+	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
+	std::size_t num_points = 256;
+
+
+	if(argc <= 1)
 	{
-		std::cout << "|B| = ";
-		std::cin >> B;
-		std::cout << "T = ";
-		std::cin >> T;
+		std::cout << "No arguments given, running interactively.\n" << std::endl;
 
-		if(dyntype == 'h')
+		std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
+		std::cin >> dyntype;
+		dyntype = std::tolower(dyntype);
+
+		std::cout << "G = ";
+		std::cin >> Gx >> Gy >> Gz;
+		std::cout << "q_range = ";
+		std::cin >> qrange;
+		std::cout << "q_delta = ";
+		std::cin >> qdelta;
+		std::cout << "B = ";
+		std::cin >> Bx >> By >> Bz;
+
+		if(dyntype == 'h' || dyntype == 'f')
 		{
-			std::cout << "Explicit calculation? [1/0]: ";
-			std::cin >> explicit_calc;
-		}
-	}
-	else if(dyntype == 's')
-	{
-		std::cout << "pinning = ";
-		std::cin >> Px >> Py >> Pz;
-	}
-	std::cout << "Query dispersion along q_para || B? [1/0]: ";
-	std::cin >> alongqpara;
-	std::cout << "q_perp = ";
-	std::cin >> qperpx >> qperpy >> qperpz;
-	std::cout << "|q_perp| = ";
-	std::cin >> qperp;
+			std::cout << "|B| = ";
+			std::cin >> B;
+			std::cout << "T = ";
+			std::cin >> T;
 
-	calc_disp(dyntype, Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
-		qperpx,qperpy,qperpz, qperp,
-		"dyn.dat", alongqpara==0,
-		T, B, qrange, qdelta,
-		explicit_calc!=0);
+			if(dyntype == 'h')
+			{
+				std::cout << "Explicit calculation? [1/0]: ";
+				std::cin >> explicit_calc;
+			}
+		}
+		else if(dyntype == 's')
+		{
+			std::cout << "pinning = ";
+			std::cin >> Px >> Py >> Pz;
+		}
+		std::cout << "Query dispersion along q_para || B? [1/0]: ";
+		std::cin >> alongqpara;
+		std::cout << "q_perp = ";
+		std::cin >> qperpx >> qperpy >> qperpz;
+		std::cout << "|q_perp| = ";
+		std::cin >> qperp;
+	}
+	else
+	{
+		std::string cfg = argv[1];
+		std::cout << "Using configuration file \"" << cfg << "\".\n" << std::endl;
+
+		// TODO: read in configuration parameters
+	}
+
+
+	if(use_para_perp_calc)
+	{
+		// calculate the dispersion using simple parallel or perpendicular momentum transfers
+		calc_disp_para_perp(dyntype,
+			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
+			qperpx,qperpy,qperpz, qperp,
+			outfile, !alongqpara,
+			T, B, qrange, qdelta,
+			explicit_calc);
+	}
+	else
+	{
+		// calculate the dispersion using arbitrary momentum transfer paths
+		calc_disp_path(dyntype,
+			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
+			qh_start, qk_start, ql_start,
+			qh_end, qk_end, ql_end,
+			num_points, outfile,
+			T, B, explicit_calc);
+	}
 
 	return 0;
 }
