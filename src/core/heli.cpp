@@ -395,12 +395,12 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 	t_vec qkh = qrlu / g_kh_rlu<t_real>(m_T);
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
 
-	bool bInChiralBase = m_explicitcalc;
-
 	// orthogonal 1-|Q><Q| projector for neutron scattering
-	t_mat_cplx projNeutron = tl2::unit_m<t_mat>(3);
+	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
 	if(m_projNeutron)
 	{
+		bool bInChiralBase = m_explicitcalc;
+
 		t_vec _Qnorm = Qrlu / tl2::veclen(Qrlu);
 		t_vec_cplx Qnorm = tl2::quat_vec_prod(m_rotCoord, _Qnorm);
 
@@ -410,10 +410,11 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 			Qnorm = tl2::prod_mv<t_vec_cplx, t_mat_cplx>(chiral, Qnorm);
 		}
 
-		projNeutron -= tl2::outer<t_vec_cplx, t_mat_cplx>(Qnorm, Qnorm);
+		projNeutron -= tl2::outer_cplx<t_vec_cplx, t_mat_cplx>(Qnorm, Qnorm);
+
+		if(bInChiralBase)
+			projNeutron = tl2::conjugate_mat(projNeutron);
 	}
-	if(bInChiralBase)
-		projNeutron = tl2::conjugate_mat(projNeutron);
 
 	return GetSpecWeights(qkh[0], qkh[1], qkh[2], projNeutron, minE, maxE);
 }

@@ -1,0 +1,92 @@
+#!/usr/local/bin/gnuplot -p
+#
+# plots the integrated weights/energies for setup 3 (using the output from the "weight_sum" program)
+# @author Tobias Weber <tweber@ill.fr>
+# @date 23-jul-20
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+file_skx = "weightsum_skx.dat"
+file_heli = "weightsum_heli.dat"
+filebin = "weightbin.dat"
+
+# same angular range as in weight_sum.cpp
+startangle = -45
+endangle = 180 - 45
+anglerange = endangle - startangle
+
+col_skx = "#ff0000"
+col_heli = "#0000ff"
+
+scale_w = 0.4
+scale_S = 0.9
+
+T = 28.5         # temperature
+kB = 0.0861733   # CODATA value from Boost.Units
+
+# Bose factor
+bose(E) = (E >= 0) \
+	? 1./(exp(abs(E)/(kB*T)) - 1.) + 1. \
+	: 1./(exp(abs(E)/(kB*T)) - 1.)
+
+
+# variant with sqrt is better because the weight gives the point radius, so the point area changes quadratically
+#weight(w) = sqrt(w) * 2.5
+weight(w) = w
+
+
+set term pngcairo enhanced font "Helvetica,38" size 2000,1500
+set output "weightsum.png"
+set multiplot
+set clip
+set border lw 6
+
+
+set xlabel "{/Helvetica-Italic α} (deg)"
+set ylabel "{/Helvetica-Italic E} (meV)" offset 1
+
+set xtics 30
+set mxtics 3
+set ytics 0.02
+set mytics 2
+
+set xrange [-7 : anglerange + 5]
+set yrange [0 : 0.105]
+
+set key top right samplen 1 Left reverse
+
+set size 0.75, 1
+plot \
+	file_heli using ($1/pi*180 - startangle):($5):((weight($6)+weight($7*0.5))*bose($5)*scale_w) with points ps var pt 7 lc rgb col_heli title "conical", \
+	file_skx using ($1/pi*180 - startangle):($5):((weight($6)+weight($7*0.5))*bose($5)*scale_w) with points ps var pt 7 lc rgb col_skx title "skyrmion"
+
+
+
+set xlabel "{/Helvetica-Italic S(E)} (a.u.)"
+unset ylabel
+
+set xrange [0 : 25]
+set xtics 20
+set mxtics 2
+
+#set format x " "
+set format y ""
+
+set origin 0.7, 0
+set size 0.3, 1
+
+#set label 100 at screen 0.05, screen 0.95 "{/Helvetica-Bold (a)}"
+#set label 100 at screen 0.95, screen 0.95 "{/Helvetica-Bold (b)}"
+
+set label 1000 at 15, 0.003 tc rgb col_skx "GM"
+set label 1001 at 15, 0.027 tc rgb col_skx "CCW"
+set label 1002 at 15, 0.051 tc rgb col_skx "(BM)"
+set label 1003 at 15, 0.065 tc rgb col_skx "(CW)"
+
+set label 2000 at 15, 0.009 tc rgb col_heli "HM 1"
+set label 2001 at 15, 0.061 tc rgb col_heli "(HM 2)"
+set label 2002 at 15, 0.070 tc rgb col_heli "HM 3"
+
+plot \
+	filebin using ($10*scale_S):($1) w filledcurve lc rgb col_heli notitle, \
+	filebin using ($6*scale_S):($1) w filledcurve lc rgb col_skx notitle

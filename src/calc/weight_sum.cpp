@@ -1,5 +1,5 @@
 /**
- * Calculates the integrated weights/energies for setup 3
+ * calculates the integrated weights/energies for setup 3
  * @author Tobias Weber <tweber@ill.fr>
  * @date jun-20
  * @license GPLv2 (see 'LICENSE' file)
