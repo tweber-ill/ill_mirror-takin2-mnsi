@@ -482,7 +482,9 @@ int main(int argc, char **argv)
 
 	if(argc <= 1)
 	{
-		std::cout << "No arguments given, running interactively.\n" << std::endl;
+		std::cout << "No arguments given, running interactively. "
+			<< "Use \"" << argv[0] << " --help\" to show all options.\n"
+			<< std::endl;
 
 		std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
 		std::cin >> dyntype;
@@ -661,6 +663,9 @@ int main(int argc, char **argv)
 			if(show_help)
 			{
 				std::cout << args << std::endl;
+				std::cout << "example usage:\n\t"
+					<< argv[0] << " --dyntype=h --use_para_perp_calc=0 --outfile=dyn.dat --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --T=28.5 --B=0.15 --num_points=256 --qh_start=-0.2 --qk_start=-0.2 --ql_start=0 --qh_end=0.2 --qk_end=0.2 --ql_end=0 --Rx=0 --Ry=0 --Rz=1 --Ralpha=0\n"
+					<< std::endl;
 				return 0;
 			}
 		}
