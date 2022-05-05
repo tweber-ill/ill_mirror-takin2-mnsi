@@ -1,7 +1,7 @@
 #!/usr/local/bin/gnuplot -p
 
 #
-# plots dispersion curves (using the output from the "dyn" program, with option --use_para_perp_calc=1)
+# plots dispersion curves (using the output from the "dyn" program, with option --use_para_perp_calc=0)
 # @author Tobias Weber <tweber@ill.fr>
 # @date august-2018
 # @license GPLv2 (see 'LICENSE' file)
@@ -35,7 +35,6 @@ scale_weight = 1.5    # weight scale for plot
 show_pol     = 1
 show_key     = 1      # show legend
 show_scans   = 0      # indicate scans
-
 
 # input data file
 file_dyn = "dyn.dat"
@@ -140,6 +139,9 @@ weight_raw(w)         = (w > 5.) ? 5. : sqrt(w) * 2.5
 weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
 weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
 
+#q_len(Qh, Qk, Ql)     = sqrt((Qh-Gh)**2 + (Qk-Gk)**2 + (Ql-Gl)**2)
+#q_sign(Qh, Qk, Ql)    = ((Qh-Gh)*Qhdir + (Qk-Gk)*Qkdir + (Qk-Gl)*Qldir < 0) ? -1 : 1
+
 
 #set multiplot layout 1,2 margins 0.09,0.91, 0.14,0.81 spacing 0.01,0.05
 set clip
@@ -149,15 +151,22 @@ E_sign = 1.
 if(show_pol != 0) {
 	# polarised results
 	plot \
-		file_dyn using ($11):(E_sign*$4)                                        with points pt 0        lc rgb col_full notitle, \
-		file_dyn using ($11):(E_sign*$4):(weight($7)*scale_weight)              with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
-		file_dyn using ($11):(E_sign*$4):(weight($6)*scale_weight)              with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
-		file_dyn using ($11):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) with points pt 7 ps var lc rgb col_pol2 notitle, \
-		file_dyn using ($11):(E_sign*$4):(weight($8)*scale_weight)              with points pt 7 ps var lc rgb col_pol3 title "NSF"
+		file_dyn using ($9):(E_sign*$4) \
+			with points pt 0        lc rgb col_full notitle, \
+		file_dyn using ($9):(E_sign*$4):(weight($7)*scale_weight) \
+			with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
+		file_dyn using ($9):(E_sign*$4):(weight($6)*scale_weight) \
+			with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
+		file_dyn using ($9):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) \
+			with points pt 7 ps var lc rgb col_pol2 notitle, \
+		file_dyn using ($9):(E_sign*$4):(weight($8)*scale_weight) \
+			with points pt 7 ps var lc rgb col_pol3 title "NSF"
 }
 else {
 	# unpolarised results
 	plot \
-	        file_dyn using ($11):(E_sign*$4)                                        with points pt 0        lc rgb col_full notitle, \
-	        file_dyn using ($11):(E_sign*$4):(weight($6+$7+$8)*scale_weight)        with points pt 7 ps var lc rgb col_pol2 title "Unpol.", \
+	        file_dyn using ($9):(E_sign*$4) \
+			with points pt 0        lc rgb col_full notitle, \
+	        file_dyn using ($9):(E_sign*$4):(weight($6+$7+$8)*scale_weight) \
+			with points pt 7 ps var lc rgb col_pol2 title "Unpol."
 }

@@ -350,15 +350,20 @@ static void calc_disp_path(char dyntype,
 	std::vector<std::vector<t_real>> allEs(num_points),
 		allWsUnpol(num_points), allWsSF1(num_points),
 		allWsSF2(num_points), allWsNSF(num_points);
+	std::vector<t_real> allqs(num_points);
 
 	for(std::size_t pt_idx=0; pt_idx<num_points; ++pt_idx)
 	{
 		t_vec q = qstart + t_real(pt_idx)/t_real(num_points-1) * (qend-qstart);
 		t_vec Q = G + q;
 
-		auto calc_spectrum = [&dyn, pt_idx, Q,
+		t_real qlen = tl2::veclen(q);
+		t_real qsign = tl2::inner<t_vec>(qend-qstart, q) < 0. ? -1. : 1.;
+
+		auto calc_spectrum = [&dyn, pt_idx, Q, qsign, qlen,
 			&allh, &allk, &alll, &allEs, &allWsUnpol,
-			&allWsSF1, &allWsSF2, &allWsNSF]()
+			&allWsSF1, &allWsSF2, &allWsNSF,
+			&allqs]()
 		{
 			auto thisdyn = dyn->copyCastDyn();
 			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = thisdyn->GetDisp(Q[0], Q[1], Q[2]);
@@ -369,6 +374,7 @@ static void calc_disp_path(char dyntype,
 			allWsSF1[pt_idx] = wsSF1;
 			allWsSF2[pt_idx] = wsSF2;
 			allWsNSF[pt_idx] = wsNSF;
+			allqs[pt_idx] = qsign * qlen;
 		};
 
 		auto taskptr = std::make_shared<t_task>(calc_spectrum);
@@ -420,20 +426,23 @@ static void calc_disp_path(char dyntype,
 		<< std::setw(16) << "w_unpol" << " "
 		<< std::setw(16) << "w_sf1" << " "
 		<< std::setw(16) << "w_sf2" << " "
-		<< std::setw(16) << "w_nsf\n";
+		<< std::setw(16) << "w_nsf" << " "
+		<< std::setw(16) << "q\n";
 
 	for(std::size_t i=0; i<num_points; ++i)
 	{
 		for(std::size_t j=0; j<allEs[i].size(); ++j)
 		{
-			ofstr << std::setw(16) << allh[i] << " "             // h
-				<< std::setw(16) << allk[i] << " "           // k
-				<< std::setw(16) << alll[i] << " "           // l
-				<< std::setw(16) << allEs[i][j] << " "       // E
-				<< std::setw(16) << allWsUnpol[i][j] << " "  // w_unpol
-				<< std::setw(16) << allWsSF1[i][j] << " "    // w_sf1
-				<< std::setw(16) << allWsSF2[i][j] << " "    // w_sf2
-				<< std::setw(16) << allWsNSF[i][j] << "\n";  // w_nsf
+			ofstr
+				<< std::setw(16) << allh[i] << " "           // 1: h
+				<< std::setw(16) << allk[i] << " "           // 2: k
+				<< std::setw(16) << alll[i] << " "           // 3: l
+				<< std::setw(16) << allEs[i][j] << " "       // 4: E
+				<< std::setw(16) << allWsUnpol[i][j] << " "  // 5: w_unpol
+				<< std::setw(16) << allWsSF1[i][j] << " "    // 6: w_sf1
+				<< std::setw(16) << allWsSF2[i][j] << " "    // 7: w_sf2
+				<< std::setw(16) << allWsNSF[i][j] << " "    // 8: w_nsf
+				<< std::setw(16) << allqs[i] << "\n";        // 9: q
 		}
 	}
 
@@ -526,7 +535,7 @@ int main(int argc, char **argv)
 				"show program usage"));
 
 			args.add(boost::make_shared<opts::option_description>(
-				"use_para_perp_calc", opts::bool_switch(&use_para_perp_calc),
+				"use_para_perp_calc", opts::value<decltype(use_para_perp_calc)>(&use_para_perp_calc),
 				"use simple Q path calculation"));
 
 			args.add(boost::make_shared<opts::option_description>(
@@ -534,11 +543,11 @@ int main(int argc, char **argv)
 				"dispersion type [s/h/f]"));
 
 			args.add(boost::make_shared<opts::option_description>(
-				"explicit_calc", opts::bool_switch(&explicit_calc),
+				"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
 				"use explicit calculation"));
 
 			args.add(boost::make_shared<opts::option_description>(
-				"along_qpara", opts::bool_switch(&alongqpara),
+				"along_qpara", opts::value<decltype(alongqpara)>(&alongqpara),
 				"calculate dispersion along q_parallel"));
 
 			args.add(boost::make_shared<opts::option_description>(
