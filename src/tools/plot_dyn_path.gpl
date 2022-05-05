@@ -7,7 +7,9 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
-out_term = 1          # 1: pdf, 2: png, others: screen
+if(!exists("out_term")) {
+	out_term = 1          # 1: pdf, 2: png, others: screen
+}
 
 if(out_term == 1) {
 	set term pdf color enhanced font "Helvetica, 50" size 20, 15
@@ -37,17 +39,22 @@ show_key     = 1      # show legend
 show_scans   = 0      # indicate scans
 
 # input data file
-file_dyn = "dyn.dat"
+if(!exists("file_dyn")) {
+	file_dyn = "dyn.dat"
+}
 
-# output files
-if(out_term == 1) {
-	file_out = "dyn.pdf"
-	set output file_out
+if(!exists("file_out")) {
+	# output files
+	if(out_term == 1) {
+		file_out = "dyn.pdf"
+	}
+	if(out_term == 2) {
+		file_out = "dyn.png"
+	}
 }
-if(out_term == 2) {
-	file_out = "dyn.png"
-	set output file_out
-}
+
+set output file_out
+print(sprintf("Plotting %s -> %s\n", file_dyn, file_out))
 
 
 # colours
