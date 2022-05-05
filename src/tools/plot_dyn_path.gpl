@@ -43,8 +43,8 @@ if(!exists("file_dyn")) {
 	file_dyn = "dyn.dat"
 }
 
+# output plot file
 if(!exists("file_out")) {
-	# output files
 	if(out_term == 1) {
 		file_out = "dyn.pdf"
 	}
@@ -53,8 +53,10 @@ if(!exists("file_out")) {
 	}
 }
 
-set output file_out
-print(sprintf("Plotting %s -> %s\n", file_dyn, file_out))
+if(exists("file_out")) {
+	set output file_out
+	print(sprintf("Plotting %s -> %s\n", file_dyn, file_out))
+}
 
 
 # colours
@@ -87,9 +89,9 @@ set my2tics 2
 
 
 # labels
-set xlabel "{/Helvetica-Italic q}_{||} (rlu)" \
+set xlabel "{/Helvetica-Italic q} (rlu)" \
 	offset 0, 0.25
-set x2label "{/Helvetica-Italic q}_{||} (k_h)" \
+set x2label "{/Helvetica-Italic q} (k_h)" \
 	offset 0, -0.4
 
 set ylabel \

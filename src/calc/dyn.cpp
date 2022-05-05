@@ -52,6 +52,23 @@ static void print_groundstate(const std::vector<t_vec_cplx>& gs)
 }
 
 
+static void show_progress(t_real done, bool init = false)
+{
+	static int last_percentage = -1;
+	int new_percentage = static_cast<int>(done * 100.);
+	if(init)
+		last_percentage = -1;
+
+	if(new_percentage != last_percentage)
+	{
+		std::cout << "\rRunning, " << new_percentage << "% done.        ";
+		std::cout.flush();
+
+		last_percentage = new_percentage;
+	}
+}
+
+
 /**
  * create the dynamics module
  */
@@ -294,7 +311,8 @@ static void calc_disp_path(char dyntype,
 	t_real qh_end, t_real qk_end, t_real ql_end,
 	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
-	t_real T=-1., t_real B=-1., bool explicit_calc = true)
+	t_real T=-1., t_real B=-1., bool explicit_calc = true,
+	unsigned int num_threads = 4)
 {
 	tl2::Stopwatch<t_real> timer;
 	timer.start();
@@ -335,11 +353,8 @@ static void calc_disp_path(char dyntype,
 		<< ", Bc2_exp = " << dyn->GetBC2(true)
 		<< "." << std::endl;
 
-
 	// thread pool
-	unsigned int num_threads = std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
 	asio::thread_pool pool(num_threads);
-	std::cout << "Calculating dispersion in " << num_threads << " threads." << std::endl;
 
 	// calculation task
 	using t_task = std::packaged_task<void()>;
@@ -365,7 +380,8 @@ static void calc_disp_path(char dyntype,
 			&allWsSF1, &allWsSF2, &allWsNSF,
 			&allqs]()
 		{
-			auto thisdyn = dyn->copyCastDyn();
+			//auto thisdyn = dyn->copyCastDyn();
+			auto& thisdyn = dyn;
 			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = thisdyn->GetDisp(Q[0], Q[1], Q[2]);
 
 			allh[pt_idx] = Q[0]; allk[pt_idx] = Q[1]; alll[pt_idx] = Q[2];
@@ -382,11 +398,12 @@ static void calc_disp_path(char dyntype,
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
+	show_progress(0, true);
 	for(std::size_t taskidx=0; taskidx<tasks.size(); ++taskidx)
 	{
 		tasks[taskidx]->get_future().get();
-		std::cout << "Calculation " << taskidx+1 << " of "
-			<< tasks.size() << " finished." << std::endl;
+		t_real done = t_real(taskidx+1) / t_real(tasks.size());
+		show_progress(done);
 	}
 
 	pool.join();
@@ -446,7 +463,7 @@ static void calc_disp_path(char dyntype,
 		}
 	}
 
-	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
+	std::cout << "\nCalculation took " << timer.GetDur() << " s." << std::endl;
 	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
 }
 
@@ -478,6 +495,8 @@ int main(int argc, char **argv)
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
 	t_real Rx = 0., Ry = 0., Rz = 1., Ralpha = 0.;
 	std::size_t num_points = 256;
+	unsigned int num_threads = 
+		std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
 
 
 	if(argc <= 1)
@@ -652,6 +671,10 @@ int main(int argc, char **argv)
 				"Ralpha", opts::value<decltype(Ralpha)>(&Ralpha),
 				"q rotation angle"));
 
+			args.add(boost::make_shared<opts::option_description>(
+				"num_threads", opts::value<decltype(num_threads)>(&num_threads),
+				"number of threads for calculation"));
+
 
 			clparser.options(args);
 			opts::basic_parsed_options<char> parsedopts = clparser.run();
@@ -679,6 +702,9 @@ int main(int argc, char **argv)
 
 	if(use_para_perp_calc)
 	{
+		// fixed number of threads in the old function
+		std::cout << "Calculating high-symmetry path dispersion in 4 threads..." << std::endl;
+
 		// calculate the dispersion using simple parallel or perpendicular momentum transfers
 		calc_disp_para_perp(dyntype,
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
@@ -689,6 +715,8 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+		std::cout << "Calculating arbitrary path dispersion in " << num_threads << " threads..." << std::endl;
+
 		// calculate the dispersion using arbitrary momentum transfer paths
 		calc_disp_path(dyntype,
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,

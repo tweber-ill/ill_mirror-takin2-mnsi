@@ -18,6 +18,7 @@ IDX_START=0     # 0 to 90 degrees
 IDX_END=180
 IDX_SCALE=0.5   # half-degree steps
 
+create_plots=1
 create_movie=1
 
 
@@ -41,7 +42,9 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 		--qh_end=0.2 --qk_end=0.2 --ql_end=0 \
 		--Rx=0 --Ry=0 --Rz=1 --Ralpha=${ANGLE}
 
-	${GPL} -e "file_dyn = \"${OUTFILE}\"; file_out = \"${PLOTFILE}\"; out_term = 2;" ${PLOT_SCRIPT}
+	if [ $create_plots -ne 0 ]; then
+		${GPL} -e "file_dyn = \"${OUTFILE}\"; file_out = \"${PLOTFILE}\"; out_term = 2;" ${PLOT_SCRIPT}
+	fi
 
 	echo -e "--------------------------------------------------------------------------------\n"
 done
