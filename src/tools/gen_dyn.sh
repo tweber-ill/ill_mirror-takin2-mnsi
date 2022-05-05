@@ -14,9 +14,9 @@ PLOT_SCRIPT=../src/tools/plot_dyn_path.gpl
 MPG=ffmpeg
 
 # indices and angles
-IDX_START=0    # 0 to 90 degrees
+IDX_START=0     # 0 to 90 degrees
 IDX_END=180
-IDX_SCALE=0.5    # one degree steps
+IDX_SCALE=0.5   # half-degree steps
 
 create_movie=1
 
