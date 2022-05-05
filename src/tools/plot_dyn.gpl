@@ -56,7 +56,7 @@ if(!exists("file_out")) {
 
 if(exists("file_out")) {
 	set output file_out
-	print(sprintf("Plotting %s -> %s\n", file_dyn, file_out))
+	print(sprintf("Plotting %s -> %s.", file_dyn, file_out))
 }
 
 
