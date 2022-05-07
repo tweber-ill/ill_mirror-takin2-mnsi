@@ -363,7 +363,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 
 
 /**
- * rotates field and pinning to internal conventions ([001] and [100], respectively])
+ * rotates field and pinning to internal conventions ([001] and [100], respectively)
  */
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetCoords(
