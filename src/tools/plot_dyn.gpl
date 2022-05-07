@@ -89,15 +89,27 @@ set mytics 4
 set my2tics 2
 
 
-# labels
-set xlabel "{/Helvetica-Italic q}_{||} (rlu)" \
-	offset 0, 0.25
-set x2label "{/Helvetica-Italic q}_{||} (k_h)" \
-	offset 0, -0.4
+# plotting directions
+if(!exists("along_q_para")) {
+	along_q_para = 1
+}
 
-set ylabel \
-	"{/Helvetica-Italic E} (meV)" \
-	offset 2
+if(!exists("q_perp")) {
+	q_perp = 0
+}
+
+
+# labels
+if(along_q_para != 0) {
+	set xlabel "{/Helvetica-Italic q}_{||} (rlu)" offset 0, 0.25
+	set x2label "{/Helvetica-Italic q}_{||} (k_h)" offset 0, -0.4
+}
+else {
+	set xlabel "{/Helvetica-Italic q}_{⊥} (rlu)" offset 0, 0.25
+	set x2label "{/Helvetica-Italic q}_{⊥} (k_h)" offset 0, -0.4
+}
+
+set ylabel "{/Helvetica-Italic E} (meV)" offset 2
 set y2label \
 	"{/Helvetica-Italic E} ({/Helvetica-Italic g} {/Helvetica-Italic μ_0} {/Helvetica-Italic μ_B} {/Helvetica-Italic H}_{c2}^{int})" \
 	offset -0.25, 0
@@ -106,6 +118,14 @@ set y2label \
 # legend
 if(show_key != 0) {
         set key at graph 0.49, graph 0.97 height 0.3 samplen 0 Left reverse box opaque
+
+	if(along_q_para != 0) {
+		qperpstr = sprintf("{/Helvetica-Italic q}_{⊥} = %s rlu", q_perp)
+	}
+	else {
+		qperpstr = sprintf("{/Helvetica-Italic q}_{||} = %s rlu", q_perp)
+	}
+	set label 100 at graph 0.51, graph 0.95  qperpstr front
 }
 else {
         unset key
