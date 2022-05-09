@@ -16,7 +16,7 @@ if(out_term == 1) {
 	term_scale = 1.
 }
 if(out_term == 2) {
-	set term pngcairo enhanced font "Helvetica, 26" size 1200, 1000
+	set term pngcairo transparent enhanced font "Helvetica, 26" size 1200, 1000
 	term_scale = 4.
 }
 

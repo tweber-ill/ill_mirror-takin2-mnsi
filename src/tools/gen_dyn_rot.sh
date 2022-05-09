@@ -12,6 +12,7 @@ PY=python3
 GPL=gnuplot
 PLOT_SCRIPT=../src/tools/plot_dyn_path.gpl
 SCANPOS_SCRIPT=../src/tools/draw_recipsetup.gpl
+CONV=convert
 MPG=ffmpeg
 
 # indices and angles
@@ -26,8 +27,9 @@ create_movie=1
 
 for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 	OUTFILE="dyn_${idx}.dat"
-	PLOTFILE="${OUTFILE/.dat/.png}"
+	PLOT_FILE="${OUTFILE/.dat/.png}"
 	SCANPOS_FILE="${OUTFILE/.dat/_scanpos.png}"
+	UNITED_FILE="${OUTFILE/.dat/_united.png}"
 	ANGLE=$(${PY} -c "print(${idx} * ${IDX_SCALE})")
 
 	echo -e "\n\x1b[1;34m"
@@ -43,14 +45,18 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 			--Px=1 --Py=-1 --Pz=0 \
 			--T=28.5 --B=0.15 \
 			--num_points=512 \
-			--qh_start=-0.2 --qk_start=-0.2 --ql_start=0 \
-			--qh_end=0.2 --qk_end=0.2 --ql_end=0 \
+			--qh_start=-0.12 --qk_start=-0.12 --ql_start=0 \
+			--qh_end=0.12 --qk_end=0.12 --ql_end=0 \
 			--Rx=0 --Ry=0 --Rz=1 --Ralpha=${ANGLE}
 	fi
 
 	if [ $create_plots -ne 0 ]; then
-		${GPL} -e "file_dyn = \"${OUTFILE}\"; file_out = \"${PLOTFILE}\"; out_term = 2;" ${PLOT_SCRIPT}
+		${GPL} -e "file_dyn = \"${OUTFILE}\"; file_out = \"${PLOT_FILE}\"; out_term = 2;" ${PLOT_SCRIPT}
 		${GPL} -e "file_out = \"${SCANPOS_FILE}\"; out_term = 2; scan_angle = ${ANGLE};" ${SCANPOS_SCRIPT}
+
+		echo -e "Uniting ${PLOT_FILE} + ${SCANPOS_FILE} -> ${UNITED_FILE=}."
+		${CONV} ${PLOT_FILE} "(" ${SCANPOS_FILE} -resize x300 ")" \
+			-gravity northeast -geometry +325+60 -composite ${UNITED_FILE}
 	fi
 
 	echo -e "\x1b[1;34m"
@@ -66,7 +72,7 @@ if [ $create_movie -ne 0 ]; then
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 
-	${MPG} -i dyn_%d.png -y dyn.mp4
+	${MPG} -i dyn_%d_united.png -y dyn.mp4
 
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"

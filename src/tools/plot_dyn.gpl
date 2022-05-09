@@ -30,8 +30,8 @@ g      = 2.
 muB    = 5.78838e-02  # codata value
 
 
-qrange       = 0.15   # q range to plot
-Erange       = 1.0    # E range to plot
+qrange       = 0.12   # q range to plot
+Erange       = 0.9    # E range to plot
 scale_weight = 1.5    # weight scale for plot
 
 show_pol     = 1
