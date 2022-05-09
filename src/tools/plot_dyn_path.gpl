@@ -30,8 +30,8 @@ g      = 2.
 muB    = 5.78838e-02  # codata value
 
 
-qrange       = 0.12   # q range to plot
-Erange       = 0.9    # E range to plot
+qrange       = 0.15   # q range to plot
+Erange       = 1.0    # E range to plot
 scale_weight = 1.5    # weight scale for plot
 
 show_pol     = 1
@@ -62,7 +62,7 @@ if(exists("file_out")) {
 # colours
 col_axis  = "#000000"  # colour for coordinate cross
 col_label = "#000000"  # colour for label
-col_scan  = "#aaaaaa"   # colour for scan marker
+col_scan  = "#aaaaaa"  # colour for scan marker
 col_full  = "#999999"  # colour for all weights
 col_pol1  = "#0000bb"  # colour for spin-flip channel 1
 col_pol2  = "#bb0000"  # colour for spin-flip channel 2

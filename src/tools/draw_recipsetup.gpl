@@ -1,0 +1,122 @@
+#!/usr/bin/gnuplot -p
+#
+# plots positions in reciprocal space
+# @author Tobias Weber <tweber@ill.fr>
+# @date aug-2019
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+if(!exists("out_term")) {
+	out_term = 1         # 1: pdf, 2: png, others: screen
+}
+
+term_scale = 1.
+if(out_term == 1) {
+	set term pdf color enhanced font "Helvetica, 12" size 4,3.5
+	term_scale = 1.
+}
+if(out_term == 2) {
+	set term pngcairo enhanced font "Helvetica, 26" size 1200, 1000
+	term_scale = 4.
+}
+
+# output plot file
+if(!exists("file_out")) {
+	if(out_term == 1) {
+		file_out = "recipsetup.pdf"
+	}
+	if(out_term == 2) {
+		file_out = "recipsetup.png"
+	}
+}
+
+if(exists("file_out")) {
+	set output file_out
+	print(sprintf("Drawing reciprocal space diagram to %s.", file_out))
+}
+
+
+col_bragg = "#008800"
+col_sat   = "#ff0000"
+col_field = "#000000"
+col_scan  = "#0000ff"
+
+size_bragg = 1.5 * term_scale
+size_sat   = 1. * term_scale
+size_scan  = 4.
+
+if(!exists("scan_angle")) {
+	scan_angle = 0.      # in deg
+}
+
+
+unset key
+set size 1,1
+set xlabel "[110] (rlu)"
+set ylabel "[1@^{/=20-}10] (rlu)" rotate by 55
+set zlabel "[001] (rlu)" rotate by 90
+
+set xtics 0.02
+set ytics 0.02
+set ztics 0.02
+
+# bragg peak
+set label 1 at 0.993, -0.01 "(110)" tc rgb col_bragg center rotate by -15
+
+# symmetry directions
+set arrow 100 from 1.0,0 to 1.03,0 head filled lw 2 lc rgb col_field
+set arrow 101 from 1.0,0 to 1,0.04 head filled lw 2 lc rgb col_field
+
+set label 100 at 1.025,-0.007 "q_{||}" tc rgb col_field center rotate by -15
+set label 101 at 1.005,0.03 "q_{⟂}" tc rgb col_field center rotate by 55
+
+# scan direction
+set arrow 500 \
+	from 1-cos(scan_angle/180.*pi)*0.04, -sin(scan_angle/180.*pi)*0.04 \
+	to 1+cos(scan_angle/180.*pi)*0.04, sin(scan_angle/180.*pi)*0.04 \
+	nohead dt 2 lw size_scan lc rgb col_scan
+
+
+xrange = 0.045
+yrange = 0.045
+zrange = 0.045
+set xrange [1 - xrange : 1 + xrange]
+set yrange [-yrange : yrange]
+set zrange [-zrange : zrange]
+
+
+set xyplane at 0
+set view 45, 25, 1, 1
+set clip
+
+
+# skx peaks
+#splot \
+#	"-" u ($1):($2):(0) w p pt 7 ps size_bragg lc rgb col_bragg, \
+#	"-" u (1):($1):($2) w p pt 7 ps size_sat lc rgb col_sat
+#	1            0          # Bragg peak: G = (1, 1, 0)
+#e
+#	0.019        0          # Q = (0.019, -0.019, 0)
+#	0.0095       0.02338    # Q = (0.0095, -0.0095, 0.02338)
+#	-0.0095      0.02338    # Q = (-0.0095, 0.0095, 0.02338)
+#	-0.019       0          # Q = (-0.019, 0.019, 0)
+#	0.0095       -0.02338   # Q = (0.0095, -0.0095, -0.02338)
+#	-0.0095      -0.02338   # Q = (-0.0095, 0.0095, -0.02338)
+#e
+
+
+# heli peaks
+splot \
+	"-" u ($1):($2):(0) w p pt 7 ps size_bragg lc rgb col_bragg, \
+	"-" u (1+$1):($2):(0) w p pt 7 ps size_sat lc rgb col_sat
+	1            0          # Bragg peak: G = (1, 1, 0)
+e
+	0.019        0          # Q = (0.019, 0.019, 0)
+	-0.019       0          # Q = (-0.019, -0.019, 0)
+e
+
+
+#
+# skx sats: ang = 0/180*pi; [0, 0, 0.027]*sin(ang) + [0.019, -0.019, 0]*cos(ang)
+# scan pos: ang = 0/180*pi; 0.04*[1, 1, 0]*cos(ang) + 0.04*[1, -1, 0]*sin(ang)
+#
