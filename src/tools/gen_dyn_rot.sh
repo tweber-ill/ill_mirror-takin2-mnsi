@@ -55,8 +55,8 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 		${GPL} -e "file_out = \"${SCANPOS_FILE}\"; out_term = 2; scan_angle = ${ANGLE};" ${SCANPOS_SCRIPT}
 
 		echo -e "Uniting ${PLOT_FILE} + ${SCANPOS_FILE} -> ${UNITED_FILE=}."
-		${CONV} ${PLOT_FILE} "(" ${SCANPOS_FILE} -resize x300 ")" \
-			-gravity northeast -geometry +325+60 -composite ${UNITED_FILE}
+		${CONV} ${PLOT_FILE} "(" ${SCANPOS_FILE} -resize x600 ")" \
+			-gravity northeast -geometry +650+120 -composite ${UNITED_FILE}
 	fi
 
 	echo -e "\x1b[1;34m"

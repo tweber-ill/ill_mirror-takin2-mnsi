@@ -7,16 +7,14 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
-if(!exists("out_term")) {
-	out_term = 1          # 1: pdf, 2: png, others: screen
-}
+qrange        = 0.12  # q range to plot
+Erange        = 0.9   # E range to plot
+scale_weight  = 1.5   # weight scale for plot
+key_pointsize = 2.0   # symbol size in legend
 
-if(out_term == 1) {
-	set term pdf color enhanced font "Helvetica, 50" size 20, 15
-}
-if(out_term == 2) {
-	set term pngcairo enhanced font "Helvetica, 28" size 1333, 1000
-}
+show_pol      = 1
+show_key      = 1     # show legend
+show_scans    = 0     # indicate scans
 
 
 a      = 4.558        # lattice constant
@@ -30,13 +28,20 @@ g      = 2.
 muB    = 5.78838e-02  # codata value
 
 
-qrange       = 0.12   # q range to plot
-Erange       = 0.9    # E range to plot
-scale_weight = 1.5    # weight scale for plot
+if(!exists("out_term")) {
+	out_term = 1          # 1: pdf, 2: png, others: screen
+}
 
-show_pol     = 1
-show_key     = 1      # show legend
-show_scans   = 0      # indicate scans
+if(out_term == 1) {
+	set term pdf color enhanced font "Helvetica, 50" size 20, 15
+}
+if(out_term == 2) {
+	set term pngcairo enhanced font "Helvetica, 56" size 2666, 2000
+
+	scale_weight = 2.0 * scale_weight
+	key_pointsize = 2.0 * key_pointsize
+}
+
 
 # input data file
 if(!exists("file_dyn")) {
@@ -157,25 +162,33 @@ set clip
 
 E_sign = 1.
 
+$dummy_data << END_DATA
+	NaN NaN
+END_DATA
+
 if(show_pol != 0) {
 	# polarised results
 	plot \
 		file_dyn using ($9):(E_sign*$4) \
 			with points pt 0        lc rgb col_full notitle, \
+		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol2 title "SF (+-)", \
+		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol1 title "SF (-+)", \
+		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol3 title "NSF", \
 		file_dyn using ($9):(E_sign*$4):(weight($7)*scale_weight) \
-			with points pt 7 ps var lc rgb col_pol2 title "SF (+-)", \
+			with points pt 7 ps var lc rgb col_pol2 notitle, \
 		file_dyn using ($9):(E_sign*$4):(weight($6)*scale_weight) \
-			with points pt 7 ps var lc rgb col_pol1 title "SF (-+)", \
+			with points pt 7 ps var lc rgb col_pol1 notitle, \
 		file_dyn using ($9):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol2 notitle, \
 		file_dyn using ($9):(E_sign*$4):(weight($8)*scale_weight) \
-			with points pt 7 ps var lc rgb col_pol3 title "NSF"
+			with points pt 7 ps var lc rgb col_pol3 notitle
 }
 else {
 	# unpolarised results
 	plot \
 	        file_dyn using ($9):(E_sign*$4) \
 			with points pt 0        lc rgb col_full notitle, \
+	        "$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol2 title "Unpol.", \
 	        file_dyn using ($9):(E_sign*$4):(weight($6+$7+$8)*scale_weight) \
-			with points pt 7 ps var lc rgb col_pol2 title "Unpol."
+			with points pt 7 ps var lc rgb col_pol2 notitle
 }
