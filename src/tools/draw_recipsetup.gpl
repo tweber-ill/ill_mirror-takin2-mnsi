@@ -36,10 +36,12 @@ if(exists("file_out")) {
 }
 
 
-col_bragg = "#008800"
-col_sat   = "#ff0000"
-col_field = "#000000"
-col_scan  = "#0000ff"
+col_bragg   = "#008800"
+col_sat     = "#ff0000"
+col_sat_pos = "#ff0000"
+col_sat_neg = "#0000ff"
+col_qdirs   = "#000000"
+col_scan    = "#0000ff"
 
 size_bragg = 1.5 * term_scale
 size_sat   = 1. * term_scale
@@ -64,11 +66,11 @@ set ztics 0.02
 set label 1 at 0.993, -0.01 "(110)" tc rgb col_bragg center rotate by -15
 
 # symmetry directions
-set arrow 100 from 1.0,0 to 1.03,0 head filled lw 2 lc rgb col_field
-set arrow 101 from 1.0,0 to 1,0.04 head filled lw 2 lc rgb col_field
+set arrow 100 from 1.0,0 to 1.03,0 head filled lw 2 lc rgb col_qdirs
+set arrow 101 from 1.0,0 to 1,0.04 head filled lw 2 lc rgb col_qdirs
 
-set label 100 at 1.025,-0.007 "q_{||}" tc rgb col_field center rotate by -15
-set label 101 at 1.005,0.03 "q_{⟂}" tc rgb col_field center rotate by 55
+set label 100 at 1.025,-0.007 "q_{||}" tc rgb col_qdirs center rotate by -15
+set label 101 at 1.005,0.03 "q_{⟂}" tc rgb col_qdirs center rotate by 55
 
 # scan direction
 set arrow 500 \
@@ -108,13 +110,14 @@ set clip
 # heli peaks
 splot \
 	"-" u ($1):($2):(0) w p pt 7 ps size_bragg lc rgb col_bragg, \
-	"-" u (1+$1):($2):(0) w p pt 7 ps size_sat lc rgb col_sat
+	"-" u (1+$1):($2):(0) w p pt 7 ps size_sat lc rgb col_sat_neg, \
+	"-" u (1+$1):($2):(0) w p pt 7 ps size_sat lc rgb col_sat_pos
 	1            0          # Bragg peak: G = (1, 1, 0)
 e
-	0.019        0          # Q = (0.019, 0.019, 0)
 	-0.019       0          # Q = (-0.019, -0.019, 0)
 e
-
+	0.019        0          # Q = (0.019, 0.019, 0)
+e
 
 #
 # skx sats: ang = 0/180*pi; [0, 0, 0.027]*sin(ang) + [0.019, -0.019, 0]*cos(ang)
