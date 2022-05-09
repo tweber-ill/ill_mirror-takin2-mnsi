@@ -42,6 +42,8 @@ if(out_term == 2) {
 	key_pointsize = 2.0 * key_pointsize
 }
 
+set clip points
+set border lw 8
 
 # input data file
 if(!exists("file_dyn")) {
@@ -156,9 +158,6 @@ weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
 #q_len(Qh, Qk, Ql)     = sqrt((Qh-Gh)**2 + (Qk-Gk)**2 + (Ql-Gl)**2)
 #q_sign(Qh, Qk, Ql)    = ((Qh-Gh)*Qhdir + (Qk-Gk)*Qkdir + (Qk-Gl)*Qldir < 0) ? -1 : 1
 
-
-#set multiplot layout 1,2 margins 0.09,0.91, 0.14,0.81 spacing 0.01,0.05
-set clip
 
 E_sign = 1.
 

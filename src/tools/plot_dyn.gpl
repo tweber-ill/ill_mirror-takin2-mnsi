@@ -42,6 +42,9 @@ if(out_term == 2) {
 	key_pointsize = 2.0 * key_pointsize
 }
 
+#set multiplot layout 1,2 margins 0.09,0.91, 0.14,0.81 spacing 0.01,0.05
+set clip points
+set border lw 8
 
 # input data file
 if(!exists("file_dyn")) {
@@ -173,9 +176,6 @@ if(show_scans != 0) {
 weight_raw(w)         = (w > 5.) ? 5. : sqrt(w) * 2.5
 weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
 weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
-
-#set multiplot layout 1,2 margins 0.09,0.91, 0.14,0.81 spacing 0.01,0.05
-set clip
 
 E_sign = 1.
 
