@@ -43,10 +43,10 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 			--Gx=1 --Gy=1 --Gz=0 \
 			--Bx=1 --By=1 --Bz=0 \
 			--Px=1 --Py=-1 --Pz=0 \
-			--T=28.5 --B=0.15 \
-			--num_points=512 \
-			--qh_start=-0.12 --qk_start=-0.12 --ql_start=0 \
-			--qh_end=0.12 --qk_end=0.12 --ql_end=0 \
+			--T=28.5 --B=0.17 \
+			--num_points=1024 \
+			--qh_start=-0.1 --qk_start=-0.1 --ql_start=0 \
+			--qh_end=0.1 --qk_end=0.1 --ql_end=0 \
 			--Rx=0 --Ry=0 --Rz=1 --Ralpha=${ANGLE}
 	fi
 

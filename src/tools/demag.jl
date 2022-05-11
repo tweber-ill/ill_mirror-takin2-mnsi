@@ -45,6 +45,9 @@ end
 l = 30
 r = 5
 
+#l = (26 + 30.5) * 0.5
+#r = (7.7 + 8) * 0.5
+
 Nx = demag_cyl_x(l, r)
 Nz = demag_cyl_z(l, r)
 

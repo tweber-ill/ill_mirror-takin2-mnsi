@@ -296,7 +296,7 @@ static void calc_disp_para_perp(char dyntype,
 	}
 
 	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
-	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
+	std::cout << "Wrote \"" << outfile << "\"." << std::endl;
 }
 
 
@@ -464,7 +464,7 @@ static void calc_disp_path(char dyntype,
 	}
 
 	std::cout << "\nCalculation took " << timer.GetDur() << " s." << std::endl;
-	std::cout << "Wrote \"" << outfile << "\"" << std::endl;
+	std::cout << "Wrote \"" << outfile << "\"." << std::endl;
 }
 
 
