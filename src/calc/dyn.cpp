@@ -115,7 +115,8 @@ static void calc_disp_para_perp(char dyntype,
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
-	t_real qperpdir_x, t_real qperpdir_y, t_real qperpdir_z, t_real qperp,
+	t_real qperpdir_x, t_real qperpdir_y, t_real qperpdir_z,
+	t_real qperp, t_real qperp2,
 	const std::string& outfile, bool bSwapQParaQPerp=0,
 	t_real T=-1., t_real B=-1.,
 	t_real qrange = 0.125, t_real delta = 0.001,
@@ -140,6 +141,8 @@ static void calc_disp_para_perp(char dyntype,
 	t_vec qperpdir = tl2::make_vec<t_vec>({ qperpdir_x, qperpdir_y, qperpdir_z });
 	qperpdir /= tl2::veclen(qperpdir);
 
+	t_vec qperpdir2 = tl2::cross_3(qparadir, qperpdir);
+	qperpdir2 /= tl2::veclen(qperpdir2);
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(-1000., false);
@@ -162,7 +165,8 @@ static void calc_disp_para_perp(char dyntype,
 		<< "." << std::endl;
 
 
-	auto calc_spectrum = [dyntype, &dyn, &G, T, &qparadir, &qperpdir, &qperp, bSwapQParaQPerp]
+	auto calc_spectrum = [dyntype, &dyn, &G, T, &qparadir,
+		&qperpdir, &qperp, &qperpdir2, &qperp2, bSwapQParaQPerp]
 		(int thid, t_real qstart, t_real qend, t_real qdelta) -> auto
 	{
 		std::vector<t_real> allh, allk, alll, allqpara_kh, allqperp_kh, allqpara_rlu, allqperp_rlu;
@@ -172,9 +176,9 @@ static void calc_disp_para_perp(char dyntype,
 		for(t_real _q=qstart; _q<qend; _q+=qdelta)
 		{
 			t_real qpara = _q;
-			t_vec Q = G + qpara*qparadir + qperp*qperpdir;
+			t_vec Q = G + qpara*qparadir + qperp*qperpdir + qperp2*qperpdir2;
 			if(bSwapQParaQPerp)
-				Q = G + qpara*qperpdir + qperp*qparadir;	// swap qpara and qperp
+				Q = G + qpara*qperpdir + qperp*qparadir + qperp2*qperpdir2;	// swap qpara and qperp
 
 			std::cout << "thread " << thid << " (" << Q[0] << " " << Q[1] << " " << Q[2] << ") ... ";
 			std::cout.flush();
@@ -481,7 +485,7 @@ int main(int argc, char **argv)
 	t_real Bx = 1., By = 1., Bz = 0.;
 	t_real Px = -1., Py = 1., Pz = 0.;
 	t_real qperpx = -1., qperpy = 1., qperpz = 0.;
-	t_real qperp = 0.;
+	t_real qperp = 0., qperp2 = 0.;
 	t_real B = 0.17, T = 28.5;
 	t_real qrange = 0.125;
 	t_real qdelta = 0.001;
@@ -495,7 +499,7 @@ int main(int argc, char **argv)
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
 	t_real Rx = 0., Ry = 0., Rz = 1., Ralpha = 0.;
 	std::size_t num_points = 256;
-	unsigned int num_threads = 
+	unsigned int num_threads =
 		std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
 
 
@@ -542,6 +546,8 @@ int main(int argc, char **argv)
 		std::cin >> qperpx >> qperpy >> qperpz;
 		std::cout << "|q_perp| = ";
 		std::cin >> qperp;
+		std::cout << "|q_perp_2| = ";
+		std::cin >> qperp2;
 	}
 	else
 	{
@@ -617,6 +623,9 @@ int main(int argc, char **argv)
 			args.add(boost::make_shared<opts::option_description>(
 				"qperp", opts::value<decltype(qperp)>(&qperp),
 				"perpendicular q magnitude"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qperp2", opts::value<decltype(qperp2)>(&qperp2),
+				"second perpendicular q magnitude"));
 
 			args.add(boost::make_shared<opts::option_description>(
 				"qrange", opts::value<decltype(qrange)>(&qrange),
@@ -708,7 +717,8 @@ int main(int argc, char **argv)
 		// calculate the dispersion using simple parallel or perpendicular momentum transfers
 		calc_disp_para_perp(dyntype,
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
-			qperpx,qperpy,qperpz, qperp,
+			qperpx,qperpy,qperpz,
+			qperp, qperp2,
 			outfile, !alongqpara,
 			T, B, qrange, qdelta,
 			explicit_calc);
