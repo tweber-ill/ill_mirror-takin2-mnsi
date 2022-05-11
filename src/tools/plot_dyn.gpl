@@ -198,7 +198,7 @@ if(show_pol != 0) {
 		file_dyn using ($11):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol2 notitle, \
 		file_dyn using ($11):(E_sign*$4):(weight($8)*scale_weight) \
-			with points pt 7 ps var lc rgb col_pol3 title "NSF"
+			with points pt 7 ps var lc rgb col_pol3 notitle
 }
 else {
 	# unpolarised results

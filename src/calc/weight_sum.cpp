@@ -3,6 +3,8 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date jun-20
  * @license GPLv2 (see 'LICENSE' file)
+ *
+ * TODO: takin into account the entire sector, not just the central path
  */
 
 #include "core/heli.h"
@@ -22,7 +24,6 @@ using t_vec_cplx = ublas::vector<t_cplx>;
 #include "core/skx_default_gs.cxx"
 
 
-const t_real g_T = 28.5;
 const t_real g_eps = 1e-5;
 const t_real g_weight_eps = 1e-6;
 
@@ -46,14 +47,16 @@ void calc_disp(const t_vec& Gvec,
 	skx.SetProjNeutron(bProj);
 	heli.SetProjNeutron(bProj);
 
+	t_real T = 28.5;
 	skx.SetT(-1000., false);
 	heli.SetT(-1000., false);
-	heli.SetT(g_T, true);
+	heli.SetT(T, true);
 
 	t_real bc2 = skx.GetBC2(false);
 	skx.SetB(bc2/2., false);
 	heli.SetB(bc2/2., false);
-	heli.SetB(0.17, true);
+	//heli.SetB(0.17, true);
+	heli.SetB(0.158, true);
 
 	skx.SetFilterZeroWeight(1);
 	heli.SetFilterZeroWeight(1);
@@ -186,7 +189,7 @@ void calc_disp(const t_vec& Gvec,
 			break;
 		}
 
-		t_real bose = tl2::bose(E, g_T);
+		t_real bose = tl2::bose(E, T);
 
 		ofstrBinned << std::left << std::setw(COL_SIZE) << E
 			<< " " << std::left << std::setw(COL_SIZE) << bose
