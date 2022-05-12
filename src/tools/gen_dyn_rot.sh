@@ -44,7 +44,7 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 			--Bx=1 --By=1 --Bz=0 \
 			--Px=1 --Py=-1 --Pz=0 \
 			--T=28.5 --B=0.17 \
-			--num_points=1024 \
+			--num_points=1024 --explicit_calc=1 \
 			--qh_start=-0.1 --qk_start=-0.1 --ql_start=0 \
 			--qh_end=0.1 --qk_end=0.1 --ql_end=0 \
 			--Rx=0 --Ry=0 --Rz=1 --Ralpha=${ANGLE}
@@ -54,7 +54,7 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 		${GPL} -e "file_dyn = \"${OUTFILE}\"; file_out = \"${PLOT_FILE}\"; out_term = 2;" ${PLOT_SCRIPT}
 		${GPL} -e "file_out = \"${SCANPOS_FILE}\"; out_term = 2; scan_angle = ${ANGLE};" ${SCANPOS_SCRIPT}
 
-		echo -e "Uniting ${PLOT_FILE} + ${SCANPOS_FILE} -> ${UNITED_FILE=}."
+		echo -e "Uniting ${PLOT_FILE} + ${SCANPOS_FILE} -> ${UNITED_FILE}."
 		${CONV} ${PLOT_FILE} "(" ${SCANPOS_FILE} -resize x600 ")" \
 			-gravity northeast -geometry +650+120 -composite ${UNITED_FILE}
 	fi
@@ -78,3 +78,18 @@ if [ $create_movie -ne 0 ]; then
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 fi
+
+
+# TODO: automatically unite dispersion images
+#for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
+#	printf -v filename_skx "skx/dyn_%d_united.png" ${idx}
+#	printf -v filename_heli "heli/dyn_%d_united.png" ${idx}
+#	printf -v filename_joined "dyn_joined_%d.png" ${idx}
+#
+#	if [ ! -f "${filename_skx}" ] || [ ! -f "${filename_heli}" ]; then
+#		break
+#	fi
+#
+#	echo -e "Joining ${filename_skx} + ${filename_heli} -> ${filename_joined}"
+#	${CONV} +append ${filename_skx} ${filename_heli} ${filename_joined}
+#done
