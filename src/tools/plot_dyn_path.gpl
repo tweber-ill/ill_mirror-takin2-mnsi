@@ -33,10 +33,10 @@ if(!exists("out_term")) {
 }
 
 if(out_term == 1) {
-	set term pdf color enhanced font "Helvetica, 50" size 20, 15
+	set term pdf color enhanced font "NimbusSans-Regular, 50" size 20, 15
 }
 if(out_term == 2) {
-	set term pngcairo enhanced font "Helvetica, 56" size 2666, 2000
+	set term pngcairo enhanced font "NimbusSans-Regular, 56" size 2666, 2000
 
 	scale_weight = 2.0 * scale_weight
 	key_pointsize = 2.0 * key_pointsize
@@ -96,16 +96,16 @@ set my2tics 2
 
 
 # labels
-set xlabel "{/Helvetica-Italic q} (rlu)" \
+set xlabel "{/NimbusSans-Italic q} (rlu)" \
 	offset 0, 0.25
-set x2label "{/Helvetica-Italic q} (k_h)" \
+set x2label "{/NimbusSans-Italic q} (k_h)" \
 	offset 0, -0.4
 
 set ylabel \
-	"{/Helvetica-Italic E} (meV)" \
+	"{/NimbusSans-Italic E} (meV)" \
 	offset 2
 set y2label \
-	"{/Helvetica-Italic E} ({/Helvetica-Italic g} {/Helvetica-Italic μ_0} {/Helvetica-Italic μ_B} {/Helvetica-Italic H}_{c2}^{int})" \
+	"{/NimbusSans-Italic E} ({/NimbusSans-Italic g} {/NimbusSans-Italic μ_0} {/NimbusSans-Italic μ_B} {/NimbusSans-Italic H}_{c2}^{int})" \
 	offset -0.25, 0
 
 

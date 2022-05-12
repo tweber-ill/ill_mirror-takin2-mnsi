@@ -107,7 +107,10 @@ void calc_disp(const t_vec& Gvec,
 		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));
 		t_vec Qvec = Gvec + qvec;
 
-		std::cout << "# angle: " << angle/M_PI*180. << ", Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")" << std::endl;
+		std::cout << "# angle: " << angle/M_PI*180.
+			<< ", Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
+			<< ", |q| = " << tl2::veclen(qvec) << "."
+			<< std::endl;
 
 		{
 			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);

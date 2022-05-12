@@ -12,11 +12,11 @@ if(!exists("out_term")) {
 
 term_scale = 1.
 if(out_term == 1) {
-	set term pdf color enhanced font "Helvetica, 12" size 4,3.5
+	set term pdf color enhanced font "NimbusSans-Regular, 12" size 4,3.5
 	term_scale = 1.
 }
 if(out_term == 2) {
-	set term pngcairo transparent enhanced font "Helvetica, 26" size 1200, 1000
+	set term pngcairo transparent enhanced font "NimbusSans-Regular, 26" size 1200, 1000
 	term_scale = 4.
 }
 

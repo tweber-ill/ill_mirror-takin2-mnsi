@@ -6,7 +6,7 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
-set term pdf enhanced font "Helvetica,24" size 10,10
+set term pdf enhanced font "NimbusSans-Regular, 24" size 10,10
 set output "skxlattice.pdf"
 
 show_axes = 1

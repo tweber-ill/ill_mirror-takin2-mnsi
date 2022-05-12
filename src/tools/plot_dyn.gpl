@@ -33,10 +33,10 @@ if(!exists("out_term")) {
 }
 
 if(out_term == 1) {
-	set term pdf color enhanced font "Helvetica, 50" size 20, 15
+	set term pdf color enhanced font "NimbusSans-Regular, 50" size 20, 15
 }
 if(out_term == 2) {
-	set term pngcairo enhanced font "Helvetica, 56" size 2666, 2000
+	set term pngcairo enhanced font "NimbusSans-Regular, 56" size 2666, 2000
 
 	scale_weight = 2.0 * scale_weight
 	key_pointsize = 2.0 * key_pointsize
@@ -108,17 +108,17 @@ if(!exists("q_perp")) {
 
 # labels
 if(along_q_para != 0) {
-	set xlabel "{/Helvetica-Italic q}_{||} (rlu)" offset 0, 0.25
-	set x2label "{/Helvetica-Italic q}_{||} (k_h)" offset 0, -0.4
+	set xlabel "{/NimbusSans-Italic q}_{||} (rlu)" offset 0, 0.25
+	set x2label "{/NimbusSans-Italic q}_{||} (k_h)" offset 0, -0.4
 }
 else {
-	set xlabel "{/Helvetica-Italic q}_{⊥} (rlu)" offset 0, 0.25
-	set x2label "{/Helvetica-Italic q}_{⊥} (k_h)" offset 0, -0.4
+	set xlabel "{/NimbusSans-Italic q}_{⊥} (rlu)" offset 0, 0.25
+	set x2label "{/NimbusSans-Italic q}_{⊥} (k_h)" offset 0, -0.4
 }
 
-set ylabel "{/Helvetica-Italic E} (meV)" offset 2
+set ylabel "{/NimbusSans-Italic E} (meV)" offset 2
 set y2label \
-	"{/Helvetica-Italic E} ({/Helvetica-Italic g} {/Helvetica-Italic μ_0} {/Helvetica-Italic μ_B} {/Helvetica-Italic H}_{c2}^{int})" \
+	"{/NimbusSans-Italic E} ({/NimbusSans-Italic g} {/NimbusSans-Italic μ_0} {/NimbusSans-Italic μ_B} {/NimbusSans-Italic H}_{c2}^{int})" \
 	offset -0.25, 0
 
 
@@ -127,10 +127,10 @@ if(show_key != 0) {
         set key at graph 0.49, graph 0.97 height 0.3 samplen 0 Left reverse box opaque
 
 	if(along_q_para != 0) {
-		qperpstr = sprintf("{/Helvetica-Italic q}_{⊥} = %s rlu", q_perp)
+		qperpstr = sprintf("{/NimbusSans-Italic q}_{⊥} = %s rlu", q_perp)
 	}
 	else {
-		qperpstr = sprintf("{/Helvetica-Italic q}_{||} = %s rlu", q_perp)
+		qperpstr = sprintf("{/NimbusSans-Italic q}_{||} = %s rlu", q_perp)
 	}
 
 	set label 100 at graph 0.51, graph 0.95 qperpstr front

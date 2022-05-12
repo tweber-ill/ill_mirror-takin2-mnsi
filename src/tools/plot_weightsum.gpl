@@ -35,15 +35,15 @@ bose(E) = (E >= 0) \
 weight(w) = w
 
 
-set term pngcairo enhanced font "Helvetica,38" size 2000,1500
+set term pngcairo enhanced font "NimbusSans-Regular, 38" size 2000,1500
 set output "weightsum.png"
 set multiplot
 set clip
 set border lw 6
 
 
-set xlabel "{/Helvetica-Italic α} (deg)"
-set ylabel "{/Helvetica-Italic E} (meV)" offset 1
+set xlabel "{/NimbusSans-Italic α} (deg)"
+set ylabel "{/NimbusSans-Italic E} (meV)" offset 1
 
 set xtics 30
 set mxtics 3
@@ -62,7 +62,7 @@ plot \
 
 
 
-set xlabel "{/Helvetica-Italic S(E)} (a.u.)"
+set xlabel "{/NimbusSans-Italic S(E)} (a.u.)"
 unset ylabel
 
 set xrange [0 : 25]
@@ -75,8 +75,8 @@ set format y ""
 set origin 0.7, 0
 set size 0.3, 1
 
-#set label 100 at screen 0.05, screen 0.95 "{/Helvetica-Bold (a)}"
-#set label 100 at screen 0.95, screen 0.95 "{/Helvetica-Bold (b)}"
+#set label 100 at screen 0.05, screen 0.95 "{/NimbusSans-Bold (a)}"
+#set label 100 at screen 0.95, screen 0.95 "{/NimbusSans-Bold (b)}"
 
 set label 1000 at 15, 0.003 tc rgb col_skx "GM"
 set label 1001 at 15, 0.027 tc rgb col_skx "CCW"
