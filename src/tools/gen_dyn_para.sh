@@ -57,7 +57,7 @@ done
 if [ $create_movie -ne 0 ]; then
 	echo -e "\n\x1b[1;34m"
 	echo -e "================================================================================"
-	echo -e "Creating dispersion movie..."
+	echo -e "Creating dispersion video..."
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 

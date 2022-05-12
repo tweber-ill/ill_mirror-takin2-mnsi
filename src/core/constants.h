@@ -87,6 +87,7 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
 		//return amp1 * std::pow(-T, ex1);
 
 #if BC2_HAS_DIPOLAR != 0
+		// TODO: set this to 1 for the heli dispersion if m_explicitcalc is false and HOC is enabled.
 		const t_real amp2 = 1.11966394;
 #else
 		const t_real amp2 = 1.;

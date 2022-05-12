@@ -6,7 +6,7 @@
  */
 
 
-#define __SKX_GS_VALS 1
+#define __SKX_GS_VALS 0
 
 /**
  * output from skx_gs.cpp
