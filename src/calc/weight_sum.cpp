@@ -34,8 +34,9 @@ const t_real g_weight_eps = 1e-6;
 
 void calc_disp(const t_vec& Gvec,
 	const t_vec& Bvec, const t_vec& Pvec,
-	t_real q, bool bProj = true)
+	t_real q, t_real q_oop, bool bProj = true)
 {
+	// vector perpendicular to the pinning, but in the skyrmion plane
 	t_vec Pperpvec = tl2::cross_3(Pvec, Bvec);
 	Pperpvec /= tl2::veclen(Pperpvec);
 
@@ -104,7 +105,8 @@ void calc_disp(const t_vec& Gvec,
 
 	for(t_real angle=angle_begin; angle<angle_end; angle+=angle_delta)
 	{
-		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));
+		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));  // in skx plane
+		qvec += q_oop * Bvec;                                                // out of skx plane
 		t_vec Qvec = Gvec + qvec;
 
 		std::cout << "# angle: " << angle/M_PI*180.
@@ -113,6 +115,7 @@ void calc_disp(const t_vec& Gvec,
 			<< std::endl;
 
 		{
+			// skyrmion dispersion
 			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 			for(std::size_t i=0; i<Es.size(); ++i)
 			{
@@ -132,6 +135,7 @@ void calc_disp(const t_vec& Gvec,
 		}
 
 		{
+			// conical dispersion
 			auto [EsH, wsUnpolH, wsSF1H, wsSF2H, wsNSFH] = heli.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 			for(std::size_t i=0; i<EsH.size(); ++i)
 			{
@@ -215,16 +219,17 @@ void calc_disp(const t_vec& Gvec,
 
 int main()
 {
-	t_vec Gvec = tl2::make_vec<t_vec>({ 0., 0., 0. });
-	t_vec Pvec = tl2::make_vec<t_vec>({ 1., 1., 0. });
-	t_vec Bvec = tl2::make_vec<t_vec>({ 0., 0., 1. });
+	t_vec Gvec = tl2::make_vec<t_vec>({ 0., 0., 0. });  // lattice vector
+	t_vec Pvec = tl2::make_vec<t_vec>({ 1., 1., 0. });  // pinning vector
+	t_vec Bvec = tl2::make_vec<t_vec>({ 0., 0., 1. });  // field direction
 
 	Pvec /= tl2::veclen(Pvec);
 	Bvec /= tl2::veclen(Bvec);
 
-	t_real q = 0.0123;
-	bool proj = true;	// using the orthogonal 1-|Q><Q| projector
+	t_real q = 0.0123;    // momentum transfer in skyrmion plane
+	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
+	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
 
-	calc_disp(Gvec, Bvec, Pvec, q, proj);
+	calc_disp(Gvec, Bvec, Pvec, q, q_oop, proj);
 	return 0;
 }
