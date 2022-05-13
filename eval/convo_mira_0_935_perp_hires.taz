@@ -19,14 +19,14 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1651488641.347463</timestamp>
+		<timestamp>1652433119.50278</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>tw</user>
 		<version>2.1.0</version>
 	</meta>
 	<monteconvo>
-		<E_from>3.000000e-01</E_from>
-		<E_to>-1.000000e+00</E_to>
+		<E_from>-1.000000e+00</E_from>
+		<E_to>4.000000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>0.7e-6</S_offs>
 		<S_scale>0.4e4</S_scale>
@@ -56,7 +56,7 @@
 		<scan_2d>0</scan_2d>
 		<scanfile>data/mlz_mira/exp_15633/data/15633_00042636.dat;data/mlz_mira/exp_15633/data/15633_00042650.dat;data/mlz_mira/exp_15633/data/15633_00042651.dat</scanfile>
 		<sqw>skxmod</sqw>
-		<sqw_conf></sqw_conf>
+		<sqw_conf/>
 		<sqw_errors>
 			<B>0</B>
 			<B_dir>0</B_dir>
@@ -145,6 +145,6 @@
 			<sigma>open : open</sigma>
 			<which_disp>open : open</which_disp>
 		</sqw_ranges>
-		<step_count>32</step_count>
+		<step_count>64</step_count>
 	</monteconvo>
 </taz>

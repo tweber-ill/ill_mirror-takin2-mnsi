@@ -60,6 +60,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 	// 360 degree peaks
 	m_allpeaks_rlu = gen_peaks<t_vec>(ORDER);
+	m_extpeaks_rlu = gen_peaks<t_vec>(/*1*/ ORDER/2);
 
 	// peaks in 60 degree segment
 	m_peaks60rlu.reserve(ORDER_FOURIER);
@@ -409,9 +410,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	t_vec Qmagrlu = tl2::prod_mv(m_Binv, qkh);
 	t_vec Gmagrlu = tl2::make_vec<t_vec>({ std::round(Qmagrlu[0]), std::round(Qmagrlu[1]) });
 
-	const std::vector<t_vec> sats = gen_peaks<t_vec>(1);
-
-	auto iterClosest = std::min_element(sats.begin(), sats.end(),
+	auto iterClosest = std::min_element(m_extpeaks_rlu.begin(), m_extpeaks_rlu.end(),
 		[&Gmagrlu, &Qmagrlu, this](const t_vec& sat1, const t_vec& sat2) -> bool
 		{
 			t_vec qmag1 = Qmagrlu - (Gmagrlu+sat1);

@@ -149,7 +149,10 @@ private:
 
 	// one sixth of the magnetic lattice
 	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu;
+	// all satellite peaks
 	std::vector<t_vec> m_allpeaks_rlu{};
+	// maximum shift in extended system
+	std::vector<t_vec> m_extpeaks_rlu;
 
 	ublas::matrix<t_vec_cplx> m_M{};
 	t_vec m_Grlu{};

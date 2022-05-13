@@ -65,7 +65,7 @@
 		<pop_source_rect>1</pop_source_rect>
 		<pop_src_h>1.200000e+01</pop_src_h>
 		<pop_src_w>6.000000e+00</pop_src_w>
-		<sample_mosaic>5.000000e+00</sample_mosaic>
+		<sample_mosaic>30.000000e+00</sample_mosaic>
 		<sample_scatter_sense>1</sample_scatter_sense>
 		<simple_sig_kf>3.000000e-02</simple_sig_kf>
 		<simple_sig_kf_perp>1.000000e-02</simple_sig_kf_perp>
