@@ -22,6 +22,7 @@ a      = 4.558        # lattice constant
 kh_A   = 0.039        # at 29 K
 kh_rlu = kh_A / (2*pi / a)
 
+#Bc2     = 0.53         # at 20 K
 #Bc2    = 0.35
 Bc2    = 0.3223
 g      = 2.
