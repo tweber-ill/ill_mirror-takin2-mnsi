@@ -44,6 +44,11 @@ if(out_term == 2) {
 
 set clip points
 set border lw 8
+#set lmargin 6
+#set rmargin 7
+#set tmargin 4
+#set bmargin 5
+
 
 # input data file
 if(!exists("file_dyn")) {
@@ -103,7 +108,7 @@ set x2label "{/NimbusSans-Italic q} (k_h)" \
 
 set ylabel \
 	"{/NimbusSans-Italic E} (meV)" \
-	offset 2
+	offset 2, 0
 set y2label \
 	"{/NimbusSans-Italic E} ({/NimbusSans-Italic g} {/NimbusSans-Italic μ_0} {/NimbusSans-Italic μ_B} {/NimbusSans-Italic H}_{c2}^{int})" \
 	offset -0.25, 0
