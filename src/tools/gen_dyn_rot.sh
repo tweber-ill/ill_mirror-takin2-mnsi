@@ -82,9 +82,15 @@ fi
 
 # TODO: automatically unite dispersion images
 #for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
+#	let idx_vert=$idx+$IDX_END+1
+#
 #	printf -v filename_skx "skx/dyn_%d_united.png" ${idx}
 #	printf -v filename_heli "heli/dyn_%d_united.png" ${idx}
 #	printf -v filename_joined "dyn_joined_%d.png" ${idx}
+#
+#	printf -v filename_skx_vert "skx_vert/dyn_%d_united.png" ${idx}
+#	printf -v filename_heli_vert "heli_vert/dyn_%d_united.png" ${idx}
+#	printf -v filename_joined_vert "joined/dyn_joined_%d.png" ${idx_vert}
 #
 #	if [ ! -f "${filename_skx}" ] || [ ! -f "${filename_heli}" ]; then
 #		break
@@ -92,4 +98,11 @@ fi
 #
 #	echo -e "Joining ${filename_skx} + ${filename_heli} -> ${filename_joined}"
 #	${CONV} +append ${filename_skx} ${filename_heli} ${filename_joined}
+#
+#	if [ ! -f "${filename_skx_vert}" ] || [ ! -f "${filename_heli_vert}" ]; then
+#		break
+#	fi
+#
+#	echo -e "${filename_skx_vert} + ${filename_heli_vert} -> ${filename_joined_vert}"
+#	convert +append ${filename_skx_vert} ${filename_heli_vert} ${filename_joined_vert}
 #done
