@@ -16,7 +16,6 @@
 	#endif
 #endif
 
-
-#ifndef HELI_USE_HOC
-	#define HELI_USE_HOC 0
+#ifdef HELI_USE_HOC
+	#pragma message("Heli HOC: " __TL2_STRCONV(HELI_USE_HOC))
 #endif

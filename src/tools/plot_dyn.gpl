@@ -122,7 +122,7 @@ else {
 	set x2label "{/NimbusSans-Italic q}_{⊥} (k_h)" offset 0, -0.4
 }
 
-set ylabel "{/NimbusSans-Italic E} (meV)" offset 2
+set ylabel "{/NimbusSans-Italic E} (meV)" offset 2, 0
 set y2label \
 	"{/NimbusSans-Italic E} ({/NimbusSans-Italic g} {/NimbusSans-Italic μ_0} {/NimbusSans-Italic μ_B} {/NimbusSans-Italic H}_{c2}^{int})" \
 	offset -0.25, 0

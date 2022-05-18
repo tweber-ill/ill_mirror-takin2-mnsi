@@ -30,9 +30,12 @@
 #define USE_LAPACK
 #include "tlibs2/libs/math17.h"
 
-
 #ifndef DEF_HELI_ORDER
 	#define DEF_HELI_ORDER 7
+#endif
+
+#ifndef HELI_USE_HOC
+	#define HELI_USE_HOC 0
 #endif
 
 

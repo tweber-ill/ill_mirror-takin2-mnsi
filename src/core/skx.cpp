@@ -30,7 +30,6 @@ template<class t_vec>
 static std::vector<t_vec> gen_peaks(const int ORDER)
 {
 	using t_val = typename t_vec::value_type;
-
 	const int SIZE = 2*ORDER + 1;
 	std::vector<t_vec> pks; pks.reserve(SIZE*SIZE);
 
@@ -60,7 +59,6 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 	// 360 degree peaks
 	m_allpeaks_rlu = gen_peaks<t_vec>(ORDER);
-	m_extpeaks_rlu = gen_peaks<t_vec>(/*1*/ ORDER/2);
 
 	// peaks in 60 degree segment
 	m_peaks60rlu.reserve(ORDER_FOURIER);
@@ -343,7 +341,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		{
 			for(std::size_t k_idx=0; k_idx<pks.size(); ++k_idx)
 			{
-				const t_mat_cplx& comp = get_flat_comp(
+				const t_mat_cplx& comp = get_ext_comp(SKX_USE_EXTENDED_SYSTEM,
 					arr, SIZE, ORDER, MAXORDER,
 					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
 					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
@@ -408,21 +406,18 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	qkh.resize(2, true);
 
 	t_vec Qmagrlu = tl2::prod_mv(m_Binv, qkh);
-	t_vec Gmagrlu = tl2::make_vec<t_vec>({ std::round(Qmagrlu[0]), std::round(Qmagrlu[1]) });
-
-	auto iterClosest = std::min_element(m_extpeaks_rlu.begin(), m_extpeaks_rlu.end(),
+	t_vec Gmagrlu = tl2::make_vec<t_vec>({ 0., 0. });
+#if SKX_USE_EXTENDED_SYSTEM != 0
+	if(auto iterClosest = std::min_element(m_allpeaks_rlu.begin(), m_allpeaks_rlu.end(),
 		[&Gmagrlu, &Qmagrlu, this](const t_vec& sat1, const t_vec& sat2) -> bool
 		{
-			t_vec qmag1 = Qmagrlu - (Gmagrlu+sat1);
-			t_vec qmag2 = Qmagrlu - (Gmagrlu+sat2);
-
-			t_vec q1 = tl2::prod_mv(m_Bmat, qmag1);
-			t_vec q2 = tl2::prod_mv(m_Bmat, qmag2);
+			t_vec q1 = tl2::prod_mv(m_Bmat, t_vec(Qmagrlu - sat1));
+			t_vec q2 = tl2::prod_mv(m_Bmat, t_vec(Qmagrlu - sat2));
 
 			return tl2::veclen_sq(q1) < tl2::veclen_sq(q2);
-		});
-
-	Gmagrlu += *iterClosest;
+		}); iterClosest != m_allpeaks_rlu.end())
+			Gmagrlu = *iterClosest;
+#endif
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
 

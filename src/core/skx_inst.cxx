@@ -16,7 +16,10 @@
 	#endif
 #endif
 
+#ifdef SKX_USE_EXTENDED_SYSTEM
+	#pragma message("Skx Extended System: " __TL2_STRCONV(SKX_USE_EXTENDED_SYSTEM))
+#endif
 
-#ifndef SKX_USE_HOC
-	#define SKX_USE_HOC 0
+#ifdef SKX_USE_HOC
+	#pragma message("Skx HOC: " __TL2_STRCONV(SKX_USE_HOC))
 #endif

@@ -158,11 +158,17 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 }
 
 
+/**
+ * index into extended system
+ */
 template<class t_arr>
-const typename t_arr::value_type& get_flat_comp(
-	const t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
+const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
+	t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
+	if(!use_ext_sys)
+		return get_comp(arr, ARRSIZE, idx1, idx2, idx3, idx4);
+
 	const int MAXSIZE = 2*MAXORDER + 1;
 
 	// negative indices
