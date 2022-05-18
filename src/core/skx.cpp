@@ -341,7 +341,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		{
 			for(std::size_t k_idx=0; k_idx<pks.size(); ++k_idx)
 			{
-				const t_mat_cplx& comp = get_ext_comp(SKX_USE_EXTENDED_SYSTEM,
+				const t_mat_cplx& comp = get_ext_comp(true,
 					arr, SIZE, ORDER, MAXORDER,
 					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
 					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
@@ -406,8 +406,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	qkh.resize(2, true);
 
 	t_vec Qmagrlu = tl2::prod_mv(m_Binv, qkh);
-	t_vec Gmagrlu = tl2::make_vec<t_vec>({ 0., 0. });
-#if SKX_USE_EXTENDED_SYSTEM != 0
+	t_vec Gmagrlu = tl2::zero_vector<t_vec>(2);
 	if(auto iterClosest = std::min_element(m_allpeaks_rlu.begin(), m_allpeaks_rlu.end(),
 		[&Gmagrlu, &Qmagrlu, this](const t_vec& sat1, const t_vec& sat2) -> bool
 		{
@@ -417,10 +416,9 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 			return tl2::veclen_sq(q1) < tl2::veclen_sq(q2);
 		}); iterClosest != m_allpeaks_rlu.end())
 			Gmagrlu = *iterClosest;
-#endif
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
 
-	return GetSpecWeights(int(Gmagrlu[0]), int(Gmagrlu[1]),
+	return GetSpecWeights(lattidx(Gmagrlu[0]), lattidx(Gmagrlu[1]),
 		qmaglab[0], qmaglab[1], _l, projNeutron, minE, maxE);
 }

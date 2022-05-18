@@ -26,10 +26,6 @@
 	#define DEF_SKX_ORDER 7
 #endif
 
-#ifndef SKX_USE_EXTENDED_SYSTEM
-	#define SKX_USE_EXTENDED_SYSTEM 1
-#endif
-
 #ifndef SKX_USE_HOC
 	#define SKX_USE_HOC 0
 #endif
