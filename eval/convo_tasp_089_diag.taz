@@ -19,7 +19,7 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1652812156.473082</timestamp>
+		<timestamp>1652842339.757952</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>t_weber</user>
 		<version>2.1.1</version>
@@ -28,8 +28,8 @@
 		<E_from>-4.041000e-01</E_from>
 		<E_to>7.658000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
-		<S_offs>1e-6</S_offs>
-		<S_scale>0.75e3</S_scale>
+		<S_offs>1e-4</S_offs>
+		<S_scale>0.5e3</S_scale>
 		<S_slope>0</S_slope>
 		<algo>1</algo>
 		<ana_foc>0</ana_foc>
@@ -111,7 +111,7 @@
 			<T>28.52</T>
 			<bose_cutoff>0.001</bose_cutoff>
 			<explicit_calc>1</explicit_calc>
-			<inc_amp>15</inc_amp>
+			<inc_amp>20</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0.5</lf_gamma>
