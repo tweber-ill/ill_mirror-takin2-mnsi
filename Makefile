@@ -63,6 +63,13 @@ else
 endif
 
 
+#
+# Setting DEF_SKX_ORDER to a higher value makes the backfolded spectrum for
+# q perpendicular to B more accurate for high qs beyond the first magnetic
+# Brillouin zone. The loss of precision at lower orders can be seen with the
+# magnon energy levels not completely connecting at the zone boundaries for
+# large qs and Es.
+#
 STD = -std=c++17
 LIBDEFS = -fPIC
 DEFS = -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
