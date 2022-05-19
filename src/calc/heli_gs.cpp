@@ -25,7 +25,7 @@ int main()
 
 	//t_real T_theo = -4500;
 	//t_real T_exp = 20.;
-	//t_real B_theo = get_B_exp_from_theo(T_theo, T_exp, 0.171);
+	//t_real B_theo = get_B_exp_from_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
 	//t_real m_scale = 15.;
 
 	const auto j = t_cplx(0, 1);

@@ -93,12 +93,12 @@ public:
 		if(exp)
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, !exp);
+			m_Bc2 = get_bc2(m_T, !exp, !HELI_USE_HOC);
 		}
 		else
 		{
 			m_T_theo = T;
-			m_Bc2_theo = get_bc2(m_T_theo, !exp);
+			m_Bc2_theo = get_bc2(m_T_theo, !exp, !HELI_USE_HOC);
 		}
 	}
 

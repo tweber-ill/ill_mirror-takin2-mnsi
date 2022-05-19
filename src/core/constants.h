@@ -12,11 +12,6 @@
 #include "tlibs2/libs/units.h"
 
 
-#ifndef BC2_HAS_DIPOLAR
-	#define BC2_HAS_DIPOLAR 1
-#endif
-
-
 /**
  * constants
  * The values are from the theoretical models by. M. Garst and J. Waizner:
@@ -75,23 +70,21 @@ constexpr t_real g_kh_rlu(t_real T)
  *	- Experimental values were measured and provided by A. Bauer (http://doi.org/10.1103/PhysRevB.85.214418).
  */
 template<class t_real = double>
-t_real get_bc2(t_real T, bool use_theo_units=1)
+t_real get_bc2(t_real T, bool use_theo_units=1, bool use_dipole=1)
 {
 	if(use_theo_units)
 	{
-		if(T >= 0.) return 0.;
+		if(T >= 0.)
+			return 0.;
 
 		// calculated with "heliphase"
-		const t_real amp1 = 1.58786033; // scaling
-		const t_real ex1 = 0.49965808;  // critical exponent
+		//const t_real amp1 = 1.58786033; // scaling
+		//const t_real ex1 = 0.49965808;  // critical exponent
 		//return amp1 * std::pow(-T, ex1);
 
-#if BC2_HAS_DIPOLAR != 0
-		// TODO: set this to 1 for the heli dispersion if m_explicitcalc is false and HOC is enabled.
-		const t_real amp2 = 1.11966394;
-#else
-		const t_real amp2 = 1.;
-#endif
+		t_real amp2 = 1.;
+		if(use_dipole)
+			amp2 = 1.11966394;
 		return g_g<t_real> * amp2 * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
@@ -123,10 +116,10 @@ t_real get_bc2(t_real T, bool use_theo_units=1)
  * get field magnitude in theoretical units from experimental one
  */
 template<class t_real = double>
-t_real get_B_exp_from_theo(t_real T_theo, t_real T_exp, t_real B_exp)
+t_real get_B_exp_from_theo(t_real T_theo, t_real T_exp, t_real B_exp, bool use_dipole=1)
 {
-	t_real bc2_theo = get_bc2(T_theo, true);
-	t_real bc2_exp = get_bc2(T_exp, false);
+	t_real bc2_theo = get_bc2(T_theo, true, use_dipole);
+	t_real bc2_exp = get_bc2(T_exp, false, use_dipole);
 
 	return B_exp / bc2_exp * bc2_theo;
 }

@@ -136,7 +136,9 @@ int main()
 	//skx.SetB(25., false);
 	const auto& peaks60 = skx.GetPeaks60(true);
 
-	std::cout << "Bc2 = " << get_bc2<t_real>(T_theo) << std::endl;
+	std::cout << "Bc2_exp = " << skx.GetBC2(true) << ", "
+		<< "Bc2_theo = " << skx.GetBC2(false) << "."
+		<< std::endl;
 
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;

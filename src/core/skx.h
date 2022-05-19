@@ -68,12 +68,12 @@ public:
 	{
 		if(exp)
 		{
-			m_Bc2_exp = get_bc2(T, !exp);
+			m_Bc2_exp = get_bc2(T, !exp, !SKX_USE_HOC);
 		}
 		else
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, !exp);
+			m_Bc2 = get_bc2(m_T, !exp, !SKX_USE_HOC);
 		}
 	}
 
