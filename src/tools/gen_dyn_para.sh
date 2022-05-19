@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# creates dispersion plots
+# creates dispersion plots comparing skyrmion modes with conical band formation when increasing q_perp
 # @author Tobias Weber <tweber@ill.fr>
 # @date may-2022
 # @license GPLv2 (see 'LICENSE' file)
@@ -42,8 +42,7 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 			--Bx=1 --By=1 --Bz=0 \
 			--Px=1 --Py=-1 --Pz=0 \
 			--T=28.5 --B=0.15 \
-			--num_points=1024 --explicit_calc=1 \
-			--along_qpara=${along_qpara} \
+			--explicit_calc=1 --along_qpara=${along_qpara} \
 			--qperpx=1 --qperpy=-1 --qperpz=0 --qperp=${QPERP} \
 			--qrange=0.12 --qdelta=0.00024
 	fi
@@ -65,7 +64,7 @@ if [ $create_movie -ne 0 ]; then
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 
-	${MPG} -i dyn_%d.png -y dyn.mp4
+	${MPG} -framerate 20 -i dyn_%d.png -y dyn.mp4
 
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"

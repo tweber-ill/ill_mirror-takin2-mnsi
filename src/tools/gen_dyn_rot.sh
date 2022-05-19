@@ -72,7 +72,7 @@ if [ $create_movie -ne 0 ]; then
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 
-	${MPG} -i dyn_%d_united.png -y dyn.mp4
+	${MPG} -framerate 20 -i dyn_%d_united.png -y dyn.mp4
 
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"
