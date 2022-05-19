@@ -42,10 +42,10 @@ for ((idx=$IDX_START; idx<=$IDX_END; ++idx)); do
 			--Bx=1 --By=1 --Bz=0 \
 			--Px=1 --Py=-1 --Pz=0 \
 			--T=28.5 --B=0.15 \
-			--num_points=512 --explicit_calc=1 \
+			--num_points=1024 --explicit_calc=1 \
 			--along_qpara=${along_qpara} \
 			--qperpx=1 --qperpy=-1 --qperpz=0 --qperp=${QPERP} \
-			--qrange=0.2 --qdelta=0.001
+			--qrange=0.12 --qdelta=0.00024
 	fi
 
 	if [ $create_plots -ne 0 ]; then
