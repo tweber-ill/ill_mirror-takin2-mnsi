@@ -33,7 +33,7 @@
 		<S_slope>0</S_slope>
 		<algo>1</algo>
 		<ana_foc>0</ana_foc>
-		<autosave>/tmp/skx_106_para_hires.dat</autosave>
+		<autosave>/tmp/skx_106_perp_hires.dat</autosave>
 		<crys>MnSi.taz</crys>
 		<filter_col>PAL</filter_col>
 		<filter_val>1</filter_val>
