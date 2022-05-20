@@ -410,7 +410,7 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 			Qnorm = tl2::prod_mv<t_vec_cplx, t_mat_cplx>(chiral, Qnorm);
 		}
 
-		projNeutron -= tl2::outer<t_vec_cplx, t_mat_cplx>(Qnorm, Qnorm);
+		projNeutron -= tl2::outer_cplx<t_vec_cplx, t_mat_cplx>(Qnorm, Qnorm);
 
 		if(bInChiralBase)
 			projNeutron = tl2::conjugate_mat(projNeutron);
