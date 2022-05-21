@@ -345,7 +345,6 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 					arr, SIZE, ORDER, MAXORDER,
 					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
 					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
-
 				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
 			}
 		}
@@ -391,16 +390,6 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 	t_vec Qrlu = tl2::make_vec<t_vec>({ h, k, l });
 	t_vec qrlu = Qrlu - m_Grlu;
 	t_vec qkh = qrlu / g_kh_rlu_29K<t_real>;
-
-	// orthogonal 1-|Q><Q| projector for neutron scattering
-	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
-	if(m_bProjNeutron)
-	{
-		t_vec Qnorm = Qrlu / tl2::veclen(Qrlu);
-		Qnorm = tl2::quat_vec_prod(m_rotCoord, Qnorm);
-		projNeutron -= tl2::outer<t_vec, t_mat>(Qnorm, Qnorm);
-	}
-
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
 	t_real _l = qkh[2];
 	qkh.resize(2, true);
@@ -418,6 +407,15 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 			Gmagrlu = *iterClosest;
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
+
+	// orthogonal 1-|Q><Q| projector for neutron scattering
+	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
+	if(m_bProjNeutron)
+	{
+		t_vec Qnorm = Qrlu / tl2::veclen(Qrlu);
+		Qnorm = tl2::quat_vec_prod(m_rotCoord, Qnorm);
+		projNeutron -= tl2::outer<t_vec, t_mat>(Qnorm, Qnorm);
+	}
 
 	return GetSpecWeights(lattidx(Gmagrlu[0]), lattidx(Gmagrlu[1]),
 		qmaglab[0], qmaglab[1], _l, projNeutron, minE, maxE);

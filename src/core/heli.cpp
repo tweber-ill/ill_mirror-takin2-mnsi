@@ -258,6 +258,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 					int k = abs_to_rel_idx(k_idx, ORDER);
 
 					const t_mat_cplx& comp = get_comp(arr, SIZE, h, k);
+					//const t_mat_cplx& comp = get_ext_comp(true,
+					//	arr, SIZE, ORDER, MAXORDER, h, k);
 					tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
 				}
 			}
@@ -394,6 +396,14 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 	t_vec qrlu = Qrlu - m_Grlu;
 	t_vec qkh = qrlu / g_kh_rlu<t_real>(m_T);
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
+
+	/*int Gmagrlu = 0;
+	if(!m_explicitcalc)
+	{
+		Gmagrlu = lattidx(qkh[2]);  // closest magnetic satellite peak
+		Gmagrlu = tl2::clamp(Gmagrlu, -ORDER, ORDER);
+		qkh[2] -= Gmagrlu;
+	}*/
 
 	// orthogonal 1-|Q><Q| projector for neutron scattering
 	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);

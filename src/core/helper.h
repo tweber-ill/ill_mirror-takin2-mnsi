@@ -164,6 +164,39 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
 template<class t_arr>
 const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
 	t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
+	int idx1, int idx2)
+{
+	if(!use_ext_sys)
+		return get_comp(arr, ARRSIZE, idx1, idx2);
+
+	const int MAXSIZE = 2*MAXORDER + 1;
+
+	// negative indices
+	idx1 = rel_to_abs_idx(idx1, MAXSIZE);
+	idx2 = rel_to_abs_idx(idx2, MAXSIZE);
+
+	static const typename t_arr::value_type zero{};
+	const int diffsize = MAXSIZE-ARRSIZE;
+
+	if(idx1 >= ORDER && (idx1 < MAXSIZE-ORDER-1 || idx1 < diffsize)) return zero;
+	if(idx2 >= ORDER && (idx2 < MAXSIZE-ORDER-1 || idx2 < diffsize)) return zero;
+
+	if(idx1 < ORDER && idx1 >= ARRSIZE) return zero;
+	if(idx2 < ORDER && idx2 >= ARRSIZE) return zero;
+
+	if(idx1 >= ORDER) idx1 -= diffsize;
+	if(idx2 >= ORDER) idx2 -= diffsize;
+
+	return arr[idx1*ARRSIZE + idx2];
+}
+
+
+/**
+ * index into extended system
+ */
+template<class t_arr>
+const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
+	t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
 	if(!use_ext_sys)
