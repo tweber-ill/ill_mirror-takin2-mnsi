@@ -7,9 +7,11 @@
 #
 
 # tools
-TOF=./tof
+TOF_UNITE=./tof_unite
+TOF_POL=./tof_pol
 
-${TOF} \
+
+${TOF_POL} \
 	../data/mlz_reseda/0p0000941ns/00168499.tof \
 	../data/mlz_reseda/0p0000941ns/00168500.tof \
 	../data/mlz_reseda/0p0000941ns/00168501.tof \

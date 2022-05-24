@@ -1,5 +1,5 @@
 /**
- * convert tof files to png images
+ * converts tof files to png images and calculate polarisation
  * @author Tobias Weber <tweber@ill.fr>
  * @date 15/nov/2021
  * @license GPLv2 (see 'LICENSE' file)
@@ -91,7 +91,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	fs::path tof_mask_file("tof_mask.txt");
 	if(fs::exists(tof_mask_file))
 	{
-		std::ifstream tof_mask(tof_mask_file);
+		std::ifstream tof_mask(tof_mask_file.string());
 		if(tof_mask)
 			tof_mask >> tof_mask_start >> tof_mask_end;
 	}
