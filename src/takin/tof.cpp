@@ -31,11 +31,13 @@ namespace gil = boost::gil;
 #define PSD_HEIGHT 128
 #define TOF_COUNT  128
 
+using t_real = tl2::t_real_min;
+
 
 /**
  * extract image and count data from a tof file
  */
-std::tuple<bool, tl2::t_real_min, tl2::t_real_min>
+std::tuple<bool, t_real, t_real, t_real>
 process_tof(const fs::path& tof_file, const fs::path& out_file)
 {
 	// tof file data type for counts
@@ -84,8 +86,8 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	}
 
 	// tof mask file giving tof foil start and end indices
-	unsigned tof_mask_start = 0;
-	unsigned tof_mask_end = TOF_COUNT;
+	unsigned tof_mask_start = 80;
+	unsigned tof_mask_end = /*TOF_COUNT*/ 96;
 	fs::path tof_mask_file("tof_mask.txt");
 	if(fs::exists(tof_mask_file))
 	{
@@ -110,9 +112,9 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 		<< std::endl;
 
 	unsigned tof_channel = 0;
-	std::vector<tl2::t_real_min> tof_channels;
-	std::vector<tl2::t_real_min> tof_counts;
-	std::vector<tl2::t_real_min> tof_errors;
+	std::vector<t_real> tof_channels;
+	std::vector<t_real> tof_counts;
+	std::vector<t_real> tof_errors;
 
 	// iterate over tof channels
 	for(unsigned t=0; t<TOF_COUNT; ++t)
@@ -127,7 +129,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 			t*PSD_WIDTH*PSD_HEIGHT*sizeof(t_data));
 
 		if(!file.is_open())
-			return std::make_tuple(false, 0., 0.);
+			return std::make_tuple(false, -1., -1., -1.);
 
 		const t_data* data = reinterpret_cast<const t_data*>(file.data());
 
@@ -193,6 +195,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	// meta information at the end of the file
 	std::size_t size = fs::file_size(tof_file);
 	std::ptrdiff_t size_rest = size - PSD_WIDTH*PSD_HEIGHT*TOF_COUNT*sizeof(t_data);
+	t_real tau = 0.;  // spin-echo time in ps
 	if(size_rest > 0)
 	{
 		ios::mapped_file_source file(tof_file,
@@ -207,50 +210,80 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 			std::ofstream ofstr_txt(txt_file);
 
 			ofstr_txt.write(data, size_rest);
+
+			// get spin-echo time from metadata
+			std::string tau_key = "echotime_value";
+			const char* tau_ptr = std::search(data, data+size_rest, tau_key.begin(), tau_key.end());
+			if(tau_ptr != data+size_rest)
+			{
+				// sometimes the key exists multiple times with the second one being correct
+				const char* tau_ptr_2 = std::search(tau_ptr+1, data+size_rest, tau_key.begin(), tau_key.end());
+				if(tau_ptr_2 != data+size_rest)
+					tau_ptr = tau_ptr_2;
+
+				const char *tau_ptr_end = std::find(tau_ptr, data+size_rest, '\n');
+				std::string tau_str(tau_ptr, tau_ptr_end);
+				std::istringstream istr_tau(tau_str);
+				std::string tau_key, tau_dummy, tau_unit;
+				istr_tau >> tau_key >> tau_dummy >> tau >> tau_unit;
+				if(tau_unit == "ns")
+					tau *= 1000.;
+				else if(tau_unit == "us")
+					tau *= 1e6;
+				else if(tau_unit == "ms")
+					tau *= 1e9;
+				else if(tau_unit == "s")
+					tau *= 1e12;
+			}
 		}
 	}
 
 	// fit spin-echo sine
-	auto se_sine = [](tl2::t_real_min x, tl2::t_real_min amp, tl2::t_real_min freq,
-		tl2::t_real_min phase, tl2::t_real_min offs)
+	auto se_sine = [](t_real x, t_real amp, t_real freq,
+		t_real phase, t_real offs)
 	{
 		return amp*std::sin(freq*x + phase) + offs;
 	};
 
-	tl2::t_real_min tof_counts_mean = tl2::mean_value(tof_counts);
-	tl2::t_real_min tof_counts_dev = tl2::std_dev(tof_counts);
+	t_real tof_counts_mean = tl2::mean_value(tof_counts);
+	t_real tof_counts_dev = tl2::std_dev(tof_counts);
 	//std::cout << "tof counts: " << tof_counts_mean << " +- " << tof_counts_dev << std::endl;
 
 	std::vector<std::string> fit_vars{{"amp", "freq", "phase", "offs"}};
 	std::vector<bool> fixed_vars{{ false, true, false, false }};
-	std::vector<tl2::t_real_min> fit_vals{{
+	std::vector<t_real> fit_vals{{
 		tof_counts_dev,
-		tl2::t_real_min(2.)*tl2::pi<tl2::t_real_min>/tl2::t_real_min(tof_channels.size()),
+		t_real(2.)*tl2::pi<t_real>/t_real(tof_channels.size()),
 		0.,
 		tof_counts_mean
 	}};
-	std::vector<tl2::t_real_min> fit_errs{{
-		tof_counts_dev / tl2::t_real_min(5.),
-		tl2::t_real_min(10. / 180.) * tl2::pi<tl2::t_real_min>,
-		tl2::pi<tl2::t_real_min>,
-		tof_counts_mean / tl2::t_real_min(5.)
+	std::vector<t_real> fit_errs{{
+		tof_counts_dev / t_real(5.),
+		t_real(10. / 180.) * tl2::pi<t_real>,
+		tl2::pi<t_real>,
+		tof_counts_mean / t_real(5.)
 	}};
-	bool fit_ok = tl2::fit<tl2::t_real_min, 5>(se_sine,
+	bool fit_ok = tl2::fit<t_real, 5>(se_sine,
 		tof_channels, tof_counts, tof_errors,
 		fit_vars, fit_vals, fit_errs, &fixed_vars, false);
 
-	tl2::t_real_min pol = fit_vals[0] / fit_vals[3];
-	tl2::t_real_min pol_err = std::sqrt(std::pow(fit_errs[0]/fit_vals[3], 2.)
+	t_real pol = fit_vals[0] / fit_vals[3];
+	t_real pol_err = std::sqrt(std::pow(fit_errs[0]/fit_vals[3], 2.)
 		+ std::pow(fit_vals[0]*fit_errs[3]/(fit_vals[3]*fit_vals[3]), 2.));
 
 	ofstr_cnts << "#\n"
 		<< "# se sine fit valid: " << std::boolalpha << fit_ok << "\n"
-		<< "# se sine fit: " << fit_vals[0] << " * sin(" << fit_vals[1] << "*x + " << fit_vals[2] << ") + " << fit_vals[3] << "\n"
+		<< "# se sine fit: " << fit_vals[0] << " * sin(" << fit_vals[1]
+			<< "*x + " << fit_vals[2] << ") + " << fit_vals[3] << "\n"
 		<< "# se polarisation: " << pol << "\n"
 		<< "# se polarisation error: " << pol_err  << "\n"
-		<< std::endl;
+		<< "# plot with: gnuplot -p -e \"plot \\\"" << cnts_file.str()
+			<< "\\\" u 1:3:(sqrt(\\$3)) w yerrorbars pt 7, " << fit_vals[0]
+			<< " * sin(" << fit_vals[1] << "*x + " << fit_vals[2] << ") + "
+			<< fit_vals[3] << "\"\n"
+		<< "#" << std::endl;
 
-	return std::make_tuple(fit_ok, pol, pol_err);
+	return std::make_tuple(fit_ok, tau, pol, pol_err);
 }
 
 
@@ -263,7 +296,9 @@ int main(int argc, char** argv)
 	}
 
 	std::cout
-		<< std::setw(16) << std::right << "file"
+		<< std::setw(8) << std::right << "index"
+		<< std::setw(48) << std::right << "file"
+		<< std::setw(16) << std::right << "se time (ps)"
 		<< std::setw(16) << std::right << "polarisation"
 		<< std::setw(16) << std::right << "error"
 		<< std::endl;
@@ -283,16 +318,23 @@ int main(int argc, char** argv)
 		file_out.replace_extension("");
 
 		bool ok = false;
-		tl2::t_real_min pol = 0., pol_err = -1.;
-		std::tie(ok, pol, pol_err) = process_tof(file, file_out);
+		t_real tau = 0.;
+		t_real pol = 0., pol_err = -1.;
+		std::tie(ok, tau, pol, pol_err) = process_tof(file, file_out);
 		if(ok)
+		{
 			std::cout
-				<< std::setw(16) << std::right << argv[i]
+				<< std::setw(8) << std::right << i
+				<< std::setw(48) << std::right << argv[i]
+				<< std::setw(16) << std::right << tau
 				<< std::setw(16) << std::right << pol
 				<< std::setw(16) << std::right << pol_err
 				<< std::endl;
+		}
 		else
+		{
 			std::cerr << "Error: Failed to process file \"" << argv[i] << "\"." << std::endl;
+		}
 	}
 
 	return 0;
