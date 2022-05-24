@@ -153,9 +153,9 @@ bin/drawskx: src/calc/drawskx.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/tof: src/takin/tof.o
+bin/tof: src/takin/tof.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
-		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng
+		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng -lMinuit2 -lMinuit2Math
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
