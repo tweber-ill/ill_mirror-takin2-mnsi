@@ -1,0 +1,52 @@
+#!/usr/local/bin/gnuplot -p
+
+#
+# plots polarisations vs. spin-echo time
+# @author Tobias Weber <tweber@ill.fr>
+# @date may-2022
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+col_data  = "#000000"  # colour data points
+point_size = 1
+
+
+if(!exists("out_term")) {
+        out_term = 1          # 1: pdf, 2: png, others: screen
+}
+
+if(out_term == 1) {
+        set term pdf color enhanced font "NimbusSans-Regular, 50" size 20, 15
+        point_size = 2
+}
+if(out_term == 2) {
+        set term pngcairo enhanced font "NimbusSans-Regular, 56" size 2666, 2000
+        point_size = 2
+}
+
+
+# output plot file
+if(!exists("file_out")) {
+        if(out_term == 1) {
+                file_out = "pol.pdf"
+        }
+        if(out_term == 2) {
+                file_out = "pol.png"
+        }
+}
+
+if(exists("file_out")) {
+        set output file_out
+        print(sprintf("Plotting to file \"%s\".", file_out))
+}
+
+
+set xlabel "Spin-echo time τ (ps)"
+set ylabel "Polarisation"
+
+set logscale x
+#set xrange [0 : 5000]
+set yrange [0 : 1]
+
+plot "< join P.dat P0.dat" u 3:($4/$8):(sqrt(($5/$8)**2 + ($4/$8**2 * $9)**2)) \
+	w yerrorbars pt 7 ps point_size lc rgb col_data notitle

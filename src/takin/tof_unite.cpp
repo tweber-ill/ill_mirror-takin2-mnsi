@@ -60,7 +60,7 @@ bool unite_tof(const fs::path& united, const std::vector<fs::path>& tofs)
 
 
 	// add the meta information of one of the input files
-	const fs::path& tof_file = *tofs.rbegin();
+	const fs::path& tof_file = *tofs.begin();
 	std::size_t size = fs::file_size(tof_file);
 	std::ptrdiff_t size_rest = size - PSD_WIDTH*PSD_HEIGHT*TOF_COUNT*sizeof(t_data);
 	if(size_rest > 0)
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 {
 	if(argc < 3)
 	{
-		std::cerr << "Usage: " << argv[0] 
+		std::cerr << "Usage: " << argv[0]
 			<< " <united.tof> <in1.tof> [in2.tof] [...]"
 			<< std::endl;
 		return -1;

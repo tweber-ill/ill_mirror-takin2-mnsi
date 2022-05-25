@@ -296,7 +296,8 @@ int main(int argc, char** argv)
 	}
 
 	std::cout
-		<< std::setw(8) << std::right << "index"
+		<< std::setw(1) << std::right << "#"
+		<< std::setw(7) << std::right << "index"
 		<< std::setw(48) << std::right << "file"
 		<< std::setw(16) << std::right << "se time (ps)"
 		<< std::setw(16) << std::right << "polarisation"
