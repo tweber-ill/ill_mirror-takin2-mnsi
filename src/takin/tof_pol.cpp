@@ -25,11 +25,7 @@ namespace ios = boost::iostreams;
 namespace gil = boost::gil;
 
 #include "tlibs2/libs/fit.h"
-
-
-#define PSD_WIDTH  128
-#define PSD_HEIGHT 128
-#define TOF_COUNT  128
+#include "tof.h"
 
 using t_real = tl2::t_real_min;
 

@@ -18,10 +18,7 @@ namespace fs = boost::filesystem;
 #include <boost/iostreams/device/mapped_file.hpp>
 namespace ios = boost::iostreams;
 
-
-#define PSD_WIDTH  128
-#define PSD_HEIGHT 128
-#define TOF_COUNT  128
+#include "tof.h"
 
 
 /**

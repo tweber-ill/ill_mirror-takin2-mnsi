@@ -7,14 +7,31 @@
 #
 
 # tools
+TOF_MASK=./tof_mask
 TOF_UNITE=./tof_unite
 TOF_POL=./tof_pol
 
 # options
+create_mask=1  # create circular mask segment
 unite_tofs=1   # merge tof files of same spin-echo time
 calc_p=1       # calculate polarisation factors
 calc_p0=1      # calculate polarisation normalisation factors
 plot=1         # plot results
+
+
+if [ $unite_tofs -ne 0 ]; then
+	echo -e "\x1b[1;34m"
+	echo -e "================================================================================"
+	echo -e "Creating mask file..."
+	echo -e "================================================================================"
+	echo -e "\x1b[0m"
+
+	${TOF_MASK}
+
+	echo -e "\x1b[1;34m"
+	echo -e "================================================================================"
+	echo -e "\x1b[0m"
+fi
 
 
 if [ $unite_tofs -ne 0 ]; then
@@ -71,9 +88,10 @@ if [ $unite_tofs -ne 0 ]; then
 	${TOF_UNITE} \
 		../data/mlz_reseda/cc_0p025ns/united.tof \
 		../data/mlz_reseda/cc_0p025ns/00168442.tof \
-		../data/mlz_reseda/cc_0p025ns/00168449.tof \
 		../data/mlz_reseda/cc_0p025ns/00168440.tof \
 		../data/mlz_reseda/cc_0p025ns/00168441.tof
+# phase is different in the following file, can't simply add
+#		../data/mlz_reseda/cc_0p025ns/00168449.tof \
 
 	${TOF_UNITE} \
 		../data/mlz_reseda/ccc_0p0296ns/united.tof \
@@ -114,9 +132,10 @@ if [ $unite_tofs -ne 0 ]; then
 		../data/mlz_reseda/f_0p0635ns/united.tof \
 		../data/mlz_reseda/f_0p0635ns/00168377.tof \
 		../data/mlz_reseda/f_0p0635ns/00168378.tof \
-		../data/mlz_reseda/f_0p0635ns/00168379.tof \
-		../data/mlz_reseda/f_0p0635ns/00168382.tof \
-		../data/mlz_reseda/f_0p0635ns/00168383.tof
+		../data/mlz_reseda/f_0p0635ns/00168379.tof
+# phase is different in the following files, can't simply add
+#		../data/mlz_reseda/f_0p0635ns/00168382.tof \
+#		../data/mlz_reseda/f_0p0635ns/00168383.tof
 
 	${TOF_UNITE} \
 		../data/mlz_reseda/g_0p08ns/united.tof \

@@ -87,7 +87,8 @@ INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 
 all: prepare \
 	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
-	bin/drawskx bin/dyn bin/weight bin/tof_pol bin/tof_unite \
+	bin/drawskx bin/dyn bin/weight \
+	bin/tof_mask bin/tof_pol bin/tof_unite \
 	bin/heliphase bin/heli_gs bin/skx_gs bin/weight_sum \
 	lib/skxmod.so lib/skxmod_grid.so
 
@@ -161,6 +162,11 @@ bin/tof_pol: src/takin/tof_pol.o ext/tlibs2/libs/log.o
 bin/tof_unite: src/takin/tof_unite.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
 		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO)
+	$(STRIP) $@$(BIN_SUFFIX)
+
+bin/tof_mask: src/takin/tof_mask.o
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
+		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
