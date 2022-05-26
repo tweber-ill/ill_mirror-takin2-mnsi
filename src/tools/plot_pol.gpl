@@ -48,5 +48,8 @@ set logscale x
 #set xrange [0 : 5000]
 set yrange [0 : 1]
 
+set ytics 0.2
+set mytics 2
+
 plot "< join P.dat P0.dat" u 3:($4/$8):(sqrt(($5/$8)**2 + ($4/$8**2 * $9)**2)) \
 	w yerrorbars pt 7 ps point_size lc rgb col_data notitle

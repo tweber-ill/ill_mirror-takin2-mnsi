@@ -29,7 +29,7 @@ namespace gil = boost::gil;
 
 using t_real = tl2::t_real_min;
 
-#define DEFAULT_FOIL 1
+#define DEFAULT_FOIL 3
 
 
 /**

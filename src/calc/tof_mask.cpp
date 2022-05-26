@@ -6,8 +6,13 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cmath>
+
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+namespace fs = boost::filesystem;
 
 #include <boost/gil/image.hpp>
 #include <boost/gil/extension/io/png.hpp>
@@ -16,23 +21,25 @@ namespace gil = boost::gil;
 #include "tof.h"
 using t_real = double;
 
-//#define USE_BACKGROUND_IMAGE
-
 
 bool circular_mask(
 	const std::string& file,
+	t_real x_mid, t_real y_mid,
 	t_real rad1, t_real rad2,
 	t_real start_angle, t_real end_angle)
 {
 	gil::gray8_image_t mask(PSD_WIDTH, PSD_HEIGHT);
-#ifdef USE_BACKGROUND_IMAGE
-	// load a background image to help pose the mask
-	gil::read_image("test.png", mask, gil::png_tag());
-#endif
-	auto mask_view = gil::view(mask);
 
-	t_real x_mid = PSD_WIDTH/2 - 2;
-	t_real y_mid = PSD_HEIGHT/2 + 4;
+	bool has_bckgrd = false;
+	fs::path bckgrd_file("test.png");
+	if(fs::exists(bckgrd_file))
+	{
+		// load a background image to help pose the mask
+		gil::read_image(bckgrd_file.string(), mask, gil::png_tag());
+		has_bckgrd = true;
+	}
+
+	auto mask_view = gil::view(mask);
 
 	for(unsigned y=0; y<PSD_HEIGHT; ++y)
 	{
@@ -52,10 +59,8 @@ bool circular_mask(
 			bool in_ring = (rad>=rad1 && rad<=rad2);
 			bool in_seg = (angle>=start_angle || angle<=end_angle);
 
-#ifdef USE_BACKGROUND_IMAGE
-			if(!in_ring || !in_seg)
+			if(has_bckgrd && (!in_ring || !in_seg))
 				continue;
-#endif
 			mask_row[x] = in_ring && in_seg ? 0xff : 0x00;;
 		}
 	}
@@ -67,9 +72,32 @@ bool circular_mask(
 
 int main(int argc, char** argv)
 {
+	t_real x_mid = PSD_WIDTH/2 - 4;
+	t_real y_mid = PSD_HEIGHT/2 + 4;
+	t_real rad1 = 35.;
+	t_real rad2 = 48.;
+	t_real start_angle = M_PI*0.25;
+	t_real end_angle = -M_PI*0.25;
+
+	fs::path mask_file("mask.txt");
+	if(fs::exists(mask_file))
+	{
+		std::ifstream mask(mask_file.string());
+		if(mask)
+		{
+			mask
+				>> x_mid >> y_mid
+				>> rad1 >> rad2
+				>> start_angle >> end_angle;
+
+			start_angle = start_angle / 180. * M_PI;
+			end_angle = end_angle / 180. * M_PI;
+		}
+	}
+
 	bool ok = circular_mask("mask.png",
-		34, 46,
-		M_PI*0.25, -M_PI*0.25);
+		x_mid, y_mid, rad1, rad2,
+		start_angle, end_angle);
 
 	if(ok)
 	{

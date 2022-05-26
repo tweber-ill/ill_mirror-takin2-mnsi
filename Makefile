@@ -154,22 +154,22 @@ bin/drawskx: src/calc/drawskx.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/tof_pol: src/takin/tof_pol.o ext/tlibs2/libs/log.o
+bin/tof_pol: src/calc/tof_pol.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
 		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng -lMinuit2 -lMinuit2Math
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/tof_unite: src/takin/tof_unite.o
+bin/tof_unite: src/calc/tof_unite.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
 		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO)
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/tof_mask: src/takin/tof_mask.o
+bin/tof_mask: src/calc/tof_mask.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
 		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng
 	$(STRIP) $@$(BIN_SUFFIX)
 
-bin/tof_img: src/takin/tof_img.o
+bin/tof_img: src/calc/tof_img.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
 		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng
 	$(STRIP) $@$(BIN_SUFFIX)
