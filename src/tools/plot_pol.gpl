@@ -58,7 +58,8 @@ set yrange [0 : 1]
 set ytics 0.2
 set mytics 2
 
-plot "< join P_1.dat P0_1.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+plot \
+	"< join P_1.dat P0_1.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
 		w yerrorbars pt 13 ps point_size lc rgb foil_cols[1] title "Foil 1", \
 	"< join P_2.dat P0_2.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
 		w yerrorbars pt 15 ps point_size lc rgb foil_cols[2] title "Foil 2", \
