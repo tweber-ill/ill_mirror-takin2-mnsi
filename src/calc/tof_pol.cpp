@@ -84,14 +84,6 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 	// tof mask file giving tof foil start and end indices
 	unsigned tof_mask_start = foil * CHANNELS_PER_FOIL;
 	unsigned tof_mask_end = (foil+1) * CHANNELS_PER_FOIL;
-	fs::path tof_mask_file("tof_mask.txt");
-	if(fs::exists(tof_mask_file))
-	{
-		std::ifstream tof_mask(tof_mask_file.string());
-		if(tof_mask)
-			tof_mask >> tof_mask_start >> tof_mask_end;
-	}
-	//std::cout << "tof mask: " << tof_mask_start <<  " " << tof_mask_end << std::endl;
 
 	// output file for tof channel counts
 	std::ostringstream cnts_file;
