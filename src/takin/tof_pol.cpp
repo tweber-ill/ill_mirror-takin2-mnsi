@@ -1,5 +1,5 @@
 /**
- * converts tof files to png images and calculate polarisation
+ * calculates the polarisation of tof files
  * @author Tobias Weber <tweber@ill.fr>
  * @date 15/nov/2021
  * @license GPLv2 (see 'LICENSE' file)
@@ -28,6 +28,8 @@ namespace gil = boost::gil;
 #include "tof.h"
 
 using t_real = tl2::t_real_min;
+
+#define DEFAULT_FOIL 1
 
 
 /**
@@ -82,8 +84,8 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	}
 
 	// tof mask file giving tof foil start and end indices
-	unsigned tof_mask_start = 80;
-	unsigned tof_mask_end = /*TOF_COUNT*/ 96;
+	unsigned tof_mask_start = DEFAULT_FOIL * CHANNELS_PER_FOIL;
+	unsigned tof_mask_end = (DEFAULT_FOIL+1) * CHANNELS_PER_FOIL;
 	fs::path tof_mask_file("tof_mask.txt");
 	if(fs::exists(tof_mask_file))
 	{
@@ -92,10 +94,6 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 			tof_mask >> tof_mask_start >> tof_mask_end;
 	}
 	//std::cout << "tof mask: " << tof_mask_start <<  " " << tof_mask_end << std::endl;
-
-	// total image, summing over all channels
-	gil::gray16_image_t total_png(PSD_WIDTH, PSD_HEIGHT);
-	auto total_view = gil::view(total_png);
 
 	// output file for tof channel counts
 	std::ostringstream cnts_file;
@@ -115,41 +113,21 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	// iterate over tof channels
 	for(unsigned t=0; t<TOF_COUNT; ++t)
 	{
-		// output file for tof channel
-		std::ostringstream ostr_file;
-		ostr_file << out_file.string() << "_" << t << ".png";
-		std::string png_file = ostr_file.str();
-
 		ios::mapped_file_source file(tof_file,
 			PSD_WIDTH*PSD_HEIGHT*sizeof(t_data),
 			t*PSD_WIDTH*PSD_HEIGHT*sizeof(t_data));
-
 		if(!file.is_open())
 			return std::make_tuple(false, -1., -1., -1.);
 
 		const t_data* data = reinterpret_cast<const t_data*>(file.data());
 
-		// image of a tof channel
-		gil::gray16_image_t png(PSD_WIDTH, PSD_HEIGHT);
-		auto view = gil::view(png);
-
 		std::uint64_t counts = 0;
 		std::uint64_t counts_mask = 0;
 		for(unsigned y=0; y<PSD_HEIGHT; ++y)
 		{
-			auto row = view.row_begin(y);
-			auto total_row = total_view.row_begin(y);
-
 			for(unsigned x=0; x<PSD_WIDTH; ++x)
 			{
 				t_data cnt = data[y*PSD_WIDTH + x];
-				*(row + x) = cnt;
-
-				if(t == 0)
-					*(total_row + x) = cnt;
-				else
-					*(total_row + x) = *(total_row + x) + cnt;
-
 				counts += cnt;
 
 				// counts inside mask
@@ -176,19 +154,9 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 			<< std::setw(16) << std::right << counts
 			<< std::setw(16) << std::right << counts_mask;
 		ofstr_cnts << std::endl;
-
-		if(counts)
-		{
-			// write channel image
-			gil::write_view(png_file, view, gil::png_tag());
-		}
 	}
 
-	// write total image
-	std::string total_png_file = out_file.string() + ".png";
-	gil::write_view(total_png_file, total_view, gil::png_tag());
-
-	// meta information at the end of the file
+	// get spin-echo time from meta information at the end of the file
 	std::size_t size = fs::file_size(tof_file);
 	std::ptrdiff_t size_rest = size - PSD_WIDTH*PSD_HEIGHT*TOF_COUNT*sizeof(t_data);
 	t_real tau = 0.;  // spin-echo time in ps
@@ -202,10 +170,9 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 		{
 			const char* data = reinterpret_cast<const char*>(file.data());
 
-			std::string txt_file = out_file.string() + ".txt";
-			std::ofstream ofstr_txt(txt_file);
-
-			ofstr_txt.write(data, size_rest);
+			//std::string txt_file = out_file.string() + ".txt";
+			//std::ofstream ofstr_txt(txt_file);
+			//ofstr_txt.write(data, size_rest);
 
 			// get spin-echo time from metadata
 			std::string tau_key = "echotime_value";
@@ -241,6 +208,11 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 		return amp*std::sin(freq*x + phase) + offs;
 	};
 
+	// remove invalid first and last point
+	tof_channels.erase(tof_channels.begin()); tof_channels.pop_back();
+	tof_counts.erase(tof_counts.begin()); tof_counts.pop_back();
+	tof_errors.erase(tof_errors.begin()); tof_errors.pop_back();
+
 	t_real tof_counts_mean = tl2::mean_value(tof_counts);
 	t_real tof_counts_dev = tl2::std_dev(tof_counts);
 	//std::cout << "tof counts: " << tof_counts_mean << " +- " << tof_counts_dev << std::endl;
@@ -249,7 +221,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	std::vector<bool> fixed_vars{{ false, true, false, false }};
 	std::vector<t_real> fit_vals{{
 		tof_counts_dev,
-		t_real(2.)*tl2::pi<t_real>/t_real(tof_channels.size()),
+		t_real(2.)*tl2::pi<t_real> / t_real(/*tof_channels.size()*/ CHANNELS_PER_FOIL),
 		0.,
 		tof_counts_mean
 	}};
@@ -306,12 +278,13 @@ int main(int argc, char** argv)
 
 		if(!fs::exists(file))
 		{
-			std::cerr << "Error: File \"" << argv[i] << "\" does not exist!" << std::endl;
+			std::cerr << "Error: File \"" << file.string()
+				<< "\" does not exist!" << std::endl;
 			continue;
 		}
 
 
-		fs::path file_out = file;
+		fs::path file_out = file.filename();
 		file_out.replace_extension("");
 
 		bool ok = false;
@@ -322,7 +295,7 @@ int main(int argc, char** argv)
 		{
 			std::cout
 				<< std::setw(8) << std::right << i
-				<< std::setw(48) << std::right << argv[i]
+				<< std::setw(48) << std::right << file.string()
 				<< std::setw(16) << std::right << tau
 				<< std::setw(16) << std::right << pol
 				<< std::setw(16) << std::right << pol_err
@@ -330,7 +303,8 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			std::cerr << "Error: Failed to process file \"" << argv[i] << "\"." << std::endl;
+			std::cerr << "Error: Failed to process file \""
+				<< file << "\"." << std::endl;
 		}
 	}
 

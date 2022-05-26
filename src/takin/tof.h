@@ -9,9 +9,9 @@
 #define __TOF_H__
 
 
-#define PSD_WIDTH  128
-#define PSD_HEIGHT 128
-#define TOF_COUNT  128
-
+#define PSD_WIDTH         128
+#define PSD_HEIGHT        128
+#define TOF_COUNT         128
+#define CHANNELS_PER_FOIL 16
 
 #endif
