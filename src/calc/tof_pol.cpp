@@ -29,14 +29,12 @@ namespace gil = boost::gil;
 
 using t_real = tl2::t_real_min;
 
-#define DEFAULT_FOIL 3
-
 
 /**
  * extract image and count data from a tof file
  */
 std::tuple<bool, t_real, t_real, t_real>
-process_tof(const fs::path& tof_file, const fs::path& out_file)
+process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 {
 	// tof file data type for counts
 	using t_data = std::uint32_t;
@@ -84,8 +82,8 @@ process_tof(const fs::path& tof_file, const fs::path& out_file)
 	}
 
 	// tof mask file giving tof foil start and end indices
-	unsigned tof_mask_start = DEFAULT_FOIL * CHANNELS_PER_FOIL;
-	unsigned tof_mask_end = (DEFAULT_FOIL+1) * CHANNELS_PER_FOIL;
+	unsigned tof_mask_start = foil * CHANNELS_PER_FOIL;
+	unsigned tof_mask_end = (foil+1) * CHANNELS_PER_FOIL;
 	fs::path tof_mask_file("tof_mask.txt");
 	if(fs::exists(tof_mask_file))
 	{
@@ -263,13 +261,15 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	std::cout.precision(6);
 	std::cout
 		<< std::setw(1) << std::right << "#"
-		<< std::setw(7) << std::right << "index"
+		<< std::setw(4) << std::right << "idx"
+		<< std::setw(5) << std::right << "foil"
 		<< std::setw(48) << std::right << "file"
-		<< std::setw(16) << std::right << "se time (ps)"
-		<< std::setw(16) << std::right << "polarisation"
-		<< std::setw(16) << std::right << "error"
+		<< std::setw(12) << std::right << "tau (ps)"
+		<< std::setw(12) << std::right << "pol."
+		<< std::setw(12) << std::right << "err."
 		<< std::endl;
 
 	for(int i=1; i<argc; ++i)
@@ -287,24 +287,35 @@ int main(int argc, char** argv)
 		fs::path file_out = file.filename();
 		file_out.replace_extension("");
 
-		bool ok = false;
-		t_real tau = 0.;
-		t_real pol = 0., pol_err = -1.;
-		std::tie(ok, tau, pol, pol_err) = process_tof(file, file_out);
-		if(ok)
+		for(int foil=0; foil<NUM_FOILS; ++foil)
 		{
-			std::cout
-				<< std::setw(8) << std::right << i
-				<< std::setw(48) << std::right << file.string()
-				<< std::setw(16) << std::right << tau
-				<< std::setw(16) << std::right << pol
-				<< std::setw(16) << std::right << pol_err
-				<< std::endl;
-		}
-		else
-		{
-			std::cerr << "Error: Failed to process file \""
-				<< file << "\"." << std::endl;
+			bool ok = false;
+			t_real tau = 0.;
+			t_real pol = 0., pol_err = -1.;
+			std::tie(ok, tau, pol, pol_err) = process_tof(file, file_out, foil);
+			if(!ok)
+			{
+				std::cerr << "Error: Failed to process file \""
+					<< file << "\", foil " << foil
+					<< "." << std::endl;
+
+			}
+
+			std::ostringstream foil_data;
+			foil_data << "pol_" << (foil+1) << ".dat";
+			std::ofstream ofstr(foil_data.str(), std::ios_base::app);
+			std::ostream* ostrs[]{ &std::cout, &ofstr };
+			for(std::ostream* ostr : ostrs)
+			{
+				(*ostr)
+					<< std::setw(5) << std::right << i
+					<< std::setw(5) << std::right << (foil+1)
+					<< std::setw(48) << std::right << file.string()
+					<< std::setw(12) << std::right << tau
+					<< std::setw(12) << std::right << pol
+					<< std::setw(12) << std::right << pol_err
+					<< std::endl;
+			}
 		}
 	}
 

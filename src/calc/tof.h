@@ -13,5 +13,6 @@
 #define PSD_HEIGHT        128
 #define TOF_COUNT         128
 #define CHANNELS_PER_FOIL 16
+#define NUM_FOILS         6
 
 #endif

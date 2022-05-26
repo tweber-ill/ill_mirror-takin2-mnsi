@@ -7,7 +7,14 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
-col_data  = "#000000"  # colour data points
+array foil_cols[6]       # foil colours
+foil_cols[1] = "#000000"
+foil_cols[2] = "#009900"
+foil_cols[3] = "#0000ff"
+foil_cols[4] = "#ff0000"
+foil_cols[5] = "#00eeee"
+foil_cols[6] = "#dddd00"
+
 point_size = 1
 
 
@@ -51,5 +58,27 @@ set yrange [0 : 1]
 set ytics 0.2
 set mytics 2
 
-plot "< join P.dat P0.dat" u 3:($4/$8):(sqrt(($5/$8)**2 + ($4/$8**2 * $9)**2)) \
-	w yerrorbars pt 7 ps point_size lc rgb col_data notitle
+plot "< join P_1.dat P0_1.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 13 ps point_size lc rgb foil_cols[1] title "Foil 1", \
+	"< join P_2.dat P0_2.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 15 ps point_size lc rgb foil_cols[2] title "Foil 2", \
+	"< join P_3.dat P0_3.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 5 ps point_size lc rgb foil_cols[3] title "Foil 3", \
+	"< join P_4.dat P0_4.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 7 ps point_size lc rgb foil_cols[4] title "Foil 4", \
+	"< join P_5.dat P0_5.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 9 ps point_size lc rgb foil_cols[5] title "Foil 5", \
+	"< join P_6.dat P0_6.dat" u 4:($5/$10):(sqrt(($6/$10)**2 + ($5/$10**2 * $11)**2)) \
+		w yerrorbars pt 11 ps point_size lc rgb foil_cols[6] title "Foil 6", \
+	"< join P_1.dat P0_1.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[1] notitle, \
+	"< join P_2.dat P0_2.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[2] notitle, \
+	"< join P_3.dat P0_3.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[3] notitle, \
+	"< join P_4.dat P0_4.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[4] notitle, \
+	"< join P_5.dat P0_5.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[5] notitle, \
+	"< join P_6.dat P0_6.dat" u 4:($5/$10) \
+		w lines lw point_size*2 lc rgb foil_cols[6] notitle

@@ -208,6 +208,8 @@ if [ $calc_p -ne 0 ]; then
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
 
+	rm -v pol_?.dat
+
 	${TOF_POL} \
 		../data/mlz_reseda/0p0000941ns/united.tof \
 		../data/mlz_reseda/0p000565ns/united.tof \
@@ -243,6 +245,13 @@ if [ $calc_p -ne 0 ]; then
 		../data/mlz_reseda/r_2p48ns/united.tof \
 		| tee P.dat
 
+	mv -v pol_1.dat P_1.dat
+	mv -v pol_2.dat P_2.dat
+	mv -v pol_3.dat P_3.dat
+	mv -v pol_4.dat P_4.dat
+	mv -v pol_5.dat P_5.dat
+	mv -v pol_6.dat P_6.dat
+
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
@@ -255,6 +264,8 @@ if [ $calc_p0 -ne 0 ]; then
 	echo -e "Calculating polarisation normalisation factors..."
 	echo -e "================================================================================"
 	echo -e "\x1b[0m"
+
+	rm -v pol_?.dat
 
 	${TOF_POL} \
 		../data/mlz_reseda/0b_resolution/00168534.tof \
@@ -290,6 +301,13 @@ if [ $calc_p0 -ne 0 ]; then
 		../data/mlz_reseda/0b_resolution/00168619.tof \
 		../data/mlz_reseda/0b_resolution/00168617.tof \
 		| tee P0.dat
+
+	mv -v pol_1.dat P0_1.dat
+	mv -v pol_2.dat P0_2.dat
+	mv -v pol_3.dat P0_3.dat
+	mv -v pol_4.dat P0_4.dat
+	mv -v pol_5.dat P0_5.dat
+	mv -v pol_6.dat P0_6.dat
 
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"
