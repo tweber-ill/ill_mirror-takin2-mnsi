@@ -19,7 +19,7 @@ calc_p0=1      # calculate polarisation normalisation factors
 plot=1         # plot results
 
 
-if [ $unite_tofs -ne 0 ]; then
+if [ $create_mask -ne 0 ]; then
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"
 	echo -e "Creating mask file..."
