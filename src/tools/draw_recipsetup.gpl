@@ -78,8 +78,8 @@ set arrow 500 \
 	to 1+cos(scan_angle/180.*pi)*0.04, sin(scan_angle/180.*pi)*0.04 \
 	nohead dt 2 lw size_scan lc rgb col_scan
 #set arrow 500 \
-#	from 1, -cos(scan_angle/180.*pi)*0.04, -sin(scan_angle/180.*pi)*0.04 \
-#	to 1, +cos(scan_angle/180.*pi)*0.04, sin(scan_angle/180.*pi)*0.04 \
+#	from 1, cos(scan_angle/180.*pi)/sqrt(2)*0.04, sin(scan_angle/180.*pi)*0.04 \
+#	to 1, -cos(scan_angle/180.*pi)/sqrt(2)*0.04, -sin(scan_angle/180.*pi)*0.04 \
 #	nohead dt 2 lw size_scan lc rgb col_scan
 
 
