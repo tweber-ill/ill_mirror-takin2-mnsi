@@ -111,7 +111,7 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(char dyntype, boo
 /**
  * calculate the dispersion parallel and perpendicular to the field
  */
-static void calc_disp_para_perp(char dyntype,
+static void calc_disp_para_perp(char dyntype, bool do_proj,
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
@@ -149,6 +149,7 @@ static void calc_disp_para_perp(char dyntype,
 	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
+	dyn->SetProjNeutron(do_proj);
 	dyn->SetG(G[0], G[1], G[2]);
 
 
@@ -307,7 +308,7 @@ static void calc_disp_para_perp(char dyntype,
 /**
  * calculate the dispersion along arbitrary paths of momentum transfer
  */
-static void calc_disp_path(char dyntype,
+static void calc_disp_path(char dyntype, bool do_proj,
 	t_real Gx, t_real Gy, t_real Gz,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
@@ -343,6 +344,7 @@ static void calc_disp_path(char dyntype,
 	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
+	dyn->SetProjNeutron(do_proj);
 	dyn->SetG(G[0], G[1], G[2]);
 
 	t_real F = 0.;
@@ -490,6 +492,7 @@ int main(int argc, char **argv)
 	t_real qrange = 0.125;
 	t_real qdelta = 0.001;
 	bool alongqpara = false;
+	bool do_proj = true;
 	bool explicit_calc = true;
 	bool use_para_perp_calc = true;
 	std::string outfile = "dyn.dat";
@@ -540,6 +543,8 @@ int main(int argc, char **argv)
 			std::cout << "pinning = ";
 			std::cin >> Px >> Py >> Pz;
 		}
+		std::cout << "Calculate S_perp? [1/0]: ";
+		std::cin >> do_proj;
 		std::cout << "Query dispersion along q_para || B? [1/0]: ";
 		std::cin >> alongqpara;
 		std::cout << "q_perp = ";
@@ -576,6 +581,10 @@ int main(int argc, char **argv)
 			args.add(boost::make_shared<opts::option_description>(
 				"along_qpara", opts::value<decltype(alongqpara)>(&alongqpara),
 				"calculate dispersion along q_parallel"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"do_proj", opts::value<decltype(do_proj)>(&do_proj),
+				"calculate orthogonal projection, S_perp"));
 
 			args.add(boost::make_shared<opts::option_description>(
 				"outfile", opts::value<decltype(outfile)>(&outfile),
@@ -715,7 +724,7 @@ int main(int argc, char **argv)
 		std::cout << "Calculating high-symmetry path dispersion in 4 threads..." << std::endl;
 
 		// calculate the dispersion using simple parallel or perpendicular momentum transfers
-		calc_disp_para_perp(dyntype,
+		calc_disp_para_perp(dyntype, do_proj,
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 			qperpx,qperpy,qperpz,
 			qperp, qperp2,
@@ -728,7 +737,7 @@ int main(int argc, char **argv)
 		std::cout << "Calculating arbitrary path dispersion in " << num_threads << " threads..." << std::endl;
 
 		// calculate the dispersion using arbitrary momentum transfer paths
-		calc_disp_path(dyntype,
+		calc_disp_path(dyntype, do_proj,
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 			qh_start, qk_start, ql_start,
 			qh_end, qk_end, ql_end,
