@@ -52,6 +52,7 @@ set mytics 2
 
 set xrange [-7 : anglerange + 5]
 set yrange [0 : 0.105]
+#set yrange [-0.105 : 0.105]
 
 set key top right samplen 1 Left reverse
 
