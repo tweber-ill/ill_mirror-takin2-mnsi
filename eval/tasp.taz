@@ -51,6 +51,9 @@
 		<pop_dist_mono_sample>2.300000e+02</pop_dist_mono_sample>
 		<pop_dist_sample_ana>7.300000e+01</pop_dist_sample_ana>
 		<pop_dist_src_mono>8.000000e+01</pop_dist_src_mono>
+		<pop_dist_mono_monitor>3.000000e+01</pop_dist_mono_monitor>
+		<pop_monitor_h>1.200000e+01</pop_monitor_h>
+		<pop_monitor_w>6.000000e+00</pop_monitor_w>
 		<pop_guide_divh>1.500000e+01</pop_guide_divh>
 		<pop_guide_divv>1.500000e+01</pop_guide_divv>
 		<pop_mono_curvh>0.000000e+00</pop_mono_curvh>
