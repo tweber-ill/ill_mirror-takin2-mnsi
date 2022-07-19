@@ -18,7 +18,7 @@
 		<ana_d>3.437000e+00</ana_d>
 		<ana_effic>1.000000e+00</ana_effic>
 		<ana_mosaic>3.000000e+01</ana_mosaic>
-		<ana_scatter_sense>0</ana_scatter_sense>
+		<ana_scatter_sense>1</ana_scatter_sense>
 		<eck_ana_mosaic_v>3.000000e+01</eck_ana_mosaic_v>
 		<eck_mono_mosaic_v>3.000000e+01</eck_mono_mosaic_v>
 		<eck_sample_mosaic_v>14</eck_sample_mosaic_v>
@@ -36,7 +36,7 @@
 		<mono_d>3.437000e+00</mono_d>
 		<mono_mosaic>3.000000e+01</mono_mosaic>
 		<mono_refl>1.000000e+00</mono_refl>
-		<mono_scatter_sense>0</mono_scatter_sense>
+		<mono_scatter_sense>1</mono_scatter_sense>
 		<pop_ana_curvh>0.000000e+00</pop_ana_curvh>
 		<pop_ana_curvv>1.400000e+02</pop_ana_curvv>
 		<pop_ana_h>9.000000e+00</pop_ana_h>
@@ -71,7 +71,7 @@
 		<pop_src_h>1.200000e+01</pop_src_h>
 		<pop_src_w>2.500000e+00</pop_src_w>
 		<sample_mosaic>1.400000e+01</sample_mosaic>
-		<sample_scatter_sense>1</sample_scatter_sense>
+		<sample_scatter_sense>0</sample_scatter_sense>
 		<scatter_kf_vert>0</scatter_kf_vert>
 		<use_guide>0</use_guide>
 		<use_general_R0>1</use_general_R0>
