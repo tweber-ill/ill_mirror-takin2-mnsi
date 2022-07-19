@@ -189,6 +189,13 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	std::size_t mxrowbegin = 0;
 	std::vector<t_mat_cplx> polMat(3);
 
+	auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+	{
+		if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
+			return 0.;
+		return g_chi<t_real>/Q_sq * Qi*Qj;
+	};
+
 	if(!m_explicitcalc)
 	{
 		// M-cross tensor
@@ -219,13 +226,6 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		{
 			t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
 			const t_real Q_sq = tl2::inner(Q, Q);
-
-			auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
-			{
-				if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
-					return 0.;
-				return g_chi<t_real>/Q_sq * Qi*Qj;
-			};
 
 			t_mat_cplx mat(3, 3);
 			for(int i=0; i<3; ++i)  // diagonal
@@ -326,26 +326,19 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 			}
 
 			// fluctuation matrix
-			auto get_dip = [this](t_real q, t_real q_sq) -> t_real
-			{
-				if(tl2::float_equal<t_real>(q_sq, 0., m_eps))
-					return 0.;
-				return g_chi<t_real>/q_sq * q;
-			};
-
 			Fluc2d(3*pk + 0, 3*pk + 0) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*heli_amp*heli_amp
-				+ 0.5*get_dip(qh*qh + qk*qk, q2) + 2.*Dqmin*qz;
-			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., q2) * hx * hx;
-			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, q2) - Dqmin) * std::sqrt(2) * hx;
+				+ 0.5*get_dip(qh*qh + qk*qk, 1., q2) + 2.*Dqmin*qz;
+			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., 1., q2) * hx * hx;
+			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, 1., q2) - Dqmin) * std::sqrt(2) * hx;
 
 			Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
 			Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*Dqmin*qz;
-			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
+			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, 1., q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
 
 			Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
 			Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
 			Fluc2d(3*pk + 2, 3*pk + 2) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*M_amp*M_amp
-				+ get_dip(qz*qz, q2);
+				+ get_dip(qz*qz, 1., q2);
 
 			if(pk > 0)
 				Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
