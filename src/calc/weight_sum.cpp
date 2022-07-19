@@ -4,7 +4,7 @@
  * @date jun-20
  * @license GPLv2 (see 'LICENSE' file)
  *
- * TODO: takin into account the entire sector, not just the central path
+ * TODO: take into account the entire sector, not just the central path
  */
 
 #include "core/heli.h"
