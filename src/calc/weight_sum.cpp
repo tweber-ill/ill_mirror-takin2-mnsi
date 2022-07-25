@@ -74,7 +74,7 @@ void calc_disp(const t_vec& Gvec,
 	t_real Erange = 0.1;
 
 	t_real angle_begin = -45/180.*M_PI;
-	t_real angle_end = 180/180.*M_PI - 45/180.*M_PI;
+	t_real angle_end = 270/180.*M_PI - 45/180.*M_PI;
 	t_real angle_delta = 2*M_PI/t_real(NUM_ANGLES);
 
 	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));

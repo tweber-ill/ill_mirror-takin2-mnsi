@@ -12,7 +12,7 @@ filebin = "weightbin.dat"
 
 # same angular range as in weight_sum.cpp
 startangle = -45
-endangle = 180 - 45
+endangle = 270 - 45
 anglerange = endangle - startangle
 
 col_skx = "#ff0000"
@@ -66,7 +66,7 @@ plot \
 set xlabel "{/NimbusSans-Italic S(E)} (a.u.)"
 unset ylabel
 
-set xrange [0 : 25]
+set xrange [0 : 35]
 set xtics 20
 set mxtics 2
 
@@ -79,14 +79,14 @@ set size 0.3, 1
 #set label 100 at screen 0.05, screen 0.95 "{/NimbusSans-Bold (a)}"
 #set label 100 at screen 0.95, screen 0.95 "{/NimbusSans-Bold (b)}"
 
-set label 1000 at 15, 0.003 tc rgb col_skx "GM"
-set label 1001 at 15, 0.027 tc rgb col_skx "CCW"
-set label 1002 at 15, 0.051 tc rgb col_skx "(BM)"
-set label 1003 at 15, 0.065 tc rgb col_skx "(CW)"
+set label 1000 at 20, 0.003 tc rgb col_skx "GM"
+set label 1001 at 20, 0.027 tc rgb col_skx "CCW"
+set label 1002 at 20, 0.051 tc rgb col_skx "(BM)"
+set label 1003 at 20, 0.065 tc rgb col_skx "(CW)"
 
-set label 2000 at 15, 0.009 tc rgb col_heli "HM 1"
-set label 2001 at 15, 0.061 tc rgb col_heli "(HM 2)"
-set label 2002 at 15, 0.070 tc rgb col_heli "HM 3"
+set label 2000 at 20, 0.009 tc rgb col_heli "HM 1"
+set label 2001 at 20, 0.061 tc rgb col_heli "(HM 2)"
+set label 2002 at 20, 0.070 tc rgb col_heli "HM 3"
 
 plot \
 	filebin using ($10*scale_S):($1) w filledcurve lc rgb col_heli notitle, \
