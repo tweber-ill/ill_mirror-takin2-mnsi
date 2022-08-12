@@ -32,7 +32,7 @@ Furthermore, their repositories are available here:
 - The helper tools can be found in the bin/ directory.
 
 See the included `Dockerfile` for more compilation info.
-This can also be used to compile it in a dockerimage with `docker build -t takin2-msni .` if you have buildproblems.
+This can also be used to compile it in a dockerimage with `docker build -t takin2-msni .` if you have build problems.
 
 
 ## References and Acknowledgements
@@ -60,4 +60,4 @@ The helimagnon and ferromagnetic parts of this code have been used in the follow
 The skyrmion part of this code has been used in the following paper:
 - T. Weber, D. M. Fobes, J. Waizner, P. Steffens, G. S. Tucker, M. Böhm, L. Beddrich, C. Franz, H. Gabold, R. Bewley, D. Voneshen, M. Skoulatos, R. Georgii, G. Ehlers, A. Bauer, C. Pfleiderer, P. Böni, M. Janoschek, and M. Garst, Science **375**(6584), pp. 1025-1030, https://doi.org/10.1126/science.abe4441 (2022).
 
-Completion of dependencies and Docker build info: N. Garofil, Universiteit Antwerpen
+Completion of dependencies and Docker build info: N. Garofil, Universiteit Antwerpen.
