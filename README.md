@@ -15,7 +15,7 @@ The development repository can be found here:
 
 
 ## Dependencies
-This software depends on [*Takin*](https://doi.org/10.5281/zenodo.4117437) and the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779).
+This software depends on [*Takin*](https://doi.org/10.5281/zenodo.4117437), the [*tlibs* libraries](https://doi.org/10.5281/zenodo.5717779), Minuit2 and some basic libs.
 An archived copy of their source codes are included in the directory ext/.
 Furthermore, their repositories are available here:
 - Stable releases: https://github.com/t-weber/takin2
@@ -30,6 +30,9 @@ Furthermore, their repositories are available here:
 - Build the module: `make -j4`.
 - Copy the built plugin modules to *Takin's* plugin directory: `mkdir -pv ~/.takin/plugins/ && cp -v lib/*.so ~/.takin/plugins/`
 - The helper tools can be found in the bin/ directory.
+
+See the included `Dockerfile` for more compilation info.
+This can also be used to compile it in a dockerimage with `docker build -t takin2-msni .` if you have buildproblems.
 
 
 ## References and Acknowledgements
@@ -56,3 +59,5 @@ The helimagnon and ferromagnetic parts of this code have been used in the follow
 
 The skyrmion part of this code has been used in the following paper:
 - T. Weber, D. M. Fobes, J. Waizner, P. Steffens, G. S. Tucker, M. Böhm, L. Beddrich, C. Franz, H. Gabold, R. Bewley, D. Voneshen, M. Skoulatos, R. Georgii, G. Ehlers, A. Bauer, C. Pfleiderer, P. Böni, M. Janoschek, and M. Garst, Science **375**(6584), pp. 1025-1030, https://doi.org/10.1126/science.abe4441 (2022).
+
+Completion of dependencies and Docker build info: N. Garofil, Universiteit Antwerpen
