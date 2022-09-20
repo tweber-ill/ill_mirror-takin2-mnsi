@@ -22,7 +22,7 @@ using t_float_dst = double;  // output grid data type
 static bool convert(
 	const std::string& filenameIdx, const std::string& filenameDat, // input files
 	const std::string& filenameNewDat,                              // output files
-	t_float_src eps, t_float_src maxE,
+	t_float_src eps, t_float_src maxE, int channel,
 	t_float_dst hstep, t_float_dst hmin, t_float_dst hmax,          //
 	t_float_dst kstep, t_float_dst kmin, t_float_dst kmax,          // input file dimensions
 	t_float_dst lstep, t_float_dst lmin, t_float_dst lmax)          //
@@ -67,11 +67,29 @@ static bool convert(
 	// header
 	ofDat << "takin_grid_data_ver2|title:skxdyn|author:tweber@ill.fr|date:25/mar/2020";
 
+	ifDat.seekg(0, std::ios_base::end);
+	std::streampos ifDat_size = ifDat.tellg();
+	ifDat.seekg(0, std::ios_base::beg);
+
 	std::size_t iLoop = 0;
+	int last_progress = -1;
+
 	while(1)
 	{
 		std::size_t idx = ifDat.tellg();
 		std::size_t idxnew = ofDat.tellp();
+
+		// show progress
+		int cur_progress = (idx*100) / ifDat_size;
+		if(cur_progress != last_progress)
+		{
+			std::cout << "Running: " << cur_progress << " % -- "
+				<< idx/1024/1024 << " MB read, "
+				<< idxnew/1024/1024 << " MB written."
+				<< "            \r"
+				<< std::flush;
+			last_progress = cur_progress;
+		}
 
 		unsigned int numBranches = 0;
 		ifDat.read((char*)&numBranches, sizeof(numBranches));
@@ -90,24 +108,56 @@ static bool convert(
 			t_float_src vals[4] = { 0, 0, 0, 0 };
 			ifDat.read((char*)vals, sizeof(vals));
 
-			t_float_dst w = t_float_dst(std::abs(vals[1])+std::abs(vals[2])+std::abs(vals[3]));
+			t_float_dst E = t_float_dst(vals[0]);
+			if(std::abs(E) < eps)
+				E = 0.;
 
-			if(w >= eps && std::abs(vals[0]) <= maxE)
+			t_float_dst w[3] =
 			{
-				t_float_dst E = t_float_dst(vals[0]);
-				if(std::abs(E) < eps)
-					E = 0.;
-				if(std::abs(w) < eps)
-					w = 0.;
+				t_float_dst(std::abs(vals[1])),
+				t_float_dst(std::abs(vals[2])),
+				t_float_dst(std::abs(vals[3])),
+			};
+			t_float_dst total_w = w[0] + w[1] + w[2];
 
-				t_float_dst newvals[2] = { E, w };
-				ofDat.write((char*)newvals, sizeof(newvals));
+			// do some operation on the channels
+			if(channel < 0)
+			{
+				if(total_w >= eps && std::abs(E) <= maxE)
+				{
+					if(channel == -1)       // keep original channels
+					{
+						t_float_dst newvals[4] = { E, w[0], w[1], w[2] };
+						ofDat.write((char*)newvals, sizeof(newvals));
+					}
+					else if(channel == -2)  // add all channels
+					{
+						t_float_dst newvals[2] = { E, total_w };
+						ofDat.write((char*)newvals, sizeof(newvals));
+					}
 
-				++numNewBranches;
+					++numNewBranches;
+				}
+				else
+				{
+					++removedBranches;
+				}
 			}
-			else
+
+			// pick a single channel
+			else if(channel >= 0)
 			{
-				++removedBranches;
+				if(w[channel] >= eps && std::abs(E) <= maxE)
+				{
+					t_float_dst newvals[2] = { E, w[channel] };
+					ofDat.write((char*)newvals, sizeof(newvals));
+
+					++numNewBranches;
+				}
+				else
+				{
+					++removedBranches;
+				}
 			}
 		}
 
@@ -176,6 +226,7 @@ int main(int argc, char** argv)
 
 	t_float_src eps = 1e-8;
 	t_float_src maxE = 1.5;
+	int channel = -1;
 
 	t_float_dst hstep = 0.0006;
 	t_float_dst hmin = -0.03;
@@ -191,7 +242,7 @@ int main(int argc, char** argv)
 
 	// argument parser
 	opts::basic_command_line_parser<char> clparser(argc, argv);
-	opts::options_description args("program arguments");
+	opts::options_description args("Program arguments");
 
 	args.add(boost::make_shared<opts::option_description>(
 		"help", opts::bool_switch(&show_help), "show program usage"));
@@ -211,6 +262,9 @@ int main(int argc, char** argv)
 	args.add(boost::make_shared<opts::option_description>(
 		"max_E", opts::value<decltype(maxE)>(&maxE),
 		("maximum energy in meV, default: " + std::to_string(maxE)).c_str()));
+	args.add(boost::make_shared<opts::option_description>(
+		"channel", opts::value<decltype(channel)>(&channel),
+		("polarisation channel (0..2: pick a channel, -1: keep individual channels, -2: add all channels), default: " + std::to_string(channel)).c_str()));
 	args.add(boost::make_shared<opts::option_description>(
 		"h_step", opts::value<decltype(hstep)>(&hstep),
 		("h step width in rlu, default: " + std::to_string(hstep)).c_str()));
@@ -249,7 +303,19 @@ int main(int argc, char** argv)
 	if(show_help)
 	{
 		std::cout << args << std::endl;
+		std::cout << "Example usage: " << argv[0]
+			<< " --infile_idx=skxdyn_asym.idx --infile_dat=skxdyn_asym.bin --outfile=skxdyn.sqw"
+			<< " --h_step=0.001 --k_step=0.001 --l_step=0.001"
+			<< " --h_min=-0.096 --k_min=-0.096 --l_min=-0.096"
+			<< " --h_max=0.096 --k_max=0.096 --l_max=0.096"
+			<< " --channel=0 --eps=2e-2\n" << std::endl;
 		return 0;
+	}
+
+	if(channel < -2 || channel > 2)
+	{
+		std::cerr << "Error: Invalid polarisation channel selected." << std::endl;
+		return -1;
 	}
 
 	// padding
@@ -259,7 +325,7 @@ int main(int argc, char** argv)
 
 	// start conversion
 	bool ok = convert(filenameIdx, filenameDat, filenameNewDat,
-		eps, maxE,
+		eps, maxE, channel,
 		hstep, hmin, hmax,
 		kstep, kmin, kmax,
 		lstep, lmin, lmax);
