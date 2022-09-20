@@ -143,7 +143,7 @@ bin/merge: src/takin/merge.o
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/convert: src/takin/convert.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSOPTS)
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/dump: src/takin/dump.o
