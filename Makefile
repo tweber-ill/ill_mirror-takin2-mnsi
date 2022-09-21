@@ -130,12 +130,12 @@ lib/skxmod_grid.so: src/takin/takin_grid.o \
 # -----------------------------------------------------------------------------
 bin/genskx: src/takin/genskx.o src/core/skx.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/genheli: src/takin/genheli.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/merge: src/takin/merge.o
@@ -143,7 +143,7 @@ bin/merge: src/takin/merge.o
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/convert: src/takin/convert.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSOPTS)
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS)
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/dump: src/takin/dump.o
@@ -176,17 +176,17 @@ bin/tof_img: src/calc/tof_img.o
 
 bin/dyn: src/calc/dyn.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -o $@ $+ -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 

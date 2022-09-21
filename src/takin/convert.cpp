@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <optional>
 #include <unordered_map>
 
 #include <boost/make_shared.hpp>
@@ -15,11 +16,8 @@
 namespace opts = boost::program_options;
 
 
-using t_float_src = double;  // input grid data type
-using t_float_dst = double;  // output grid data type
-
-
-static bool convert(
+template<class t_float_src, class t_float_dst>
+bool convert(
 	const std::string& filenameIdx, const std::string& filenameDat, // input files
 	const std::string& filenameNewDat,                              // output files
 	t_float_src eps, t_float_src maxE, int channel,
@@ -74,6 +72,9 @@ static bool convert(
 	std::size_t iLoop = 0;
 	int last_progress = -1;
 
+	std::optional<t_float_dst> w_min, w_max;
+	std::optional<t_float_dst> E_min, E_max;
+
 	while(1)
 	{
 		std::size_t idx = ifDat.tellg();
@@ -85,7 +86,7 @@ static bool convert(
 		{
 			std::cout << "Running: " << cur_progress << " % -- "
 				<< idx/1024/1024 << " MB read, "
-				<< idxnew/1024/1024 << " MB written."
+				<< idxnew/1024/1024 << " MB written. "
 				<< "            \r"
 				<< std::flush;
 			last_progress = cur_progress;
@@ -119,6 +120,28 @@ static bool convert(
 				t_float_dst(std::abs(vals[3])),
 			};
 			t_float_dst total_w = w[0] + w[1] + w[2];
+
+			// update E range
+			if(E_min && E_max)
+			{
+				E_min = std::min(*E_min, E);
+				E_max = std::max(*E_max, E);
+			}
+			else
+			{
+				E_min = E_max = E;
+			}
+
+			// update w range
+			if(w_min && w_max)
+			{
+				w_min = std::min(*w_min, total_w);
+				w_max = std::max(*w_max, total_w);
+			}
+			else
+			{
+				w_min = w_max = total_w;
+			}
 
 			// do some operation on the channels
 			if(channel < 0)
@@ -178,7 +201,13 @@ static bool convert(
 	ofDat.write((char*)&idx_offs, sizeof(idx_offs));
 	ofDat.seekp(idx_offs, std::ios_base::beg);
 
-	std::cout << removedBranches << " branches removed (w<eps || E<maxE)." << std::endl;
+	std::cout << removedBranches << " branches removed (w<eps || E<maxE), ";
+	if(E_min && E_max)
+		std::cout << "E: [" << *E_min << ", " << *E_max << "] meV, ";
+	if(w_min && w_max)
+		std::cout << "w: [" << *w_min << ", " << *w_max << "].";
+	std::cout << std::endl;
+
 	std::cout << "\nConverting index file \"" << filenameIdx << "\"..." << std::endl;
 
 	std::ifstream ifIdx(filenameIdx);
@@ -215,10 +244,14 @@ static bool convert(
 
 int main(int argc, char** argv)
 {
+	using t_float_src = double;  // input grid data type
+
 	std::cout << "Takin grid version 1 to version 2 converter.\n" << std::endl;
 
 	// arguments
 	bool show_help = false;
+	bool use_single_prec = false;
+	bool pad_endpoint = false;
 
 	std::string filenameIdx = "skxdyn.idx";
 	std::string filenameDat = "skxdyn.bin";
@@ -228,17 +261,17 @@ int main(int argc, char** argv)
 	t_float_src maxE = 1.5;
 	int channel = -1;
 
-	t_float_dst hstep = 0.0006;
-	t_float_dst hmin = -0.03;
-	t_float_dst hmax = 0.03;
+	t_float_src hstep = 0.0006;
+	t_float_src hmin = -0.03;
+	t_float_src hmax = 0.03;
 
-	t_float_dst kstep = 0.0006;
-	t_float_dst kmin = -0.03;
-	t_float_dst kmax = 0.03;
+	t_float_src kstep = 0.0006;
+	t_float_src kmin = -0.03;
+	t_float_src kmax = 0.03;
 
-	t_float_dst lstep = 0.0006;
-	t_float_dst lmin = -0.03;
-	t_float_dst lmax = 0.03;
+	t_float_src lstep = 0.0006;
+	t_float_src lmin = -0.03;
+	t_float_src lmax = 0.03;
 
 	// argument parser
 	opts::basic_command_line_parser<char> clparser(argc, argv);
@@ -246,7 +279,10 @@ int main(int argc, char** argv)
 
 	args.add(boost::make_shared<opts::option_description>(
 		"help", opts::bool_switch(&show_help), "show program usage"));
-
+	args.add(boost::make_shared<opts::option_description>(
+		"use_single_prec", opts::bool_switch(&use_single_prec), "output single-precision floating point data"));
+	args.add(boost::make_shared<opts::option_description>(
+		"pad_endpoint", opts::bool_switch(&pad_endpoint), "add one step to q range end points"));
 	args.add(boost::make_shared<opts::option_description>(
 		"infile_idx", opts::value<decltype(filenameIdx)>(&filenameIdx),
 		("input index file, default: " + filenameIdx).c_str()));
@@ -305,10 +341,11 @@ int main(int argc, char** argv)
 		std::cout << args << std::endl;
 		std::cout << "Example usage: " << argv[0]
 			<< " --infile_idx=skxdyn_asym.idx --infile_dat=skxdyn_asym.bin --outfile=skxdyn.sqw"
+			<< " --use_single_prec"
 			<< " --h_step=0.001 --k_step=0.001 --l_step=0.001"
 			<< " --h_min=-0.096 --k_min=-0.096 --l_min=-0.096"
 			<< " --h_max=0.096 --k_max=0.096 --l_max=0.096"
-			<< " --channel=0 --eps=2e-2\n" << std::endl;
+			<< " --channel=0 --eps=1e-3\n" << std::endl;
 		return 0;
 	}
 
@@ -319,16 +356,35 @@ int main(int argc, char** argv)
 	}
 
 	// padding
-	hmax += hstep;
-	kmax += kstep;
-	lmax += lstep;
+	if(pad_endpoint)
+	{
+		hmax += hstep;
+		kmax += kstep;
+		lmax += lstep;
+	}
 
 	// start conversion
-	bool ok = convert(filenameIdx, filenameDat, filenameNewDat,
-		eps, maxE, channel,
-		hstep, hmin, hmax,
-		kstep, kmin, kmax,
-		lstep, lmin, lmax);
+	bool ok = false;
+	if(use_single_prec)
+	{
+		using t_float_dst = float;
+		ok = convert<t_float_src, t_float_dst>(
+			filenameIdx, filenameDat, filenameNewDat,
+			eps, maxE, channel,
+			t_float_dst(hstep), t_float_dst(hmin), t_float_dst(hmax),
+			t_float_dst(kstep), t_float_dst(kmin), t_float_dst(kmax),
+			t_float_dst(lstep), t_float_dst(lmin), t_float_dst(lmax));
+	}
+	else
+	{
+		using t_float_dst = double;
+		ok = convert<t_float_src, t_float_dst>(
+			filenameIdx, filenameDat, filenameNewDat,
+			eps, maxE, channel,
+			t_float_dst(hstep), t_float_dst(hmin), t_float_dst(hmax),
+			t_float_dst(kstep), t_float_dst(kmin), t_float_dst(kmax),
+			t_float_dst(lstep), t_float_dst(lmin), t_float_dst(lmax));
+	}
 
 	return ok ? 0 : -1;
 }
