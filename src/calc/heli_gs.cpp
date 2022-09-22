@@ -18,14 +18,7 @@ int main()
 {
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
-	t_real T_theo = -1000;
-	t_real T_exp = 28.5;
-	t_real B_theo = heli.GetBC2(false)/2.;
 	t_real m_scale = 10.;
-
-	//t_real T_theo = -4500;
-	//t_real T_exp = 20.;
-	//t_real B_theo = get_B_exp_from_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
 	//t_real m_scale = 15.;
 
 	const auto j = t_cplx(0, 1);
@@ -36,7 +29,15 @@ int main()
  	};
 
 	heli.SetFourier(fourier);
+
+	t_real T_exp = 28.5;
+	t_real T_theo = -1000;
+	//t_real T_exp = 20.;
+	//t_real T_theo = -4500;
 	heli.SetT(T_theo, false);
+
+	t_real B_theo = heli.GetBC2(false)/2.;
+	//t_real B_theo = get_B_exp_from_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
 	heli.SetB(B_theo, false);
 
 	std::cout.precision(8);

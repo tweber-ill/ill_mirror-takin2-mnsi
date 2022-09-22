@@ -100,19 +100,22 @@ SkxMod::SkxMod()
 	tl2::log_info("\tby T. Weber <tweber@ill.fr>, September 2018.");
 	tl2::log_info("--------------------------------------------------------------------------------");
 
-	m_skx.SetT(-1000., false);
-	m_skx.SetB(m_skx.GetBC2(false)/2., false);
+	auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
+	auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+
+	m_skx.SetT(skxgs_T, false);
+	m_skx.SetB(/*m_skx.GetBC2(false)/2.*/ skxgs_B, false);
 	m_skx.SetT(28.5, true);
 	m_fp.SetT(28.5, true);
 	m_fp.SetB(0.35, true);
-	m_heli.SetT(-1000., false);
-	m_heli.SetB(25., false);
+	m_heli.SetT(heligs_T, false);
+	m_heli.SetB(heligs_B, false);
 	m_heli.SetT(28.5, true);
 	m_heli.SetB(0.35, true);
 	m_lf.SetT(28.5);
 
-	m_heli.SetFourier(_get_heli_gs<t_vec_cplx>());
-	m_skx.SetFourier(_get_skx_gs<t_vec_cplx>());
+	m_heli.SetFourier(heligs);
+	m_skx.SetFourier(skxgs);
 
 	m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
 	m_skx.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);

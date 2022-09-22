@@ -132,8 +132,11 @@ int main()
 
 	const t_real T_theo = -1000;
 	skx.SetT(T_theo, false);
-	skx.SetB(skx.GetBC2(false)/2., false);
+
+	const t_real B_theo = skx.GetBC2(false)/2.;
+	skx.SetB(B_theo, false);
 	//skx.SetB(25., false);
+
 	const auto& peaks60 = skx.GetPeaks60(true);
 
 	std::cout << "Bc2_exp = " << skx.GetBC2(true) << ", "
@@ -142,6 +145,8 @@ int main()
 
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;
+	std::cout << "T_theo = " << T_theo << std::endl;
+	std::cout << "B_theo = " << B_theo << std::endl;
 	std::cout << "F_start = " << skx.F() << std::endl;
 	bool ok = skx.minimise(ORDER, 1,1,0, 0,1,1);
 	std::cout << "F_min = " << skx.F() << " (ok: " << std::boolalpha << ok << ")" << std::endl;

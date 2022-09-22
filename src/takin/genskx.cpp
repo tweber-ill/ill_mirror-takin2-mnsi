@@ -30,12 +30,13 @@ void calc_disp(
 	t_real Px, t_real Py, t_real Pz,
 	const std::string& filename)
 {
+	auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 
-	skx.SetFourier(_get_skx_gs<t_vec_cplx>());
+	skx.SetFourier(skxgs);
 	skx.SetProjNeutron(false);
-	skx.SetT(-1000., false);
-	skx.SetB(skx.GetBC2(false)/2., false);
+	skx.SetT(skxgs_T, false);
+	skx.SetB(/*skx.GetBC2(false)/2.*/ skxgs_B, false);
 	skx.SetFilterZeroWeight(true);
 
 	//t_vec G = tl2::make_vec<t_vec>({ 1, 1, 0 });

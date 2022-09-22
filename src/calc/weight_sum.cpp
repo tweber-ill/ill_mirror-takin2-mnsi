@@ -43,19 +43,20 @@ void calc_disp(const t_vec& Gvec,
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
-	skx.SetFourier(_get_skx_gs<t_vec_cplx>());
+	auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+	skx.SetFourier(skxgs);
 
 	skx.SetProjNeutron(bProj);
 	heli.SetProjNeutron(bProj);
 
 	t_real T = 28.5;
-	skx.SetT(-1000., false);
-	heli.SetT(-1000., false);
+	skx.SetT(skxgs_T, false);
+	heli.SetT(skxgs_T, false);
 	heli.SetT(T, true);
 
 	t_real bc2 = skx.GetBC2(false);
-	skx.SetB(bc2/2., false);
-	heli.SetB(bc2/2., false);
+	skx.SetB(/*bc2/2.*/ skxgs_B, false);
+	heli.SetB(/*bc2/2.*/ skxgs_B, false);
 	//heli.SetB(0.17, true);
 	heli.SetB(0.158, true);
 

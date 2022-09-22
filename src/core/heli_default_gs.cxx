@@ -7,6 +7,14 @@
 
 
 /**
+ * temperature and field (both in theoretical units),
+ * for which the ground state has been calculated
+ */
+static const t_real _heligs_T = -1000.;
+static const t_real _heligs_B = 22.5;
+
+
+/**
  * output from heli_gs.cpp
  */
 static const std::vector<std::complex<t_real>> _heligs_allcomps =
@@ -40,7 +48,12 @@ static const std::vector<std::complex<t_real>> _heligs_allcomps =
 
 
 template<class t_vec_cplx>
-std::vector<t_vec_cplx> _get_heli_gs()
+std::tuple<
+	t_real,                  // T
+	t_real,                  // B
+	std::vector<t_vec_cplx>  // fourier components
+>
+_get_heli_gs()
 {
 	// set initial fourier components
 	std::vector<t_vec_cplx> fourier;
@@ -56,5 +69,5 @@ std::vector<t_vec_cplx> _get_heli_gs()
 		}));
 	}
 
-	return fourier;
+	return std::make_tuple(_heligs_T, _heligs_B, fourier);
 }

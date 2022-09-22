@@ -79,17 +79,27 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(char dyntype, boo
 	if(dyntype == 's')
 	{
 		//std::cout << "Calculating skyrmion dispersion." << std::endl;
+		auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
-		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
+		skx->SetFourier(skxgs);
+		skx->SetT(skxgs_T, false);
+		skx->SetB(/*skx->GetBC2(false)/2.*/ skxgs_B, false);
+
 		print_groundstate(skx->GetFourier());
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
 	{
 		//std::cout << "Calculating helical dispersion." << std::endl;
+		auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
+
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
 		heli->SetExplicitCalc(explicit_calc);
-		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
+		heli->SetFourier(heligs);
+		heli->SetT(heligs_T, false);
+		heli->SetB(/*heli->GetBC2(false)/2.*/ heligs_B, false);
+
 		print_groundstate(heli->GetFourier());
 		dyn = heli;
 	}
@@ -144,8 +154,6 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	qperpdir2 /= tl2::veclen(qperpdir2);
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
-	dyn->SetT(-1000., false);
-	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetProjNeutron(do_proj);
@@ -338,8 +346,6 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	qend = tl2::prod_mv(rot, qend);
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
-	dyn->SetT(-1000., false);
-	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetProjNeutron(do_proj);

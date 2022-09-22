@@ -155,17 +155,20 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	bool calc_angles = 1;
 
 	std::ofstream ofstr(file);
-	std::shared_ptr<std::ofstream> ofstrGpl, ofstrGplBc2;
+	std::shared_ptr<std::ofstream> ofstrGpl, ofstrGplF, ofstrGplBc2;
 
 	if(calc_angles)
 	{
 		ofstrGpl.reset(new std::ofstream(std::string(file)+"_ang.gpl"));
+		ofstrGplF.reset(new std::ofstream(std::string(file)+"_F.gpl"));
 		ofstrGplBc2.reset(new std::ofstream(std::string(file)+"_Bc2.gpl"));
 
 		ofstrGpl->precision(8);
+		ofstrGplF->precision(8);
 		ofstrGplBc2->precision(8);
 
 		(*ofstrGpl) << "#!/usr/local/bin/gnuplot -p\n\n";
+		(*ofstrGplF) << "#!/usr/local/bin/gnuplot -p\n\n";
 		(*ofstrGplBc2) << "#!/usr/local/bin/gnuplot -p\n\n";
 	}
 
@@ -200,6 +203,17 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 		(*ofstrGpl) << "\n";
 	}
 
+	if(ofstrGplF)
+	{
+		(*ofstrGplF) << "set xlabel \"T\"\nset ylabel \"B\"\n";
+		(*ofstrGplF) << "set autosc xfix\nset autosc yfix\n\n";
+		(*ofstrGplF) << "plot \"-\" mat nonuni w ima\n";
+		(*ofstrGplF) << std::setw(16) << "0" << " ";
+		for(t_real T : Ts)
+			(*ofstrGplF) << std::setw(16) << T << " ";
+		(*ofstrGplF) << "\n";
+	}
+
 
 	std::vector<std::vector<t_real>> Bc2s;
 	Bc2s.resize(Ts.size());
@@ -208,6 +222,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 	for(t_real B : Bs)
 	{
 		if(ofstrGpl) (*ofstrGpl) << std::setw(16) << B << " ";
+		if(ofstrGplF) (*ofstrGplF) << std::setw(16) << B << " ";
 
 		for(std::size_t T_idx=0; T_idx<Ts.size(); ++T_idx)
 		{
@@ -220,7 +235,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 			if(T_idx == 0)	// run twice to get better initial values
 				ok = mag->minimise(iMaxOrder, bFixXR, bFixYR, bFixZR, bFixXI, bFixYI, bFixZI);
 			const auto& fourier = mag->GetFourier();
-			auto f = mag->F();
+			t_real f = mag->F();
 
 			const std::string labState = "state_" + tl2::var_to_str(iState);
 			ofstr << "\t<" << labState << ">\n";
@@ -251,6 +266,7 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 
 
 			if(ofstrGpl) (*ofstrGpl) << std::setw(16) << ang << " ";
+			if(ofstrGplF) (*ofstrGplF) << std::setw(16) << f << " ";
 
 			std::cout << "\rB = " << B << ", T = " << T << "        ";
 			std::cout.flush();
@@ -260,9 +276,11 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 		}
 
 		if(ofstrGpl) (*ofstrGpl) << "\n";
+		if(ofstrGplF) (*ofstrGplF) << "\n";
 	}
 
 	if(ofstrGpl) (*ofstrGpl) << "e\n";
+	if(ofstrGplF) (*ofstrGplF) << "e\n";
 	std::cout << std::endl;
 	ofstr << "</states>\n";
 

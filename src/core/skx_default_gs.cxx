@@ -8,6 +8,15 @@
 
 #define __SKX_GS_VALS 0
 
+
+/**
+ * temperature and field (both in theoretical units),
+ * for which the ground state has been calculated
+ */
+static const t_real _skxgs_T = -1000.;
+static const t_real _skxgs_B = 25.052945;
+
+
 /**
  * output from skx_gs.cpp
  * x values are the x (and y) imaginary components
@@ -231,7 +240,12 @@ static const std::vector<t_real> _skxgs_allcomps =
 
 
 template<class t_vec_cplx>
-std::vector<t_vec_cplx> _get_skx_gs()
+std::tuple<
+	t_real,                   // T
+	t_real,                   // B
+	std::vector<t_vec_cplx>   // fourier components
+>
+_get_skx_gs()
 {
 	using t_cplx = typename t_vec_cplx::value_type;
 	constexpr auto imag = t_cplx(0, 1);
@@ -250,5 +264,5 @@ std::vector<t_vec_cplx> _get_skx_gs()
 		}));
 	}
 
-	return fourier;
+	return std::make_tuple(_skxgs_T, _skxgs_B, fourier);
 }

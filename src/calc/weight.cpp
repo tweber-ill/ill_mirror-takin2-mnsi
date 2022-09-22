@@ -32,14 +32,24 @@ static void calc_weight(char dyntype,
 
 	if(dyntype == 's')
 	{
+		auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
-		skx->SetFourier(_get_skx_gs<t_vec_cplx>());
+		skx->SetFourier(skxgs);
+		skx->SetT(skxgs_T, false);
+		skx->SetB(/*skx->GetBC2(false)/2.*/ skxgs_B, false);
+
 		dyn = skx;
 	}
 	else if(dyntype == 'h')
 	{
+		auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
+
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
-		heli->SetFourier(_get_heli_gs<t_vec_cplx>());
+		heli->SetFourier(heligs);
+		heli->SetT(heligs_T, false);
+		heli->SetB(/*heli->GetBC2(false)/2.*/ heligs_B, false);
+
 		dyn = heli;
 	}
 	else if(dyntype == 'f')
@@ -54,8 +64,6 @@ static void calc_weight(char dyntype,
 
 
 	dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
-	dyn->SetT(-1000., false);
-	dyn->SetB(dyn->GetBC2(false)/2., false);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
 	dyn->SetFilterZeroWeight(1);
