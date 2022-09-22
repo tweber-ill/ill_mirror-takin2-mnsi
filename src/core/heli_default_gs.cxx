@@ -42,9 +42,6 @@ static const std::vector<std::complex<t_real>> _heligs_allcomps =
 template<class t_vec_cplx>
 std::vector<t_vec_cplx> _get_heli_gs()
 {
-	using t_cplx = typename t_vec_cplx::value_type;
-	constexpr auto imag = t_cplx(0, 1);
-
 	// set initial fourier components
 	std::vector<t_vec_cplx> fourier;
 	fourier.reserve(_heligs_allcomps.size()/3);

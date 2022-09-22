@@ -368,7 +368,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
  * rotates field to internal [001] convention
  */
 template<class t_real, class t_cplx, int ORDER>
-void Heli<t_real, t_cplx, ORDER>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t_real Py, t_real pZ)
+void Heli<t_real, t_cplx, ORDER>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real /*Px*/, t_real /*Py*/, t_real /*Pz*/)
 {
 	t_vec B = tl2::make_vec<t_vec>({ Bx, By, Bz });
 	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>({ 0, 0, 1 }));

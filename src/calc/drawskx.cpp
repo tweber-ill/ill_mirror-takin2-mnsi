@@ -69,7 +69,7 @@ void calcskx(const char* pcFile)
 }
 
 
-int main(int argc, char **argv)
+int main()
 {
 	calcskx("drawskx.dat");
 	return 0;

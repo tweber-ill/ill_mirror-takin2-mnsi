@@ -64,7 +64,6 @@ bool convert_tof(const fs::path& tof_file, const fs::path& out_file)
 #endif
 
 		std::uint64_t counts = 0;
-		std::uint64_t counts_mask = 0;
 		for(unsigned y=0; y<PSD_HEIGHT; ++y)
 		{
 #ifdef WRITE_TOF_CHANNEL

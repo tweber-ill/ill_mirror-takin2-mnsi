@@ -129,7 +129,6 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	if(!dyn)
 		return;
 
-	constexpr auto imag = t_cplx(0, 1);
 	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
 	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
 	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });
@@ -326,7 +325,6 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	if(!dyn)
 		return;
 
-	constexpr auto imag = t_cplx(0, 1);
 	t_vec G = tl2::make_vec<t_vec>({ Gx, Gy, Gz });
 	t_vec Pdir = tl2::make_vec<t_vec>({ Px, Py, Pz });
 	t_vec Bdir = tl2::make_vec<t_vec>({ Bx, By, Bz });

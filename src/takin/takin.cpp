@@ -37,7 +37,7 @@
 #endif
 
 
-class SqwMod : public SqwBase
+class SkxMod : public SqwBase
 {
 public:
 	using SqwBase::t_var;
@@ -72,9 +72,9 @@ protected:
 	t_vec m_vecPin = tl2::make_vec<t_vec>({1,-1,0});
 
 public:
-	SqwMod();
-	SqwMod(const std::string& strCfgFile);
-	virtual ~SqwMod();
+	SkxMod();
+	SkxMod(const std::string& strCfgFile);
+	virtual ~SkxMod();
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>> disp(t_real dh, t_real dk, t_real dl) const override;
 	virtual t_real operator()(t_real dh, t_real dk, t_real dl, t_real dE) const override;
@@ -87,13 +87,13 @@ public:
 };
 
 
-using t_real = typename SqwMod::t_real;
+using t_real = typename SkxMod::t_real;
 #include "core/heli_default_gs.cxx"
 #include "core/skx_default_gs.cxx"
 
 
 // ----------------------------------------------------------------------------
-SqwMod::SqwMod()
+SkxMod::SkxMod()
 {
 	tl2::log_info("--------------------------------------------------------------------------------");
 	tl2::log_info("This is the Takin MnSi magnon dynamics module,");
@@ -130,8 +130,8 @@ SqwMod::SqwMod()
 	SqwBase::m_bOk = 1;
 }
 
-SqwMod::SqwMod(const std::string& strCfgFile) : SqwMod() { SqwBase::m_bOk = 1; }
-SqwMod::~SqwMod() {}
+SkxMod::SkxMod(const std::string& /*strCfgFile*/) : SkxMod() { SqwBase::m_bOk = 1; }
+SkxMod::~SkxMod() {}
 // ----------------------------------------------------------------------------
 
 
@@ -140,7 +140,7 @@ SqwMod::~SqwMod() {}
 // S(Q,E)
 
 std::tuple<std::vector<t_real>, std::vector<t_real>>
-	SqwMod::disp(t_real dh, t_real dk, t_real dl) const
+	SkxMod::disp(t_real dh, t_real dk, t_real dl) const
 {
 	std::vector<t_real> vecE, vecW[4];
 	if(m_iwhich_disp == 0)
@@ -154,7 +154,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 }
 
 
-t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	t_vec vecq = tl2::make_vec<t_vec>({dh, dk, dl}) - m_vecG;
 
@@ -196,7 +196,7 @@ t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 // ----------------------------------------------------------------------------
 // getters & setters
 
-std::vector<SqwMod::t_var> SqwMod::GetVars() const
+std::vector<SkxMod::t_var> SkxMod::GetVars() const
 {
 	std::vector<t_var> vecVars;
 
@@ -227,7 +227,7 @@ std::vector<SqwMod::t_var> SqwMod::GetVars() const
 }
 
 
-void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
+void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 {
 	if(!vecVars.size()) return;
 
@@ -361,7 +361,7 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 	}
 }
 
-bool SqwMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewVal)
+bool SkxMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewVal)
 {
 	return SqwBase::SetVarIfAvail(strKey, strNewVal);
 }
@@ -372,9 +372,9 @@ bool SqwMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewV
 // ----------------------------------------------------------------------------
 // copy
 
-SqwBase* SqwMod::shallow_copy() const
+SqwBase* SkxMod::shallow_copy() const
 {
-	SqwMod *pMod = new SqwMod();
+	SkxMod *pMod = new SkxMod();
 
 	pMod->m_iProjNeutron = this->m_iProjNeutron;
 	pMod->m_iwhich_disp = this->m_iwhich_disp;
@@ -420,7 +420,7 @@ std::tuple<std::string, std::string, std::string> sqw_info()
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 {
-	return std::make_shared<SqwMod>(strCfgFile);
+	return std::make_shared<SkxMod>(strCfgFile);
 }
 
 
@@ -462,7 +462,7 @@ int main(int argc, char** argv)
 
 	const char* pcCfgFile = argv[1];
 	const char* pcSharedMem = argv[2];
-	SqwProc<SqwMod> proc(pcCfgFile, SqwProcStartMode::START_CHILD, pcSharedMem);
+	SqwProc<SkxMod> proc(pcCfgFile, SqwProcStartMode::START_CHILD, pcSharedMem);
 	return 0;
 }
 

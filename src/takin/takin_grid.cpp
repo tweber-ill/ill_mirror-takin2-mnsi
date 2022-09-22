@@ -24,7 +24,7 @@ using t_quat = boost::math::quaternion<t_real>;
 using t_cplx = std::complex<t_real>;
 
 
-class SqwMod : public SqwBase
+class SkxGridMod : public SqwBase
 {
 	public:
 		using SqwBase::t_var;
@@ -57,8 +57,8 @@ class SqwMod : public SqwBase
 
 
 	public:
-		SqwMod();
-		SqwMod(const std::string& strCfgFile);
+		SkxGridMod();
+		SkxGridMod(const std::string& strCfgFile);
 
 		virtual std::tuple<std::vector<t_real>, std::vector<t_real>>
 			disp(t_real dh, t_real dk, t_real dl) const override;
@@ -76,13 +76,13 @@ class SqwMod : public SqwBase
 // ----------------------------------------------------------------------------
 // constructors
 
-SqwMod::SqwMod()
+SkxGridMod::SkxGridMod()
 {
 	SqwBase::m_bOk = 1;
 }
 
 
-SqwMod::SqwMod(const std::string& strCfgFile) : SqwMod()
+SkxGridMod::SkxGridMod(const std::string& strCfgFile) : SkxGridMod()
 {
 	tl2::log_info("--------------------------------------------------------------------------------");
 	tl2::log_info("This is the Takin skx grid module,");
@@ -127,7 +127,7 @@ SqwMod::SqwMod(const std::string& strCfgFile) : SqwMod()
 // dispersion, spectral weight and structure factor
 
 std::tuple<std::vector<t_real>, std::vector<t_real>>
-	SqwMod::disp(t_real dh, t_real dk, t_real dl) const
+	SkxGridMod::disp(t_real dh, t_real dk, t_real dl) const
 {
 	if(!tl2::vec_equal(m_vecRotFrom, m_vecRotTo, 1e-6))
 	{
@@ -293,7 +293,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 /**
  * S(q,E)
  */
-t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
+t_real SkxGridMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
 	t_real dInc=0;
 	if(!tl2::float_equal(m_dIncAmp, t_real(0)))
@@ -317,7 +317,7 @@ t_real SqwMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 // ----------------------------------------------------------------------------
 // get & set variables
 
-std::vector<SqwMod::t_var> SqwMod::GetVars() const
+std::vector<SkxGridMod::t_var> SkxGridMod::GetVars() const
 {
 	std::vector<t_var> vecVars;
 
@@ -340,7 +340,7 @@ std::vector<SqwMod::t_var> SqwMod::GetVars() const
 }
 
 
-void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
+void SkxGridMod::SetVars(const std::vector<SkxGridMod::t_var>& vecVars)
 {
 	if(!vecVars.size()) return;
 
@@ -367,7 +367,7 @@ void SqwMod::SetVars(const std::vector<SqwMod::t_var>& vecVars)
 }
 
 
-bool SqwMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewVal)
+bool SkxGridMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewVal)
 {
 	return SqwBase::SetVarIfAvail(strKey, strNewVal);
 }
@@ -377,9 +377,9 @@ bool SqwMod::SetVarIfAvail(const std::string& strKey, const std::string& strNewV
 // ----------------------------------------------------------------------------
 // copy
 
-SqwBase* SqwMod::shallow_copy() const
+SqwBase* SkxGridMod::shallow_copy() const
 {
-	SqwMod *pMod = new SqwMod();
+	SkxGridMod *pMod = new SkxGridMod();
 
 	pMod->m_dSigma = this->m_dSigma;
 	pMod->m_dIncAmp = this->m_dIncAmp;
@@ -428,7 +428,7 @@ int main(int argc, char **argv)
 	}
 
 
-	SqwMod mod(argv[1]);
+	SkxGridMod mod(argv[1]);
 	mod.SetVarIfAvail("pol_chan", "0");
 
 	while(1)
@@ -463,7 +463,7 @@ std::tuple<std::string, std::string, std::string> sqw_info()
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 {
-	return std::make_shared<SqwMod>(strCfgFile);
+	return std::make_shared<SkxGridMod>(strCfgFile);
 }
 
 

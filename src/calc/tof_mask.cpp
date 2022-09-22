@@ -70,7 +70,7 @@ bool circular_mask(
 }
 
 
-int main(int argc, char** argv)
+int main()
 {
 	t_real x_mid = PSD_WIDTH/2 - 4;
 	t_real y_mid = PSD_HEIGHT/2 + 4;

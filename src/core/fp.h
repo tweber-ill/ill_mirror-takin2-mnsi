@@ -80,7 +80,7 @@ public:
 
 	virtual void SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px=0., t_real Py=0., t_real Pz=0.) override;
 	virtual void SetProjNeutron(bool b) override { m_bProjNeutron = b; }
-	virtual void SetFilterZeroWeight(bool b) override {}
+	virtual void SetFilterZeroWeight(bool) override {}
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;

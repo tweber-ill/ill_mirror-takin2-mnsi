@@ -58,7 +58,7 @@ ifneq ($(debug_build), 1)
 		STRIP = echo -e "Not stripping"
 	endif
 else
-	OPT = -g -ggdb -Wall -Wextra
+	OPT = -g -ggdb -Wall -Wextra -Weffc++
 	STRIP = echo -e "Not stripping"
 endif
 

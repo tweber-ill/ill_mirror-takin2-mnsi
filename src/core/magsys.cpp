@@ -312,14 +312,14 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
 }
 
 
-#else
+#else  // use dummy implementations if not needed
 
 
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
-	int iMaxOrder,
-	bool bFixXR, bool bFixYR, bool bFixZR,
-	bool bFixXI, bool bFixYI, bool bFixZI)
+	int /*iMaxOrder*/,
+	bool /*bFixXR*/, bool /*bFixYR*/, bool /*bFixZR*/,
+	bool /*bFixXI*/, bool /*bFixYI*/, bool /*bFixZI*/)
 {
 	return 0;
 }
@@ -327,9 +327,9 @@ bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::minimise(
 
 template<class t_real, class t_cplx, int ORDER_FOURIER>
 bool MagSystem<t_real, t_cplx, ORDER_FOURIER>::SaveStates(
-	const char *file, int iMaxOrder,
-	bool bFixXR, bool bFixYR, bool bFixZR,
-	bool bFixXI, bool bFixYI, bool bFixZI) const
+	const char* /*file*/, int /*iMaxOrder*/,
+	bool /*bFixXR*/, bool /*bFixYR*/, bool /*bFixZR*/,
+	bool /*bFixXI*/, bool /*bFixYI*/, bool /*bFixZI*/) const
 {
 	return 0;
 }

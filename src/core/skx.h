@@ -152,7 +152,7 @@ private:
 	std::vector<std::pair<int, int>> m_idx2[3], m_idx3[4];
 
 	// one sixth of the magnetic lattice
-	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu;
+	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu{};
 	// all satellite peaks
 	std::vector<t_vec> m_allpeaks_rlu{};
 

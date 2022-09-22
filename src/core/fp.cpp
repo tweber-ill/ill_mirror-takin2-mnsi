@@ -24,7 +24,7 @@ FP<t_real, t_cplx>::FP()
  * rotates field to internal [001] convention
  */
 template<class t_real, class t_cplx>
-void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t_real Py, t_real Pz)
+void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real /*Px*/, t_real /*Py*/, t_real /*Pz*/)
 {
 	t_vec B = tl2::make_vec<t_vec>( {Bx, By, Bz} );
 	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>( {0, 0, 1} ));
@@ -38,8 +38,7 @@ void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real Px, t
  */
 template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l,
-	t_real minE, t_real maxE) const
+FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_real /*maxE*/) const
 {
 	constexpr auto imag = t_cplx(0,1);
 	const auto ident2 = tl2::unit_m<t_mat_cplx>(2);
@@ -66,7 +65,7 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l,
 	std::tie(q, phi, theta) = tl2::cart_to_sph(qvec[0], qvec[1], qvec[2]);
 
 	// eigensystems
-	auto get_evecs = [&qvec, &q, &dh0, &imag, &sigma, &ident2](t_real phi) -> auto
+	auto get_evecs = [&qvec, &q, &dh0, &imag, &sigma, &ident2]() -> auto
 	{
 		// Hamiltonian
 		t_cplx qp = qvec[0] + imag*qvec[1];
@@ -77,7 +76,6 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l,
 		H += g_chi<t_real>/(2.*q*q) * tl2::make_mat<t_mat_cplx>(
 			{{ qm*qp, qm*qm },
 			{ qp*qp, qm*qp } });
-
 
 		// eigenvectors and -values
 		std::vector<t_vec_cplx> evecs;
@@ -140,19 +138,18 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l,
 	};
 
 
-	auto [ok_phi, evals_phi, evecs_phi] = get_evecs(phi);
-	auto [ok_mphi, evals_mphi, evecs_mphi] = get_evecs(-phi);
-	if(!ok_phi || !ok_mphi)
+	auto [ok, evals, evecs] = get_evecs();
+	if(!ok)
 	{
 		std::vector<t_real> empty;
 		return std::make_tuple(empty, empty, empty, empty, empty);
 	}
 
-	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights(evecs_phi[0], evecs_mphi[0]);
-	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs_phi[1], evecs_mphi[1]);
+	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights(evecs[0], evecs[0]);
+	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs[1], evecs[1]);
 
 
-	std::vector<t_real> Es = { evals_phi[0]*g_g<t_real>*g_muB<t_real>*m_Bc2, evals_phi[1]*g_g<t_real>*g_muB<t_real>*m_Bc2 };
+	std::vector<t_real> Es = { evals[0]*g_g<t_real>*g_muB<t_real>*m_Bc2, evals[1]*g_g<t_real>*g_muB<t_real>*m_Bc2 };
 	std::vector<t_real> ws_all = { std::abs(wAll_p.real()), std::abs(wAll_m.real()) };
 	std::vector<t_real> ws_SF1 = { std::abs(wSF1_p.real()), std::abs(wSF1_m.real()) };
 	std::vector<t_real> ws_SF2 = { std::abs(wSF2_p.real()), std::abs(wSF2_m.real()) };
