@@ -70,9 +70,10 @@ static void show_progress(t_real done, bool init = false)
 
 
 /**
- * create the dynamics module
+ * create the skyrmion, conical, or field-polarised dynamics module
  */
-static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(char dyntype, bool explicit_calc = true)
+static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
+	char dyntype, bool explicit_calc = true)
 {
 	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn;
 

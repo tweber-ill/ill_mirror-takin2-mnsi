@@ -1,12 +1,19 @@
 /**
- * Calculate the ground state fourier components and free energy
+ * Calculate the skyrmion ground state fourier components and free energy
  * @author tweber@ill.fr
  * @date aug-18
  * @license GPLv2 (see 'LICENSE' file)
  */
 
 #include "core/skx.h"
-#include <fstream>
+#include "core/load_gs.h"
+
+#include <iostream>
+
+#include <boost/make_shared.hpp>
+#include <boost/program_options.hpp>
+namespace opts = boost::program_options;
+
 
 #define ORDER DEF_SKX_ORDER
 
@@ -105,12 +112,65 @@ const std::vector<t_real> _allcomps =
 }};
 
 
-int main()
+int main(int argc, char **argv)
 {
+	std::cout << "Skyrmion ground state calculator, use --help for options.\n" << std::endl;
+
+	// argument parser
+	opts::basic_command_line_parser<char> clparser(argc, argv);
+	opts::options_description args("Program arguments");
+
+	bool show_help = false;
+	args.add(boost::make_shared<opts::option_description>(
+		"help", opts::bool_switch(&show_help), "show program usage"));
+
+	/*t_real T_exp = 28.5;
+	args.add(boost::make_shared<opts::option_description>(
+		"T_exp", opts::value<decltype(T_exp)>(&T_exp),
+		("experimental temperature, default: " + std::to_string(T_exp)).c_str()));*/
+
+	t_real T_theo = -1000;
+	args.add(boost::make_shared<opts::option_description>(
+		"T_theo", opts::value<decltype(T_theo)>(&T_theo),
+		("theoretical temperature, default: " + std::to_string(T_theo)).c_str()));
+
+	t_real B_theo = 25.052945;
+	args.add(boost::make_shared<opts::option_description>(
+		"B_theo", opts::value<decltype(B_theo)>(&B_theo),
+		("theoretical field, default: " + std::to_string(B_theo)).c_str()));
+
+	bool B_half_BC2 = false;
+	args.add(boost::make_shared<opts::option_description>(
+		"B_half_BC2", opts::bool_switch(&B_half_BC2), "set B to BC2/2"));
+
+	/*bool B_from_exp = false;
+	args.add(boost::make_shared<opts::option_description>(
+		"B_from_exp", opts::bool_switch(&B_from_exp), "set B from experimental value"));*/
+
+	std::string outfile = "skx_gs.bin";
+	args.add(boost::make_shared<opts::option_description>(
+		"outfile", opts::value<decltype(outfile)>(&outfile),
+		("output file, default: " + outfile).c_str()));
+
+
+	clparser.options(args);
+	opts::basic_parsed_options<char> parsedopts = clparser.run();
+
+	opts::variables_map opts_map;
+	opts::store(parsedopts, opts_map);
+	opts::notify(opts_map);
+
+	if(show_help)
+	{
+		std::cout << args << std::endl;
+		return 0;
+	}
+
+
 	constexpr auto imag = t_cplx(0, 1);
 
 	Skx<t_real, t_cplx, ORDER> skx;
-	skx.SetDebug(1);
+	skx.SetDebug(true);
 
 	// set initial fourier components
 	{
@@ -130,10 +190,11 @@ int main()
 		skx.SetFourier(fourier);
 	}
 
-	const t_real T_theo = -1000;
 	skx.SetT(T_theo, false);
 
-	const t_real B_theo = skx.GetBC2(false)/2.;
+	if(B_half_BC2)
+		B_theo = skx.GetBC2(false)/2.;
+
 	skx.SetB(B_theo, false);
 	//skx.SetB(25., false);
 
@@ -151,8 +212,9 @@ int main()
 	bool ok = skx.minimise(ORDER, 1,1,0, 0,1,1);
 	std::cout << "F_min = " << skx.F() << " (ok: " << std::boolalpha << ok << ")" << std::endl;
 
-	std::cout << "\nFourier components:\n";
+	std::cout << "\nFourier components for use in skx_default_gs.cxx:\n";
 	const auto& fouriers = skx.GetFourier();
+	// iterate peaks
 	for(std::size_t fourier_idx=0; fourier_idx<fouriers.size(); ++fourier_idx)
 	{
 		const auto& fourier = fouriers[fourier_idx];
@@ -167,6 +229,15 @@ int main()
 			std::cout << "// (" << pk[0] << ", " << pk[1] << ")";
 		}
 		std::cout << std::endl;
+	}
+
+	// also save the fourier components to a binary file
+	if(outfile != "")
+	{
+		if(!save_gs<decltype(fouriers)>(outfile, 's', T_theo, B_theo, fouriers))
+			std::cerr << "\nError: Could not open output file \"" << outfile << "\"." << std::endl;
+		else
+			std::cout << "\nWrote skyrmion ground state to file \"" << outfile << "\"." << std::endl;
 	}
 
 	return 0;

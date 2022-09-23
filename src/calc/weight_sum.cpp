@@ -54,7 +54,7 @@ void calc_disp(const t_vec& Gvec,
 	heli.SetT(skxgs_T, false);
 	heli.SetT(T, true);
 
-	t_real bc2 = skx.GetBC2(false);
+	//t_real bc2 = skx.GetBC2(false);
 	skx.SetB(/*bc2/2.*/ skxgs_B, false);
 	heli.SetB(/*bc2/2.*/ skxgs_B, false);
 	//heli.SetB(0.17, true);

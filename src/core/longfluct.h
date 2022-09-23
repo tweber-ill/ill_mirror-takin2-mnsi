@@ -5,6 +5,9 @@
  * @license GPLv2 (see 'LICENSE' file)
  */
 
+#ifndef __LONGFLUCT_H__
+#define __LONGFLUCT_H__
+
 #define USE_LAPACK
 #include "tlibs2/libs/math17.h"
 
@@ -47,3 +50,6 @@ private:
 	t_real m_inv_correl = 0.1;
 	t_real m_A = 0.;
 };
+
+#endif
+

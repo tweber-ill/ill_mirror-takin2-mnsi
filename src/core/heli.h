@@ -80,7 +80,7 @@ public:
 	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm=true) override;
 	virtual const std::vector<t_vec_cplx>& GetFourier() const override { return m_fourier; }
 
-	virtual void SetB(t_real B, bool exp=true) override
+	virtual void SetB(t_real B, bool exp = true) override
 	{
 		if(exp)
 			m_B = B;
@@ -88,7 +88,7 @@ public:
 			m_B_theo = B;
 	}
 
-	virtual void SetT(t_real T, bool exp=true) override
+	virtual void SetT(t_real T, bool exp = true) override
 	{
 		if(exp)
 		{
@@ -102,7 +102,7 @@ public:
 		}
 	}
 
-	virtual t_real GetBC2(bool exp=true) const override
+	virtual t_real GetBC2(bool exp = true) const override
 	{
 		return exp ? m_Bc2 : m_Bc2_theo;
 	}

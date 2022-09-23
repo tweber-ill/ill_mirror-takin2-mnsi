@@ -246,7 +246,7 @@ int main(int argc, char** argv)
 {
 	using t_float_src = double;  // input grid data type
 
-	std::cout << "Takin grid version 1 to version 2 converter.\n" << std::endl;
+	std::cout << "Takin grid version 1 to version 2 converter, use --help for options.\n" << std::endl;
 
 	// arguments
 	bool show_help = false;

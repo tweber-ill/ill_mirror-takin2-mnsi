@@ -70,7 +70,7 @@ constexpr t_real g_kh_rlu(t_real T)
  *	- Experimental values were measured and provided by A. Bauer (http://doi.org/10.1103/PhysRevB.85.214418).
  */
 template<class t_real = double>
-t_real get_bc2(t_real T, bool use_theo_units=1, bool use_dipole=1)
+t_real get_bc2(t_real T, bool use_theo_units = true, bool use_dipole = true)
 {
 	if(use_theo_units)
 	{
@@ -116,7 +116,7 @@ t_real get_bc2(t_real T, bool use_theo_units=1, bool use_dipole=1)
  * get field magnitude in theoretical units from experimental one
  */
 template<class t_real = double>
-t_real get_B_exp_from_theo(t_real T_theo, t_real T_exp, t_real B_exp, bool use_dipole=1)
+t_real get_B_theo(t_real T_theo, t_real T_exp, t_real B_exp, bool use_dipole = true)
 {
 	t_real bc2_theo = get_bc2(T_theo, true, use_dipole);
 	t_real bc2_exp = get_bc2(T_exp, false, use_dipole);
