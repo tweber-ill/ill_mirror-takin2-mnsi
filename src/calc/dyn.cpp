@@ -8,6 +8,7 @@
 #include "core/heli.h"
 #include "core/skx.h"
 #include "core/fp.h"
+#include "core/load_gs.h"
 
 #include <fstream>
 #include <thread>
@@ -73,14 +74,29 @@ static void show_progress(t_real done, bool init = false)
  * create the skyrmion, conical, or field-polarised dynamics module
  */
 static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
-	char dyntype, bool explicit_calc = true)
+	char dyntype, bool explicit_calc = true, const std::string& gs_file = "")
 {
 	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn;
 
 	if(dyntype == 's')
 	{
 		//std::cout << "Calculating skyrmion dispersion." << std::endl;
+
+		// get default ground state
 		auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+
+		// optionally load a given ground state file
+		if(gs_file != "")
+		{
+			bool ok = false;
+			std::tie(ok, skxgs_T, skxgs_B, skxgs) =
+				load_gs<std::decay_t<decltype(skxgs)>>(gs_file, 's');
+			if(!ok)
+			{
+				std::cerr << "Error: Could not load skyrmion ground state." << std::endl;
+				return nullptr;
+			}
+		}
 
 		auto skx = std::make_shared<Skx<t_real, t_cplx, DEF_SKX_ORDER>>();
 		skx->SetFourier(skxgs);
@@ -93,7 +109,22 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 	else if(dyntype == 'h')
 	{
 		//std::cout << "Calculating helical dispersion." << std::endl;
+
+		// get default ground state
 		auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
+
+		// optionally load a given ground state file
+		if(gs_file != "")
+		{
+			bool ok = false;
+			std::tie(ok, heligs_T, heligs_B, heligs) =
+				load_gs<std::decay_t<decltype(heligs)>>(gs_file, 'h');
+			if(!ok)
+			{
+				std::cerr << "Error: Could not load conical ground state." << std::endl;
+				return nullptr;
+			}
+		}
 
 		auto heli = std::make_shared<Heli<t_real, t_cplx, DEF_HELI_ORDER>>();
 		heli->SetExplicitCalc(explicit_calc);
@@ -111,7 +142,7 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 	}
 	else
 	{
-		std::cerr << "Unknown dynamics type selected." << std::endl;
+		std::cerr << "Error: Unknown dynamics type selected." << std::endl;
 		return nullptr;
 	}
 
@@ -131,12 +162,14 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	const std::string& outfile, bool bSwapQParaQPerp=0,
 	t_real T=-1., t_real B=-1.,
 	t_real qrange = 0.125, t_real delta = 0.001,
-	bool explicit_calc = true)
+	bool explicit_calc = true,
+	const std::string& gs_file = "")
 {
 	tl2::Stopwatch<t_real> timer;
 	timer.start();
 
-	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn = create_dyn(dyntype, explicit_calc);
+	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn =
+		create_dyn(dyntype, explicit_calc, gs_file);
 	if(!dyn)
 		return;
 
@@ -325,12 +358,14 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
 	t_real T=-1., t_real B=-1., bool explicit_calc = true,
+	const std::string& gs_file = "",
 	unsigned int num_threads = 4)
 {
 	tl2::Stopwatch<t_real> timer;
 	timer.start();
 
-	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn = create_dyn(dyntype, explicit_calc);
+	std::shared_ptr<MagDynamics<t_real, t_cplx>> dyn =
+		create_dyn(dyntype, explicit_calc, gs_file);
 	if(!dyn)
 		return;
 
@@ -501,6 +536,7 @@ int main(int argc, char **argv)
 	bool explicit_calc = true;
 	bool use_para_perp_calc = true;
 	std::string outfile = "dyn.dat";
+	std::string gs_file = "";
 
 	// arguments for arbitrary Q path calculation
 	t_real qh_start = 0., qk_start = 0., ql_start = 0.;
@@ -594,6 +630,10 @@ int main(int argc, char **argv)
 			args.add(boost::make_shared<opts::option_description>(
 				"outfile", opts::value<decltype(outfile)>(&outfile),
 				"output file name"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"gsfile", opts::value<decltype(gs_file)>(&gs_file),
+				"ground state file name"));
 
 			args.add(boost::make_shared<opts::option_description>(
 				"Gx", opts::value<decltype(Gx)>(&Gx),
@@ -735,7 +775,8 @@ int main(int argc, char **argv)
 			qperp, qperp2,
 			outfile, !alongqpara,
 			T, B, qrange, qdelta,
-			explicit_calc);
+			explicit_calc,
+			gs_file);
 	}
 	else
 	{
@@ -748,7 +789,8 @@ int main(int argc, char **argv)
 			qh_end, qk_end, ql_end,
 			Rx,Ry,Rz, tl2::d2r(Ralpha),
 			num_points, outfile,
-			T, B, explicit_calc);
+			T, B, explicit_calc,
+			gs_file, num_threads);
 	}
 
 	return 0;

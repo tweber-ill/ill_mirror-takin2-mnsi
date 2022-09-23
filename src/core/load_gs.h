@@ -10,20 +10,90 @@
 
 #include <iostream>
 #include <fstream>
+#include <tuple>
+
+#include "tlibs2/libs/math17.h"
 
 
-template<class t_fouriers, class t_real = decltype(t_fouriers{}[0][0].real())>
+/**
+ * load ground state configuration
+ */
+template<class t_fouriers, class t_real = std::decay_t<decltype(t_fouriers{}[0][0].real())>>
+std::tuple<bool, t_real /*T*/, t_real /*B*/, t_fouriers>
+load_gs(const std::string& infile, char expected_gs_type = '*')
+{
+	std::ifstream ifstr(infile, std::ios_base::binary);
+	if(!ifstr)
+	{
+		std::cerr << "Error: Could not open input ground state file \""
+			<< infile << "\"." << std::endl;
+		return std::make_tuple(false, 0., 0., t_fouriers{});
+	}
+
+	// check magic values
+	char magic[4];
+	ifstr.read(magic, sizeof(magic));
+	if(magic[0]!='g' || magic[1]!='s' || magic[2]!='_')
+	{
+		std::cerr << "Error: File \"" << infile << "\""
+			<< " does not have a valid ground state." << std::endl;
+		return std::make_tuple(false, 0., 0., t_fouriers{});
+	}
+
+	// check ground state type
+	if(expected_gs_type != '*' && expected_gs_type != magic[3])
+	{
+		std::cerr << "Error: File \"" << infile << "\""
+			<< " has a mismatching ground state type." << std::endl;
+		return std::make_tuple(false, 0., 0., t_fouriers{});
+	}
+
+	// read temperature and field
+	t_real T_theo = 0.;
+	t_real B_theo = 0.;
+	ifstr.read((char*)&T_theo, sizeof(T_theo));
+	ifstr.read((char*)&B_theo, sizeof(B_theo));
+
+	// read fourier components
+	t_fouriers fouriers;
+
+	using t_vec_cplx = std::decay_t<decltype(fouriers[0])>;
+	using t_cplx = std::decay_t<decltype(t_vec_cplx{}[0])>;
+
+	while(true)
+	{
+		t_real components[6]{};
+		if(!ifstr.read((char*)components, sizeof(components)))
+			break;
+
+		fouriers.emplace_back(tl2::make_vec<t_vec_cplx>(
+		{
+			t_cplx{components[0], components[1]},
+			t_cplx{components[2], components[3]},
+			t_cplx{components[4], components[5]}
+		}));
+	}
+
+	return std::make_tuple(true, T_theo, B_theo, fouriers);
+}
+
+
+/**
+ * save ground state configuration
+ */
+template<class t_fouriers, class t_real = std::decay_t<decltype(t_fouriers{}[0][0].real())>>
 bool save_gs(const std::string& outfile, char gs_type,
 	t_real T_theo, t_real B_theo, const t_fouriers& fouriers)
 {
 	std::ofstream ofstr(outfile, std::ios_base::binary);
 	if(!ofstr)
 	{
-		std::cerr << "Error: Could not open output file \"" << outfile << "\"." << std::endl;
+		std::cerr << "Error: Could not open output ground state file \""
+			<< outfile << "\"." << std::endl;
 		return false;
 	}
 
-	// write magic number
+	// write magic values
 	const char magic[] = {'g', 's', '_', gs_type};
 	ofstr.write(magic, sizeof(magic));
 
