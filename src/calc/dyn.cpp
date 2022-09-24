@@ -93,7 +93,8 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 				load_gs<std::decay_t<decltype(skxgs)>>(gs_file, 's');
 			if(!ok)
 			{
-				std::cerr << "Error: Could not load skyrmion ground state." << std::endl;
+				std::cerr << "Error: Could not load skyrmion ground state \""
+					<< gs_file << "\"." << std::endl;
 				return nullptr;
 			}
 		}
@@ -121,7 +122,8 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 				load_gs<std::decay_t<decltype(heligs)>>(gs_file, 'h');
 			if(!ok)
 			{
-				std::cerr << "Error: Could not load conical ground state." << std::endl;
+				std::cerr << "Error: Could not load conical ground state \""
+					<< gs_file << "\"." << std::endl;
 				return nullptr;
 			}
 		}
@@ -514,6 +516,15 @@ static void calc_disp_path(char dyntype, bool do_proj,
 }
 
 
+/**
+ * removes remaining characters in istream
+ */
+static inline void clear_line(std::istream& istr)
+{
+	istr.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+
 int main(int argc, char **argv)
 {
 	std::cout
@@ -554,46 +565,52 @@ int main(int argc, char **argv)
 			<< std::endl;
 
 		std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
-		std::cin >> dyntype;
+		std::cin >> dyntype; clear_line(std::cin);
 		dyntype = std::tolower(dyntype);
 
-		std::cout << "G = ";
-		std::cin >> Gx >> Gy >> Gz;
+		std::cout << "G [vec] = ";
+		std::cin >> Gx >> Gy >> Gz; clear_line(std::cin);
 		std::cout << "q_range = ";
-		std::cin >> qrange;
+		std::cin >> qrange; clear_line(std::cin);
 		std::cout << "q_delta = ";
-		std::cin >> qdelta;
-		std::cout << "B = ";
-		std::cin >> Bx >> By >> Bz;
+		std::cin >> qdelta; clear_line(std::cin);
+		std::cout << "B [vec] = ";
+		std::cin >> Bx >> By >> Bz; clear_line(std::cin);
 
 		if(dyntype == 'h' || dyntype == 'f')
 		{
 			std::cout << "|B| = ";
-			std::cin >> B;
+			std::cin >> B; clear_line(std::cin);
 			std::cout << "T = ";
-			std::cin >> T;
+			std::cin >> T; clear_line(std::cin);
 
 			if(dyntype == 'h')
 			{
 				std::cout << "Explicit calculation? [1/0]: ";
-				std::cin >> explicit_calc;
+				std::cin >> explicit_calc; clear_line(std::cin);
 			}
 		}
 		else if(dyntype == 's')
 		{
-			std::cout << "pinning = ";
-			std::cin >> Px >> Py >> Pz;
+			std::cout << "pinning [vec] = ";
+			std::cin >> Px >> Py >> Pz; clear_line(std::cin);
 		}
 		std::cout << "Calculate S_perp? [1/0]: ";
-		std::cin >> do_proj;
+		std::cin >> do_proj; clear_line(std::cin);
 		std::cout << "Query dispersion along q_para || B? [1/0]: ";
-		std::cin >> alongqpara;
-		std::cout << "q_perp = ";
-		std::cin >> qperpx >> qperpy >> qperpz;
+		std::cin >> alongqpara; clear_line(std::cin);
+		std::cout << "q_perp [vec] = ";
+		std::cin >> qperpx >> qperpy >> qperpz; clear_line(std::cin);
 		std::cout << "|q_perp| = ";
-		std::cin >> qperp;
+		std::cin >> qperp; clear_line(std::cin);
 		std::cout << "|q_perp_2| = ";
-		std::cin >> qperp2;
+		std::cin >> qperp2; clear_line(std::cin);
+
+		if(dyntype == 's' || (dyntype == 'h' && !explicit_calc))
+		{
+			std::cout << "Ground state file [empty for default]: ";
+			std::getline(std::cin, gs_file);
+		}
 	}
 	else
 	{
