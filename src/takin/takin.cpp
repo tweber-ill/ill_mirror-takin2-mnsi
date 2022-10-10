@@ -190,7 +190,7 @@ t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 			dS += tl2::gauss_model(dE, vecE[iE], m_dSigma, vecW[m_iPolChan][iE], t_real(0));
 	}
 
-	return m_dS0*dS * tl2::bose_cutoff(dE, m_dT, m_dcut) + dInc;
+	return m_dS0*dS * tl2::bose_cutoff(dE, m_dT, m_dcut) + dInc + dS_lf;
 }
 // ----------------------------------------------------------------------------
 

@@ -28,7 +28,7 @@
 		<E_from>-9.890000e-02</E_from>
 		<E_to>9.014000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
-		<S_offs>1.e-5</S_offs>
+		<S_offs>0.5e-5</S_offs>
 		<S_scale>4</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
@@ -43,7 +43,7 @@
 		<h_to>1.060000e+00</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>thales3030.taz</instr>
+		<instr>thales3030pg.taz</instr>
 		<k_from>9.397000e-01</k_from>
 		<k_to>9.399000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>

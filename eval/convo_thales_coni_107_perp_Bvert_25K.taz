@@ -19,7 +19,7 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1665185333.047005</timestamp>
+		<timestamp>1665387853.11372</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>t_weber</user>
 		<version>2.2</version>
@@ -43,7 +43,7 @@
 		<h_to>1.070200e+00</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>thales3030.taz</instr>
+		<instr>thales3030pg.taz</instr>
 		<k_from>9.300000e-01</k_from>
 		<k_to>9.300000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>
@@ -112,7 +112,7 @@
 			<T>24.98</T>
 			<bose_cutoff>0.0001</bose_cutoff>
 			<explicit_calc>1</explicit_calc>
-			<inc_amp>15</inc_amp>
+			<inc_amp>25</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0.5</lf_gamma>
