@@ -42,7 +42,7 @@
 		<h_to>8.899000e-01</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>tasp.taz</instr>
+		<instr>instr/tasp.taz</instr>
 		<k_from>1.000200e+00</k_from>
 		<k_to>1.000000e+00</k_to>
 		<k_to_2>1.070000e+00</k_to_2>

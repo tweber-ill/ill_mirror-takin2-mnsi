@@ -42,7 +42,7 @@
 		<h_to>9.325000e-01</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>mira3030_2.taz</instr>
+		<instr>instr/mira3030_2.taz</instr>
 		<k_from>9.325000e-01</k_from>
 		<k_to>9.325000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>

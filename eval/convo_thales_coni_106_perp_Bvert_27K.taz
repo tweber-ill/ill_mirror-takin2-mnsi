@@ -43,7 +43,7 @@
 		<h_to>1.060100e+00</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>thales3030pg.taz</instr>
+		<instr>instr/thales3030pg.taz</instr>
 		<k_from>9.400000e-01</k_from>
 		<k_to>9.399000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>

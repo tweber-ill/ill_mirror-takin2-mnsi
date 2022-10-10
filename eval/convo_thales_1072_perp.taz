@@ -42,7 +42,7 @@
 		<h_to>1.072200e+00</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
-		<instr>thales.taz</instr>
+		<instr>instr/thales.taz</instr>
 		<k_from>9.280000e-01</k_from>
 		<k_to>9.282000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>
