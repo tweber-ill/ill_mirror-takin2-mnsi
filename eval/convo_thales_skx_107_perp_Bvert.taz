@@ -19,7 +19,7 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1665387968.482631</timestamp>
+		<timestamp>1665497559.322043</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>t_weber</user>
 		<version>2.2</version>
@@ -28,8 +28,8 @@
 		<E_from>-1.508000e-01</E_from>
 		<E_to>1.039500e+00</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
-		<S_offs>1.e-5</S_offs>
-		<S_scale>4</S_scale>
+		<S_offs>0.5e-5</S_offs>
+		<S_scale>5</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
 		<algo_idx>2</algo_idx>
@@ -112,16 +112,16 @@
 			<T>28.24</T>
 			<bose_cutoff>0.0001</bose_cutoff>
 			<explicit_calc>1</explicit_calc>
-			<inc_amp>25</inc_amp>
+			<inc_amp>17</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
-			<lf_A>0</lf_A>
-			<lf_gamma>0.5</lf_gamma>
+			<lf_A>50</lf_A>
+			<lf_gamma>2</lf_gamma>
 			<lf_invcorrel>0.1</lf_invcorrel>
 			<lf_only>0</lf_only>
 			<only_mode>-1</only_mode>
 			<pol_chan>0</pol_chan>
 			<proj_neutron>1</proj_neutron>
-			<sigma>0.015</sigma>
+			<sigma>0.05</sigma>
 			<which_disp>0</which_disp>
 		</sqw_params>
 		<sqw_ranges>
