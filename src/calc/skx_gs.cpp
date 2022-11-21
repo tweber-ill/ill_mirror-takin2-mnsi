@@ -147,6 +147,11 @@ int main(int argc, char **argv)
 	args.add(boost::make_shared<opts::option_description>(
 		"B_from_exp", opts::bool_switch(&B_from_exp), "set B from experimental value"));*/
 
+	std::string gs_file = "";
+	args.add(boost::make_shared<opts::option_description>(
+		"gsfile", opts::value<decltype(gs_file)>(&gs_file),
+		"initial ground state file name"));
+
 	std::string outfile = "skx_gs.bin";
 	args.add(boost::make_shared<opts::option_description>(
 		"outfile", opts::value<decltype(outfile)>(&outfile),
@@ -172,9 +177,32 @@ int main(int argc, char **argv)
 	Skx<t_real, t_cplx, ORDER> skx;
 	skx.SetDebug(true);
 
-	// set initial fourier components
+	// load a given initial ground state
+	std::vector<ublas::vector<t_cplx>> fourier;
+	if(gs_file != "")
 	{
-		std::vector<ublas::vector<t_cplx>> fourier;
+		bool ok = false;
+		t_real T_theo_file, B_theo_file;
+		std::tie(ok, T_theo_file, B_theo_file, fourier) =
+			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 's');
+		if(!ok)
+		{
+			std::cerr << "Error: Could not load skx ground state \""
+				<< gs_file << "\"." << std::endl;
+			return -1;
+		}
+
+		// if no explicit temperature or field is given on the command line,
+		// use the ones from the file
+		if(opts_map.find("T_theo") == opts_map.end())
+			T_theo = T_theo_file;
+		if(opts_map.find("B_theo") == opts_map.end())
+			B_theo = B_theo_file;
+	}
+
+	// set default initial fourier components
+	else
+	{
 		fourier.reserve(_allcomps.size()/3);
 
 		for(std::size_t comp=0; comp<_allcomps.size(); comp+=3)
@@ -186,10 +214,9 @@ int main(int argc, char **argv)
 				_allcomps[comp+2]
 			}));
 		}
-
-		skx.SetFourier(fourier);
 	}
 
+	skx.SetFourier(fourier);
 	skx.SetT(T_theo, false);
 
 	if(B_half_BC2)

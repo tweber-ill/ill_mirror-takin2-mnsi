@@ -19,6 +19,7 @@ namespace opts = boost::program_options;
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
+constexpr const auto j = t_cplx(0, 1);
 
 
 int main(int argc, char** argv)
@@ -66,6 +67,11 @@ int main(int argc, char** argv)
 		"scale", opts::value<decltype(scale)>(&scale),
 		("scaling factor, default: " + std::to_string(scale)).c_str()));
 
+	std::string gs_file = "";
+	args.add(boost::make_shared<opts::option_description>(
+		"gsfile", opts::value<decltype(gs_file)>(&gs_file),
+		"initial ground state file name"));
+
 	std::string outfile = "heli_gs.bin";
 	args.add(boost::make_shared<opts::option_description>(
 		"outfile", opts::value<decltype(outfile)>(&outfile),
@@ -88,12 +94,38 @@ int main(int argc, char** argv)
 
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
-	const auto j = t_cplx(0, 1);
-	std::vector<ublas::vector<t_cplx>> fourier{
-		tl2::make_vec<ublas::vector<t_cplx>>({0, 0, scale0}),
-		// helical order => Re{M} perp. Im{M}
-		tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) / std::sqrt(2) * scale,
- 	};
+	// load a given initial ground state
+	std::vector<ublas::vector<t_cplx>> fourier;
+	if(gs_file != "")
+	{
+		bool ok = false;
+		t_real T_theo_file, B_theo_file;
+		std::tie(ok, T_theo_file, B_theo_file, fourier) =
+			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 'h');
+		if(!ok)
+		{
+			std::cerr << "Error: Could not load conical ground state \""
+				<< gs_file << "\"." << std::endl;
+			return -1;
+		}
+
+		// if no explicit temperature or field is given on the command line,
+		// use the ones from the file
+		if(opts_map.find("T_theo") == opts_map.end())
+			T_theo = T_theo_file;
+		if(opts_map.find("B_theo") == opts_map.end())
+			B_theo = B_theo_file;
+	}
+
+	// set a default initial ground state
+	else
+	{
+		fourier = std::vector<ublas::vector<t_cplx>>{
+			tl2::make_vec<ublas::vector<t_cplx>>({0, 0, scale0}),
+			// helical order => Re{M} perp. Im{M}
+			tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) / std::sqrt(2) * scale,
+ 		};
+	}
 
 	heli.SetFourier(fourier);
 	heli.SetT(T_theo, false);
@@ -102,7 +134,6 @@ int main(int argc, char** argv)
 		B_theo = heli.GetBC2(false)/2.;
 	else if(B_from_exp)
 		B_theo = get_B_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
-
 	heli.SetB(B_theo, false);
 
 	// print the table of fourier components
