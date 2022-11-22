@@ -54,6 +54,7 @@ class SkxGridMod : public SqwBase
 		t_real m_hmin=0., m_hmax=0., m_hstep=0.;
 		t_real m_kmin=0., m_kmax=0., m_kstep=0.;
 		t_real m_lmin=0., m_lmax=0., m_lstep=0.;
+		std::size_t m_hsize=0, m_ksize=0, m_lsize=0;
 
 
 	public:
@@ -107,12 +108,18 @@ SkxGridMod::SkxGridMod(const std::string& strCfgFile) : SkxGridMod()
 		m_lmax = prop.QueryAndParse<t_real>("dims/lmax");
 		m_lstep = prop.QueryAndParse<t_real>("dims/lstep");
 
+		// max dimensions
+		m_hsize = std::size_t(std::round((m_hmax - m_hmin) / m_hstep));
+		m_ksize = std::size_t(std::round((m_kmax - m_kmin) / m_kstep));
+		m_lsize = std::size_t(std::round((m_lmax - m_lmin) / m_lstep));
+
 		SqwBase::m_bOk = 1;
 
 		tl2::log_info("Index file: ", m_strIndexFile, ", data file: ", m_strDataFile, ".");
-		tl2::log_info("h range: ", m_hmin, " .. ", m_hmax, ", step: ", m_hstep);
-		tl2::log_info("k range: ", m_kmin, " .. ", m_kmax, ", step: ", m_kstep);
-		tl2::log_info("l range: ", m_lmin, " .. ", m_lmax, ", step: ", m_lstep);
+		tl2::log_info("h range: ", m_hmin, " .. ", m_hmax, ", step: ", m_hstep, ".");
+		tl2::log_info("k range: ", m_kmin, " .. ", m_kmax, ", step: ", m_kstep, ".");
+		tl2::log_info("l range: ", m_lmin, " .. ", m_lmax, ", step: ", m_lstep, ".");
+		tl2::log_info("Grid size: ", m_hsize, " x ", m_ksize, " x ", m_lsize, ".");
 	}
 	else
 	{
@@ -175,22 +182,17 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 		if(k >= m_kmax) k = m_kmax - m_kstep;
 		if(l >= m_lmax) l = m_lmax - m_lstep;
 
-		// max dimensions
-		std::size_t iHSize = std::size_t(((m_hmax-m_hmin) / m_hstep));
-		std::size_t iKSize = std::size_t(((m_kmax-m_kmin) / m_kstep));
-		std::size_t iLSize = std::size_t(((m_lmax-m_lmin) / m_lstep));
-
 		// position indices
 		std::size_t iH = std::size_t(std::round(((h - m_hmin) / m_hstep)));
 		std::size_t iK = std::size_t(std::round(((k - m_kmin) / m_kstep)));
 		std::size_t iL = std::size_t(std::round(((l - m_lmin) / m_lstep)));
 
 		// clamp again
-		if(iH >= iHSize) iH = iHSize-1;
-		if(iK >= iKSize) iK = iKSize-1;
-		if(iL >= iLSize) iL = iLSize-1;
+		if(iH >= m_hsize) iH = m_hsize-1;
+		if(iK >= m_ksize) iK = m_ksize-1;
+		if(iL >= m_lsize) iL = m_lsize-1;
 
-		return iH*iKSize*iLSize + iK*iLSize + iL;
+		return iH*m_ksize*m_lsize + iK*m_lsize + iL;
 	};
 
 
@@ -403,12 +405,15 @@ SqwBase* SkxGridMod::shallow_copy() const
 	pMod->m_hmin = this->m_hmin;
 	pMod->m_hmax = this->m_hmax;
 	pMod->m_hstep = this->m_hstep;
+	pMod->m_hsize = this->m_hsize;
 	pMod->m_kmin = this->m_kmin;
 	pMod->m_kmax = this->m_kmax;
 	pMod->m_kstep = this->m_kstep;
+	pMod->m_ksize = this->m_ksize;
 	pMod->m_lmin = this->m_lmin;
 	pMod->m_lmax = this->m_lmax;
 	pMod->m_lstep = this->m_lstep;
+	pMod->m_lsize = this->m_lsize;
 
 	return pMod;
 }
