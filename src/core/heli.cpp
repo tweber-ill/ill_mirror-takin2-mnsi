@@ -8,12 +8,14 @@
  *	- M. Kugler, G. Brandl, et al., Phys. Rev. Lett. 115, 097203 (2015), https://doi.org/10.1103/PhysRevLett.115.097203
  *	- Personal communications with M. Garst, 2014-2019.
  * @desc This file is based on:
- *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
+ *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018.
  *	- The 2015 and 2016 Python optimised implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
  *	  This present version started as a C++ port of G. Brandl's and M. Kugler's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
+ *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
+ *	  that also included improvements to the helimagnon model and code.
  *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model,
- *	  that also included improvements to the helimagnon code, which we ported to C++ in the present version.
+ *	  that also included improvements to the helimagnon code.
  * @license GPLv2 (see 'LICENSE' file)
  */
 
@@ -179,11 +181,10 @@ std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::v
 Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	const t_mat_cplx& projNeutron, t_real minE, t_real maxE) const
 {
-	constexpr t_cplx imag = t_cplx(0, 1);
-
 	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
 
+	constexpr const t_cplx imag = t_cplx(0, 1);
 	t_mat_cplx Mx2d, Fluc2d;
 	t_real w_scale = 1.;
 	std::size_t mxrowbegin = 0;
@@ -237,7 +238,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 				{
 					int k = 3 - i - j;                // third index in {0,1,2}
 					t_real sign = (k==1 ? 1. : -1.);  // - + -
-					mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0,1)*Q[k];
+					mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*imag*Q[k];
 					mat(j, i) = std::conj(mat(i, j));
 				}
 			}
@@ -274,10 +275,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	}
 	else
 	{
-		const t_cplx hx = qh - imag*qk;
-		constexpr t_real A1 = g_hoc<t_real>;
-		constexpr t_real A2 = A1*A1;
-		constexpr t_real A3 = A2*A1;
+		constexpr t_real A1 = g_hoc<t_real>, A2 = A1*A1, A3 = A2*A1;
 		constexpr t_real interact = 88.;
 
 		static const t_real Dqmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
@@ -298,6 +296,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 
 		const t_real M_amp = m_B / m_Bc2;
 		const t_real heli_amp = std::sqrt(0.5 - 0.5*M_amp*M_amp);
+		const t_cplx hx = qh - imag*qk;
 
 		Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 		Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);

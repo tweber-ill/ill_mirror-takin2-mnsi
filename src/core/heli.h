@@ -8,12 +8,14 @@
  *	- M. Kugler, G. Brandl, et al., Phys. Rev. Lett. 115, 097203 (2015), https://doi.org/10.1103/PhysRevLett.115.097203
  *	- Personal communications with M. Garst, 2014-2019.
  * @desc This file is based on:
- *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018,
+ *	- The descriptions and Mathematica implementations of the different helimagnon model versions by M. Garst and J. Waizner, 2014-2018.
  *	- The 2015 and 2016 optimised Python implementations by G. Brandl and M. Kugler of the first version of the helimagnon model.
  *	  This present version started as a C++ port of G. Brandl's and M. Kugler's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
+ *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
+ *	  that also included improvements to the helimagnon model and code.
  *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model,
- *	  that also included improvements to the helimagnon code, which we ported to C++ in the present version.
+ *	  that also included improvements to the helimagnon code.
  * @license GPLv2 (see 'LICENSE' file)
  */
 

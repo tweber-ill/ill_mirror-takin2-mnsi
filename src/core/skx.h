@@ -7,7 +7,7 @@
  *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
  *	- Personal communications with M. Garst, 2017-2020.
  * @desc This file is based on:
- *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020,
+ *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020.
  *	- The 2016 optimised Python implementations by M. Kugler and G. Brandl of the first version of the skyrmion model.
  *	  This present version started as a C++ port of M. Kugler's and G. Brandl's Python implementation,
  *	  that was then adapted to new theoretical model revisions provided by M. Garst.
