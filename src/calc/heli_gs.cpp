@@ -130,8 +130,9 @@ int main(int argc, char** argv)
 	heli.SetFourier(fourier);
 	heli.SetT(T_theo, false);
 
+	t_real bc2 = heli.GetBC2(false);
 	if(B_half_BC2)
-		B_theo = heli.GetBC2(false)/2.;
+		B_theo = bc2/2.;
 	else if(B_from_exp)
 		B_theo = get_B_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
 	heli.SetB(B_theo, false);
@@ -140,7 +141,8 @@ int main(int argc, char** argv)
 	std::cout.precision(8);
 	std::cout << "Order: " << ORDER << std::endl;
 	std::cout << "T_theo = " << T_theo << ", T_exp = " << T_exp << std::endl;
-	std::cout << "B_theo = " << B_theo << std::endl;
+	std::cout << "B_theo = " << B_theo << ", BC2_theo = " << bc2
+		<< ", fraction = " << B_theo/bc2 << std::endl;
 	std::cout << "F_start = " << heli.F() << std::endl;
 	bool ok = heli.minimise(ORDER, 0,1,0, 0,1,1);
 	std::cout << "F_min = " << heli.F() << " (ok: " << std::boolalpha << ok << ")" << std::endl;

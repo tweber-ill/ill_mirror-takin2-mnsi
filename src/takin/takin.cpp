@@ -19,6 +19,7 @@
 #include "core/fp.h"
 #include "core/heli.h"
 #include "core/longfluct.h"
+#include "core/load_gs.h"
 
 #include "tlibs2/libs/phys.h"
 #include "tlibs2/libs/str.h"
@@ -73,7 +74,7 @@ protected:
 
 public:
 	SkxMod();
-	SkxMod(const std::string& strCfgFile);
+	SkxMod(const std::string& gs_file);
 	virtual ~SkxMod();
 
 	virtual std::tuple<std::vector<t_real>, std::vector<t_real>> disp(t_real dh, t_real dk, t_real dl) const override;
@@ -100,6 +101,7 @@ SkxMod::SkxMod()
 	tl2::log_info("\tby T. Weber <tweber@ill.fr>, September 2018.");
 	tl2::log_info("--------------------------------------------------------------------------------");
 
+	// get default ground states
 	auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
 	auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
 
@@ -133,8 +135,39 @@ SkxMod::SkxMod()
 	SqwBase::m_bOk = 1;
 }
 
-SkxMod::SkxMod(const std::string& /*strCfgFile*/) : SkxMod() { SqwBase::m_bOk = 1; }
-SkxMod::~SkxMod() {}
+
+SkxMod::SkxMod(const std::string& gs_file) : SkxMod{}
+{
+	// load a given initial ground state for the helimagnetic phase
+	std::vector<ublas::vector<t_cplx>> fourier;
+	if(gs_file != "")
+	{
+		bool ok = false;
+		t_real T_theo, B_theo;
+		std::tie(ok, T_theo, B_theo, fourier) =
+			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 'h');
+		if(!ok)
+		{
+			tl2::log_err("Error: Could not load conical ground state \"",
+				gs_file, "\".");
+			return;
+		}
+
+		m_heli.SetT(T_theo, false);
+		m_heli.SetB(B_theo, false);
+		m_heli.SetFourier(fourier);
+
+		tl2::log_info("Loaded helimagnetic ground state from file \"",
+			gs_file, "\" (T = ", T_theo, ", B = ", B_theo, ").");
+	}
+
+	SqwBase::m_bOk = 1;
+}
+
+
+SkxMod::~SkxMod()
+{
+}
 // ----------------------------------------------------------------------------
 
 
