@@ -119,24 +119,22 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	// phi^4
 	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
 	{
-		int h = -m_idx2[0][i];
-		if(h <= 0) continue;
+		if(-m_idx2[0][i] <= 0) continue;
 
-		const auto& m1 = get_comp(m_fourier, h);
-		const auto& m2 = get_comp(m_fourier, m_idx2[1][i]);
-		const auto& m3 = get_comp(m_fourier, m_idx2[2][i]);
+		const auto& m1 = get_comp(m_fourier, -m_idx2[0][i]);
+		const auto& m2 = get_comp(m_fourier, +m_idx2[1][i]);
+		const auto& m3 = get_comp(m_fourier, +m_idx2[2][i]);
 
 		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
 	{
-		int h = -m_idx3[0][i];
-		if(h <= 0) continue;
+		if(-m_idx3[0][i] <= 0) continue;
 
-		const auto& m1 = get_comp(m_fourier, h);
-		const auto& m2 = get_comp(m_fourier, m_idx3[1][i]);
-		const auto& m3 = get_comp(m_fourier, m_idx3[2][i]);
-		const auto& m4 = get_comp(m_fourier, m_idx3[3][i]);
+		const auto& m1 = get_comp(m_fourier, -m_idx3[0][i]);
+		const auto& m2 = get_comp(m_fourier, +m_idx3[1][i]);
+		const auto& m3 = get_comp(m_fourier, +m_idx3[2][i]);
+		const auto& m4 = get_comp(m_fourier, +m_idx3[3][i]);
 
 		cF += mult * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
@@ -197,7 +195,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		return g_chi<t_real>/Q_sq * Qi*Qj;
 	};
 
-	if(!m_explicitcalc)
+	if(!m_explicitcalc)  // calculate using ground state magnetisation
 	{
 		// M-cross tensor
 		auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
@@ -273,10 +271,10 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		polMat[1] = get_chiralpol<t_mat_cplx>(2);   // SF2
 		polMat[2] = get_chiralpol<t_mat_cplx>(3);   // NSF
 	}
-	else
+	else  // calculate using closed form
 	{
-		constexpr t_real A1 = g_hoc<t_real>, A2 = A1*A1, A3 = A2*A1;
-		constexpr t_real interact = 88.;
+		constexpr const t_real A1 = g_hoc<t_real>, A2 = A1*A1, A3 = A2*A1;
+		constexpr const t_real interact = 88.;
 
 		static const t_real Dqmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
 			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
