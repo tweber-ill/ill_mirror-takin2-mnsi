@@ -88,8 +88,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			// unrolled indices for two loops
 			int l_h2 = lattidx(pk_j[0]) - lattidx(pk_k[0]);
 			int l_k2 = lattidx(pk_j[1]) - lattidx(pk_k[1]);
-			if(std::abs(l_h2) <= ORDER && std::abs(l_k2) <= ORDER
-				&& std::abs(l_h2-l_k2) <= ORDER)
+			if(std::abs(l_h2) <= ORDER && std::abs(l_k2) <= ORDER && std::abs(l_h2-l_k2) <= ORDER)
 			{
 				m_idx2[0].emplace_back(std::make_pair(lattidx(pk_j[0]), lattidx(pk_j[1])));
 				m_idx2[1].emplace_back(std::make_pair(lattidx(pk_k[0]), lattidx(pk_k[1])));
@@ -101,8 +100,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 			{
 				int l_h3 = lattidx(pk_i[0]) - lattidx(pk_j[0]) - lattidx(pk_k[0]);
 				int l_k3 = lattidx(pk_i[1]) - lattidx(pk_j[1]) - lattidx(pk_k[1]);
-				if(std::abs(l_h3) <= ORDER && std::abs(l_k3) <= ORDER
-					&& std::abs(l_h3-l_k3) <= ORDER)
+				if(std::abs(l_h3) <= ORDER && std::abs(l_k3) <= ORDER && std::abs(l_h3-l_k3) <= ORDER)
 				{
 					m_idx3[0].emplace_back(std::make_pair(lattidx(pk_i[0]), lattidx(pk_i[1])));
 					m_idx3[1].emplace_back(std::make_pair(lattidx(pk_j[0]), lattidx(pk_j[1])));
@@ -151,8 +149,6 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	const t_real mult = 2.;   // 2 * top 180 degree peaks
 	for(const t_vec& q_rlu : m_allpeaks_rlu)
 	{
-		const int hk[2] = { lattidx(q_rlu[0]), lattidx(q_rlu[1]) };
-
 		t_vec q = tl2::prod_mv(m_Bmat, q_rlu);
 		const t_real q_sq = tl2::inner(q, q);
 
@@ -160,7 +156,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 			continue;
 
 		t_vec_cplx qc = tl2::make_vec<t_vec_cplx>({ q[0], q[1], 0. });
-		const t_vec_cplx& m = get_comp(m_M, hk[0], hk[1]);
+		const t_vec_cplx& m = get_comp(m_M, lattidx(q_rlu[0]), lattidx(q_rlu[1]));
 		t_vec_cplx mj = tl2::conjugate_vec(m);
 		const t_cplx m_sq = tl2::inner(m, mj);
 
@@ -175,28 +171,26 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		cF += mult * g_hoc_b<t_real, SKX_USE_HOC> * m_sq * q_sq*q_sq; // high-order correction
 	}
 
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // phi^4
+	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // phi^4 involving m0
 	{
-		const int hk[2] = { -m_idx2[0][i].first, -m_idx2[0][i].second };
-		if(!is_hk_in_top_half(hk[0], hk[1]))
+		if(!is_hk_in_top_half(-m_idx2[0][i].first, -m_idx2[0][i].second))
 			continue;
 
-		const auto& m1 = get_comp(m_M, hk[0], hk[1]);
-		const auto& m2 = get_comp(m_M, m_idx2[1][i].first, m_idx2[1][i].second);
-		const auto& m3 = get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second);
+		const auto& m1 = get_comp(m_M, -m_idx2[0][i].first, -m_idx2[0][i].second);
+		const auto& m2 = get_comp(m_M, +m_idx2[1][i].first, +m_idx2[1][i].second);
+		const auto& m3 = get_comp(m_M, +m_idx2[2][i].first, +m_idx2[2][i].second);
 
 		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
 	for(std::size_t i=0; i<m_idx3[0].size(); ++i)  // phi^4
 	{
-		const int hk[2] = { -m_idx3[0][i].first, -m_idx3[0][i].second };
-		if(!is_hk_in_top_half(hk[0], hk[1]))
+		if(!is_hk_in_top_half(-m_idx3[0][i].first, -m_idx3[0][i].second))
 			continue;
 
-		const auto& m1 = get_comp(m_M, hk[0], hk[1]);
-		const auto& m2 = get_comp(m_M, m_idx3[1][i].first, m_idx3[1][i].second);
-		const auto& m3 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
-		const auto& m4 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
+		const auto& m1 = get_comp(m_M, -m_idx3[0][i].first, -m_idx3[0][i].second);
+		const auto& m2 = get_comp(m_M, +m_idx3[1][i].first, +m_idx3[1][i].second);
+		const auto& m3 = get_comp(m_M, +m_idx3[2][i].first, +m_idx3[2][i].second);
+		const auto& m4 = get_comp(m_M, +m_idx3[3][i].first, +m_idx3[3][i].second);
 
 		cF += mult * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
