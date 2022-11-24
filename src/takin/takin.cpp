@@ -61,12 +61,14 @@ protected:
 	t_real m_dT = 29.;
 	t_real m_dB = 0.35;
 	t_real m_dcut = 0.02;
+	t_real m_dlowE = 1e-3;
 
 	int m_iOnlyMode = -1;
 	int m_iPolChan = 0;
 	int m_iwhich_disp = 0;	// 0: skx, 1: fp, 2: heli
 	int m_iProjNeutron = 1;
 	int m_ionlylf = 0;
+	int m_iFilterLowE = 0;
 
 	t_vec m_vecG = tl2::make_vec<t_vec>({1,1,0});
 	t_vec m_vecB = tl2::make_vec<t_vec>({1,1,0});
@@ -240,6 +242,8 @@ std::vector<SkxMod::t_var> SkxMod::GetVars() const
 	vecVars.push_back(SqwBase::t_var{"which_disp", "real", tl2::var_to_str(m_iwhich_disp)});
 	vecVars.push_back(SqwBase::t_var{"E_range", "real", tl2::var_to_str(m_dErange)});
 	vecVars.push_back(SqwBase::t_var{"bose_cutoff", "real", tl2::var_to_str(m_dcut)});
+	vecVars.push_back(SqwBase::t_var{"low_E", "real", tl2::var_to_str(m_dlowE)});
+	vecVars.push_back(SqwBase::t_var{"filter_low_E", "int", tl2::var_to_str(m_iFilterLowE)});
 	vecVars.push_back(SqwBase::t_var{"only_mode", "int", tl2::var_to_str(m_iOnlyMode)});
 	vecVars.push_back(SqwBase::t_var{"sigma", "real", tl2::var_to_str(m_dSigma)});
 	vecVars.push_back(SqwBase::t_var{"inc_amp", "real", tl2::var_to_str(m_dIncAmp)});
@@ -287,6 +291,14 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		else if(strVar == "bose_cutoff")
 		{
 			m_dcut = tl2::str_to_var<t_real>(strVal);
+		}
+		else if(strVar == "low_E")
+		{
+			m_dlowE = tl2::str_to_var<t_real>(strVal);
+		}
+		else if(strVar == "filter_low_E")
+		{
+			m_iFilterLowE = tl2::str_to_var<decltype(m_iFilterLowE)>(strVal);
 		}
 		else if(strVar == "sigma")
 		{
@@ -431,6 +443,8 @@ SqwBase* SkxMod::shallow_copy() const
 	pMod->m_vecPin = this->m_vecPin;
 	pMod->m_dErange = this->m_dErange;
 	pMod->m_dcut = this->m_dcut;
+	pMod->m_dlowE = this->m_dlowE;
+	pMod->m_iFilterLowE = this->m_iFilterLowE;
 
 	return pMod;
 }

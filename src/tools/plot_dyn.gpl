@@ -11,11 +11,12 @@ qrange        = 0.12  # q range to plot
 Erange        = 0.9   # E range to plot
 scale_weight  = 1.5   # weight scale for plot
 key_pointsize = 2.0   # symbol size in legend
+eps_E         = 1e-3  # low energy for filtering diverging weights
+filter_lowE   = 1     # filter diverging weights at E=0 (on satellite peaks)
 
 show_pol      = 1
 show_key      = 1     # show legend
 show_scans    = 0     # indicate scans
-
 
 a      = 4.558        # lattice constant
 #kh_A   = 0.036        # at 20 K
@@ -179,9 +180,9 @@ if(show_scans != 0) {
 
 
 # weight factor
-weight_raw(w)         = (w > 5.) ? 5. : sqrt(w) * 2.5
-weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
-weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
+weight_raw(w, E)      = (abs(E) < eps_E && filter_lowE) ? 0. : ((w > 5.) ? 5. : sqrt(w) * 2.5)
+weight(w, E)          = (weight_raw(w, E) < 0.04) ? 0 : weight_raw(w, E)
+weight_ifminusE(w, E) = (E < 0) ? weight(w, E) : 0
 
 E_sign = 1.
 
@@ -197,13 +198,13 @@ if(show_pol != 0) {
 		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol2 title "SF (+-)", \
 		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol1 title "SF (-+)", \
 		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol3 title "NSF", \
-		file_dyn using ($11):(E_sign*$4):(weight($7)*scale_weight) \
+		file_dyn using ($11):(E_sign*$4):(weight($7, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol2 notitle, \
-		file_dyn using ($11):(E_sign*$4):(weight($6)*scale_weight) \
+		file_dyn using ($11):(E_sign*$4):(weight($6, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol1 notitle, \
 		file_dyn using ($11):(E_sign*$4):(weight_ifminusE($7, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol2 notitle, \
-		file_dyn using ($11):(E_sign*$4):(weight($8)*scale_weight) \
+		file_dyn using ($11):(E_sign*$4):(weight($8, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol3 notitle
 }
 else {
@@ -212,6 +213,6 @@ else {
 	        file_dyn using ($11):(E_sign*$4) \
 			with points pt 0        lc rgb col_full notitle, \
 		"$dummy_data" with points pt 7 ps key_pointsize lc rgb col_pol2 title "Unpol.", \
-	        file_dyn using ($11):(E_sign*$4):(weight($6+$7+$8)*scale_weight) \
+	        file_dyn using ($11):(E_sign*$4):(weight($6+$7+$8, $4)*scale_weight) \
 			with points pt 7 ps var lc rgb col_pol2 notitle
 }
