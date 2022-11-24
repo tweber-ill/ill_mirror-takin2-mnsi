@@ -19,6 +19,8 @@ namespace opts = boost::program_options;
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
+using t_vec_cplx = ublas::vector<t_cplx>;
+constexpr const t_cplx imag(0, 1);
 
 
 // initial values
@@ -172,18 +174,16 @@ int main(int argc, char **argv)
 	}
 
 
-	constexpr auto imag = t_cplx(0, 1);
-
 	Skx<t_real, t_cplx, ORDER> skx;
 	skx.SetDebug(true);
 
 	// load a given initial ground state
-	std::vector<ublas::vector<t_cplx>> fourier;
+	std::vector<t_vec_cplx> fourier;
 	if(gs_file != "")
 	{
 		bool ok = false;
 		t_real T_theo_file, B_theo_file;
-		std::tie(ok, T_theo_file, B_theo_file, fourier) =
+		std::tie(ok, T_theo_file, B_theo_file, fourier, std::ignore) =
 			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 's');
 		if(!ok)
 		{
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 
 		for(std::size_t comp=0; comp<_allcomps.size(); comp+=3)
 		{
-			fourier.push_back(tl2::make_vec<ublas::vector<t_cplx>>(
+			fourier.push_back(tl2::make_vec<t_vec_cplx>(
 			{
 				_allcomps[comp] * imag,
 				_allcomps[comp+1] * imag,

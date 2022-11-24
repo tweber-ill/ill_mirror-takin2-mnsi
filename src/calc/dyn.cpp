@@ -89,7 +89,7 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 		if(gs_file != "")
 		{
 			bool ok = false;
-			std::tie(ok, skxgs_T, skxgs_B, skxgs) =
+			std::tie(ok, skxgs_T, skxgs_B, skxgs, std::ignore) =
 				load_gs<std::decay_t<decltype(skxgs)>>(gs_file, 's');
 			if(!ok)
 			{
@@ -118,7 +118,7 @@ static std::shared_ptr<MagDynamics<t_real, t_cplx>> create_dyn(
 		if(gs_file != "")
 		{
 			bool ok = false;
-			std::tie(ok, heligs_T, heligs_B, heligs) =
+			std::tie(ok, heligs_T, heligs_B, heligs, std::ignore) =
 				load_gs<std::decay_t<decltype(heligs)>>(gs_file, 'h');
 			if(!ok)
 			{

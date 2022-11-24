@@ -19,6 +19,7 @@ namespace opts = boost::program_options;
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
+using t_vec_cplx = ublas::vector<t_cplx>;
 constexpr const auto j = t_cplx(0, 1);
 
 
@@ -95,12 +96,12 @@ int main(int argc, char** argv)
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
 	// load a given initial ground state
-	std::vector<ublas::vector<t_cplx>> fourier;
+	std::vector<t_vec_cplx> fourier;
 	if(gs_file != "")
 	{
 		bool ok = false;
 		t_real T_theo_file, B_theo_file;
-		std::tie(ok, T_theo_file, B_theo_file, fourier) =
+		std::tie(ok, T_theo_file, B_theo_file, fourier, std::ignore) =
 			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 'h');
 		if(!ok)
 		{
@@ -120,10 +121,10 @@ int main(int argc, char** argv)
 	// set a default initial ground state
 	else
 	{
-		fourier = std::vector<ublas::vector<t_cplx>>{
-			tl2::make_vec<ublas::vector<t_cplx>>({0, 0, scale0}),
+		fourier = std::vector<t_vec_cplx>{
+			tl2::make_vec<t_vec_cplx>({0, 0, scale0}),
 			// helical order => Re{M} perp. Im{M}
-			tl2::make_vec<ublas::vector<t_cplx>>({1.+j, 1.-j, 0}) / std::sqrt(2) * scale,
+			tl2::make_vec<t_vec_cplx>({1.+j, 1.-j, 0}) / std::sqrt(2) * scale,
  		};
 	}
 

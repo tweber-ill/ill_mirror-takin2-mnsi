@@ -140,14 +140,11 @@ SkxMod::SkxMod()
 
 SkxMod::SkxMod(const std::string& gs_file) : SkxMod{}
 {
-	// load a given initial ground state for the helimagnetic phase
-	std::vector<ublas::vector<t_cplx>> fourier;
+	// load a given initial ground state
 	if(gs_file != "")
 	{
-		bool ok = false;
-		t_real T_theo, B_theo;
-		std::tie(ok, T_theo, B_theo, fourier) =
-			load_gs<std::decay_t<decltype(fourier)>>(gs_file, 'h');
+		auto [ok, T_theo, B_theo, fourier, gs_type] =
+			load_gs<std::vector<t_vec_cplx>>(gs_file, '*');
 		if(!ok)
 		{
 			tl2::log_err("Error: Could not load conical ground state \"",
@@ -155,12 +152,24 @@ SkxMod::SkxMod(const std::string& gs_file) : SkxMod{}
 			return;
 		}
 
-		m_heli.SetT(T_theo, false);
-		m_heli.SetB(B_theo, false);
-		m_heli.SetFourier(fourier);
+		if(gs_type == 'h')
+		{
+			m_heli.SetT(T_theo, false);
+			m_heli.SetB(B_theo, false);
+			m_heli.SetFourier(fourier);
 
-		tl2::log_info("Loaded helimagnetic ground state from file \"",
-			gs_file, "\" (T = ", T_theo, ", B = ", B_theo, ").");
+			tl2::log_info("Loaded helimagnetic ground state from file \"",
+				gs_file, "\" (T = ", T_theo, ", B = ", B_theo, ").");
+		}
+		else if(gs_type == 's')
+		{
+			m_skx.SetT(T_theo, false);
+			m_skx.SetB(B_theo, false);
+			m_skx.SetFourier(fourier);
+
+			tl2::log_info("Loaded skx ground state from file \"",
+				gs_file, "\" (T = ", T_theo, ", B = ", B_theo, ").");
+		}
 	}
 
 	SqwBase::m_bOk = 1;
@@ -478,9 +487,9 @@ std::tuple<std::string, std::string, std::string> sqw_info()
 	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
 }
 
-std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
+std::shared_ptr<SqwBase> sqw_construct(const std::string& gs_file)
 {
-	return std::make_shared<SkxMod>(strCfgFile);
+	return std::make_shared<SkxMod>(gs_file);
 }
 
 
@@ -498,9 +507,9 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 	}
 
 	extern "C" __declspec(dllexport)
-	std::shared_ptr<SqwBase> takin_sqw(const std::string& strCfgFile)
+	std::shared_ptr<SqwBase> takin_sqw(const std::string& gs_file)
 	{
-		return sqw_construct(strCfgFile);
+		return sqw_construct(gs_file);
 	}
 #endif
 

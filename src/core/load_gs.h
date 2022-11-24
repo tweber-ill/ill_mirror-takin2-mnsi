@@ -19,7 +19,7 @@
  * load ground state configuration
  */
 template<class t_fouriers, class t_real = std::decay_t<decltype(t_fouriers{}[0][0].real())>>
-std::tuple<bool, t_real /*T*/, t_real /*B*/, t_fouriers>
+std::tuple<bool, t_real /*T*/, t_real /*B*/, t_fouriers, char /*gs_type*/>
 load_gs(const std::string& infile, char expected_gs_type = '*')
 {
 	std::ifstream ifstr(infile, std::ios_base::binary);
@@ -27,7 +27,7 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 	{
 		std::cerr << "Error: Could not open input ground state file \""
 			<< infile << "\"." << std::endl;
-		return std::make_tuple(false, 0., 0., t_fouriers{});
+		return std::make_tuple(false, 0., 0., t_fouriers{}, '-');
 	}
 
 	// check magic values
@@ -37,7 +37,7 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 	{
 		std::cerr << "Error: File \"" << infile << "\""
 			<< " does not have a valid ground state." << std::endl;
-		return std::make_tuple(false, 0., 0., t_fouriers{});
+		return std::make_tuple(false, 0., 0., t_fouriers{}, '-');
 	}
 
 	// check ground state type
@@ -45,7 +45,7 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 	{
 		std::cerr << "Error: File \"" << infile << "\""
 			<< " has a mismatching ground state type." << std::endl;
-		return std::make_tuple(false, 0., 0., t_fouriers{});
+		return std::make_tuple(false, 0., 0., t_fouriers{}, magic[3]);
 	}
 
 	// read temperature and field
@@ -74,7 +74,7 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 		}));
 	}
 
-	return std::make_tuple(true, T_theo, B_theo, fouriers);
+	return std::make_tuple(true, T_theo, B_theo, fouriers, magic[3]);
 }
 
 
