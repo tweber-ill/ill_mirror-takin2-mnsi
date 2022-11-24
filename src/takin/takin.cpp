@@ -211,6 +211,16 @@ t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 			std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_fp.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
 		else if(m_iwhich_disp == 2)
 			std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_heli.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
+
+		if(m_iFilterLowE)
+		{
+			for(std::size_t idx=0; idx<vecE.size(); ++idx)
+			{
+				t_real E = vecE[idx];
+				if(std::abs(E) < m_dlowE)
+					vecW[0][idx] = vecW[1][idx] = vecW[2][idx] = vecW[3][idx] = 0.;
+			}
+		}
 	}
 
 	// incoherent
