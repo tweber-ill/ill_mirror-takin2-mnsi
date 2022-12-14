@@ -574,6 +574,8 @@ int main(int argc, char **argv)
 		std::cin >> qrange; clear_line(std::cin);
 		std::cout << "q_delta = ";
 		std::cin >> qdelta; clear_line(std::cin);
+		std::cout << "T = ";
+		std::cin >> T; clear_line(std::cin);
 		std::cout << "B [vec] = ";
 		std::cin >> Bx >> By >> Bz; clear_line(std::cin);
 
@@ -581,8 +583,6 @@ int main(int argc, char **argv)
 		{
 			std::cout << "|B| = ";
 			std::cin >> B; clear_line(std::cin);
-			std::cout << "T = ";
-			std::cin >> T; clear_line(std::cin);
 
 			if(dyntype == 'h')
 			{
