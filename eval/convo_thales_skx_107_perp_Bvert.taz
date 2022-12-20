@@ -114,7 +114,7 @@
 			<explicit_calc>1</explicit_calc>
 			<inc_amp>17</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
-			<lf_A>50</lf_A>
+			<lf_A>0</lf_A>
 			<lf_gamma>2</lf_gamma>
 			<lf_invcorrel>0.1</lf_invcorrel>
 			<lf_only>0</lf_only>
