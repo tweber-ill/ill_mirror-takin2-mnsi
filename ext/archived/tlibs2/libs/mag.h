@@ -139,25 +139,24 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 			MxEvecs(idx1, idx2) = Mxevecs[idx2][idx1];
 
 	t_mat_cplx MxEvecsH = hermitian(MxEvecs);
-	t_mat_cplx MxEvecs3 = submatrix_wnd<t_mat_cplx>(MxEvecs, MxsubMatSize, Mxevecs.size(), MxsubMatRowBegin, 0);
+	t_mat_cplx MxEvecs3 = submatrix_wnd<t_mat_cplx>(
+		MxEvecs, MxsubMatSize, Mxevecs.size(), MxsubMatRowBegin, 0);
 	t_mat_cplx MxEvecsH3 = hermitian(MxEvecs3);
 
 	// transform fluctuation matrix into Mx eigenvector system
-	t_mat_cplx invsuscept = prod_mm(Fluc, MxEvecs);
-	invsuscept = prod_mm(MxEvecsH, invsuscept);
+	t_mat_cplx invsuscept = prod_mm(MxEvecsH, prod_mm(Fluc, MxEvecs));
 
 	// transform Mx into Mx eigenvector system
 	// Mxx is diagonal with this construction => directly use Mxevals
 #if MXX_IS_DIAG == 1
 	t_mat_cplx Mxx = imag * diag_matrix<t_mat_cplx>(Mxevals);
 #else
-	t_mat_cplx Mxx = prod_mm(Mx, MxEvecs);
-	Mxx = imag * prod_mm(MxEvecsH, Mxx);
+	t_mat_cplx Mxx = imag * prod_mm(MxEvecsH, prod_mm(Mx, MxEvecs));
 
-	#ifdef TL2_MAG_CHECKS
-		if(!tl2::is_diagonal_cplx(Mxx, eps))
-			tl2::log_warn("Mxx is not diagonal!");
-	#endif
+#ifdef TL2_MAG_CHECKS
+	if(!tl2::is_diagonal_cplx(Mxx, eps))
+		tl2::log_warn("Mxx is not diagonal!");
+#endif
 #endif
 
 	// Landau-Lifshitz: d/dt dM = -g*Mx B_mean, B_mean = -chi^(-1) * dM
@@ -174,16 +173,12 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 	std::vector<t_mat_cplx> Interactemats;
 	Interactemats.reserve(Interactevals.size());
 
-	for(std::size_t iInteract=0; iInteract<Interactevals.size(); ++iInteract)
+	for(const t_vec_cplx& evec : Interactevecs)
 	{
-		const t_vec_cplx& evec = Interactevecs[iInteract];
-		const t_vec_cplx evec_scale = prod_mv(Mxx, evec);
+		t_mat_cplx matOuter = outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec);
+		t_mat_cplx emat = prod_mm(MxEvecs3, prod_mm(matOuter, MxEvecsH3));
+		emat /= inner_cplx<t_vec_cplx>(evec, prod_mv(Mxx, evec));
 
-		auto matOuter = outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec);
-		matOuter /= inner_cplx<t_vec_cplx>(evec, evec_scale);
-
-		t_mat_cplx emat = prod_mm(matOuter, MxEvecsH3);
-		emat = prod_mm(MxEvecs3, emat);
 		Interactemats.emplace_back(std::move(emat));
 	}
 
