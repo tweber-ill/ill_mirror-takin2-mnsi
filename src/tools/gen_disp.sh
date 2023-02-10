@@ -24,16 +24,16 @@ Gx=1
 Gy=1
 Gz=0
 
-K1x=1.02001
-K1y=0.97999
-K1z=0.0
+K1x=+0.02001
+K1y=-0.02001
+K1z=+0.0
 
-K2x=1.01
-K2y=0.99
+K2x=+0.01
+K2y=-0.01
 K2z=-0.0245
 
-Mx=1.015
-My=0.985
+Mx=+0.015
+My=-0.015
 Mz=-0.01225
 
 
@@ -44,7 +44,7 @@ $DYN --dyntype=$dyn_ty --use_para_perp_calc=0 --outfile=GM.dat \
 	--Px=1 --Py=-1 --Pz=0 \
 	--T=$T --B=$B \
 	--num_points=$num_pts \
-	--qh_start=$Gx --qk_start=$Gy --ql_start=$Gz \
+	--qh_start=0 --qk_start=0 --ql_start=0 \
 	--qh_end=$Mx --qk_end=$My --ql_end=$Mz
 
 
@@ -67,4 +67,4 @@ $DYN --dyntype=$dyn_ty --use_para_perp_calc=0 --outfile=KG.dat \
 	--T=$T --B=$B \
 	--num_points=$num_pts \
 	--qh_start=$K2x --qk_start=$K2y --ql_start=$K2z \
-	--qh_end=$Gx --qk_end=$Gy --ql_end=$Gz
+	--qh_end=0 --qk_end=0 --ql_end=0

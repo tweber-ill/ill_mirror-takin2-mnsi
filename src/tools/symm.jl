@@ -13,6 +13,7 @@ using Printf
 Bvec = [ 1;  1; 0 ]
 Pvec = [ 1; -1; 0 ]
 Gvec = [ 1;  1; 0 ]
+include_G = false
 
 
 #
@@ -69,9 +70,12 @@ posK1 *= 0.039 / (2*pi / 4.558)
 posK2 *= 0.039 / (2*pi / 4.558)
 posM *= 0.039 / (2*pi / 4.558)
 
-posK1 += Gvec
-posK2 += Gvec
-posM += Gvec
+
+if include_G
+	posK1 += Gvec
+	posK2 += Gvec
+	posM += Gvec
+end
 
 
 @printf("K1 = %s\n", round.(posK1, digits=5))
