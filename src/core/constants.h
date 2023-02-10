@@ -31,6 +31,7 @@ template<class t_real = double> constexpr t_real g_hoc = -0.0073;
 template<class t_real = double, bool use_hoc=1> constexpr t_real g_hoc_b = use_hoc ? g_hoc<t_real> : 0.;
 template<class t_real = double> constexpr t_real g_a = 4.558;
 template<class t_real = double> constexpr t_real g_g = -tl2::g_e<t_real>;
+template<class t_real = double> constexpr t_real g_kh_A_20K = 0.036;
 template<class t_real = double> constexpr t_real g_kh_A_29K = 0.039;
 template<class t_real = double> constexpr t_real g_kh_rlu_29K = g_kh_A_29K<t_real> / (t_real(2.)*g_pi<t_real> / g_a<t_real>);
 
@@ -44,7 +45,7 @@ constexpr t_real g_kh_A(t_real T)
 	constexpr t_real T1 = 20.;
 	constexpr t_real T2 = 29.;
 
-	constexpr t_real A1 = 0.036;			// at 20 K
+	constexpr t_real A1 = g_kh_A_20K<t_real>;	// at 20 K
 	constexpr t_real A2 = g_kh_A_29K<t_real>;	// at 29 K
 
 	constexpr t_real m = (A2-A1) / (T2-T1);

@@ -182,7 +182,7 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		Interactemats.emplace_back(std::move(emat));
 	}
 
-	return std::make_tuple(Interactevals, Interactevecs, Interactemats);
+	return std::make_tuple(std::move(Interactevals), std::move(Interactevecs), std::move(Interactemats));
 }
 
 
@@ -226,7 +226,7 @@ get_dynstrucfact_neutron(
 		}
 	}
 
-	return std::make_tuple(E, sfacts);
+	return std::make_tuple(E, std::move(sfacts));
 }
 
 }
