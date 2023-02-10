@@ -1,3 +1,4 @@
+#!env julia
 #
 # demagnetisation factors
 # @author Tobias Weber <tweber@ill.fr>

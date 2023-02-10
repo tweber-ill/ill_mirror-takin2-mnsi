@@ -1,3 +1,4 @@
+#!env julia
 #
 # calculates high symmetry points for the skx lattice
 # @author Tobias Weber <tweber@ill.fr>
@@ -54,30 +55,28 @@ rotinv = la.inv(rot)
 
 B = [1 cos(120/180*pi) 0; 0 sin(120/180*pi) 0; 0 0 1]
 
-posK1 = B * [1; 0; 0]
-posK1 /= la.norm2(posK1)
+posM = B * [1; 0; 0]
+#posM /= la.norm2(posM)
+posM /= 2
 
-posK2 = B * [1; 1; 0]
-posK2 /= la.norm2(posK2)
+posK = B * [2; 1; 0]
+#posK /= la.norm2(posK)
+posK /= 3
 
-posM = (posK1 + posK2) / 2
-
-posK1 = rotinv * posK1
-posK2 = rotinv * posK2
 posM = rotinv * posM
+posK = rotinv * posK
 
-posK1 *= 0.039 / (2*pi / 4.558)
-posK2 *= 0.039 / (2*pi / 4.558)
 posM *= 0.039 / (2*pi / 4.558)
+posK *= 0.039 / (2*pi / 4.558)
 
+angle = acos(la.dot(posM, posK) / (la.norm2(posM) * la.norm2(posK)))/pi*180
 
 if include_G
-	posK1 += Gvec
-	posK2 += Gvec
 	posM += Gvec
+	posK += Gvec
 end
 
 
-@printf("K1 = %s\n", round.(posK1, digits=5))
-@printf("K2 = %s\n", round.(posK2, digits=5))
-@printf("M  = %s\n", round.(posM, digits=5))
+@printf("M = %s\n", round.(posM, digits=5))
+@printf("K = %s\n", round.(posK, digits=5))
+@printf("Angle between M and K: %s deg.\n", round(angle, digits=5))

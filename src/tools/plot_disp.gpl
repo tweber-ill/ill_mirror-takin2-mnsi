@@ -7,24 +7,25 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
-qrange_M      = 0.02449   # M range
-qrange_K      = 0.0282917 # K range
-Erange        = 0.25      # E range
-scale_weight  = 1.5       # weight scale for plot
-key_pointsize = 2.0       # symbol size in legend
+qrange_M      = 0.0282917/2 # M range
+qrange_K      = 0.016332449 # K range
+Emrange       = -0.25       # -E range
+Erange        = 0.25        # +E range
+scale_weight  = 1.5         # weight scale for plot
+key_pointsize = 2.0         # symbol size in legend
 
 show_pol      = 1
-show_key      = 0         # show legend
+show_key      = 0           # show legend
 
 
-a      = 4.558            # lattice constant
-#kh_A   = 0.036           # at 20 K
-kh_A   = 0.039            # at 29 K
+a      = 4.558              # lattice constant
+#kh_A   = 0.036             # at 20 K
+kh_A   = 0.039              # at 29 K
 kh_rlu = kh_A / (2*pi / a)
 
 Bc2    = 0.3223
 g      = 2.
-muB    = 5.78838e-02      # codata value
+muB    = 5.78838e-02        # codata value
 
 
 file_GM = "GM.dat"
@@ -33,7 +34,7 @@ file_KG = "KG.dat"
 
 
 if(!exists("out_term")) {
-	out_term = 1      # 1: pdf, 2: png, others: screen
+	out_term = 1        # 1: pdf, 2: png, others: screen
 }
 
 if(out_term == 1) {
@@ -97,10 +98,10 @@ set lmargin at screen 0.1
 set rmargin at screen 0.39
 
 # ranges
-set xrange  [  0                    : qrange_M             ]
-set x2range [  0/kh_rlu             : qrange_M/kh_rlu      ]
-set yrange  [ -Erange               : Erange               ]
-set y2range [ -Erange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
+set xrange  [ 0                     : qrange_M             ]
+set x2range [ 0/kh_rlu              : qrange_M/kh_rlu      ]
+set yrange  [ Emrange               : Erange               ]
+set y2range [ Emrange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
 
 
 # ticks
@@ -134,7 +135,7 @@ else {
 
 
 # show coordinate cross
-set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
+set arrow 1 from 0,Emrange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
 set arrow 2 from 0,0 to qrange_M,0 lw 2 dt 2 lc rgb col_axis nohead
 
 
@@ -177,10 +178,10 @@ set lmargin at screen 0.4
 set rmargin at screen 0.6
 
 # ranges
-set xrange  [  qrange_M             : qrange_K             ]
-set x2range [  qrange_M/kh_rlu      : qrange_M/kh_rlu      ]
-set yrange  [ -Erange               : Erange               ]
-set y2range [ -Erange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
+set xrange  [ qrange_M              : qrange_K             ]
+set x2range [ qrange_M/kh_rlu       : qrange_M/kh_rlu      ]
+set yrange  [ Emrange               : Erange               ]
+set y2range [ Emrange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
 
 
 # ticks
@@ -214,7 +215,7 @@ else {
 
 
 # show coordinate cross
-set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
+set arrow 1 from 0,Emrange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
 set arrow 2 from qrange_M,0 to qrange_K,0 lw 2 dt 2 lc rgb col_axis nohead
 
 
@@ -257,10 +258,10 @@ set lmargin at screen 0.61
 set rmargin at screen 0.9
 
 # ranges
-set xrange  [  qrange_K             : 0             ]
-set x2range [  qrange_K/kh_rlu      : 0/kh_rlu      ]
-set yrange  [ -Erange               : Erange               ]
-set y2range [ -Erange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
+set xrange  [ qrange_K              : 0                    ]
+set x2range [ qrange_K/kh_rlu       : 0/kh_rlu             ]
+set yrange  [ Emrange               : Erange               ]
+set y2range [ Emrange / (g*muB*Bc2) : Erange / (g*muB*Bc2) ]
 
 
 # ticks
@@ -296,7 +297,7 @@ else {
 
 
 # show coordinate cross
-set arrow 1 from 0,-Erange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
+set arrow 1 from 0,Emrange to 0,Erange lw 2 dt 2 lc rgb col_axis nohead
 set arrow 2 from qrange_K,0 to 0,0 lw 2 dt 2 lc rgb col_axis nohead
 
 
