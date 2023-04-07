@@ -103,7 +103,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += mult * g_chi<t_real> * mi[2]/**q*/ * mj[2]/**q / q_sq*/;
 
 		// dmi, mi * ([0,0,q] x mj) = mi * (-q*mj[1], q*mj[0], 0])
-		cF += -2. * mult * t_cplx(0, 1) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
+		cF += -mult * t_cplx(0., 2.) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
 		// phi^2
 		cF += mult * m_sq * q_sq;
@@ -215,8 +215,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 			const t_vec_cplx& vecM1 = get_comp(m_fourier, m_idx3[2][i]);
 			const t_vec_cplx& vecM2 = get_comp(m_fourier, m_idx3[3][i]);
 
-			t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
-				4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
+			t_mat_cplx mat = 8. * tl2::outer(vecM1, vecM2) +
+				4. * tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
 			t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE, m_idx3[0][i], m_idx3[1][i]);
 			assign_or_add(fluccomp, mat);
 		}

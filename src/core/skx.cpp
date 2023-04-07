@@ -164,7 +164,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		if(!tl2::float_equal<t_real>(q_sq, 0., m_eps))
 			cF += mult * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
-		cF += -2. * mult * t_cplx(0, 1) * tl2::inner(m, tl2::cross_3(qc, mj)); // dmi
+		cF += -mult * t_cplx(0., 2.) * tl2::inner(m, tl2::cross_3(qc, mj)); // dmi
 		cF += mult * m_sq * q_sq;        // phi^2
 		cF += mult * (m_T + 1.) * m_sq;  // phi^2
 		cF += mult * m0_sq * m_sq;       // phi^4
@@ -282,8 +282,8 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		const t_vec_cplx& vecM1 = get_comp(m_M, m_idx3[2][i].first, m_idx3[2][i].second);
 		const t_vec_cplx& vecM2 = get_comp(m_M, m_idx3[3][i].first, m_idx3[3][i].second);
 
-		t_mat_cplx mat = 8.*tl2::outer(vecM1, vecM2) +
-			4.*tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
+		t_mat_cplx mat = 8. * tl2::outer(vecM1, vecM2) +
+			4. * tl2::diag_matrix<t_mat_cplx>(3, tl2::inner(vecM1, vecM2));
 		t_mat_cplx& fluccomp = get_comp(*Fluc, SIZE,
 			m_idx3[0][i].first, m_idx3[0][i].second,
 			m_idx3[1][i].first, m_idx3[1][i].second);
@@ -304,7 +304,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 			return g_chi<t_real>/Q_sq * Qi*Qj;
 		};
 
-		t_mat_cplx mat(3,3);
+		t_mat_cplx mat(3, 3);
 		for(int i=0; i<3; ++i)  // diagonal
 			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq
 				+ g_hoc_b<t_real, SKX_USE_HOC>*Q_sq*Q_sq;
@@ -314,7 +314,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 			{
 				int k = 3 - i - j;                // third index in {0,1,2}
 				t_real sign = (k==1 ? 1. : -1.);  // - + -
-				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*t_cplx(0, 1)*Q[k];
+				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*t_cplx(0., 2.)*Q[k];
 				mat(j, i) = std::conj(mat(i, j));
 			}
 		}
