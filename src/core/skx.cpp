@@ -4,7 +4,7 @@
  * @date jul-18
  * @desc This file implements the theoretical skyrmion model by M. Garst and J. Waizner, references:
  *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
- *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
+ *	- [waizner17] J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
  *	- Personal communications with M. Garst, 2017-2020.
  * @desc This file is based on:
  *	- The descriptions and Mathematica implementations of the different skyrmion model versions by M. Garst and J. Waizner, 2016-2020.
@@ -61,18 +61,12 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	m_allpeaks_rlu = gen_peaks<t_vec>(ORDER);
 
 	// peaks in 60 degree segment
-	m_peaks60rlu.reserve(ORDER_FOURIER);
-	m_peaks60lab.reserve(ORDER_FOURIER);
+	m_peaks60_rlu.reserve(ORDER_FOURIER);
 	for(const t_vec& pk_rlu : m_allpeaks_rlu)
 	{
 		if(!(pk_rlu[0] > pk_rlu[1] && pk_rlu[1] >= 0))
 			continue;
-
-		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
-		pk_lab /= tl2::veclen(pk_lab);
-
-		m_peaks60rlu.emplace_back(std::move(pk_rlu));
-		m_peaks60lab.emplace_back(std::move(pk_lab));
+		m_peaks60_rlu.emplace_back(std::move(pk_rlu));
 	}
 
 	for(int i=0; i<3; ++i)
@@ -201,7 +195,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 
 /**
- * set fourier components
+ * set fourier components, see p. 69 in [waizner17]
  */
 template<class t_real, class t_cplx, int ORDER>
 void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm)
@@ -229,9 +223,9 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 		const t_mat rotLab = tl2::rotation_matrix_2d<t_mat>(tl2::d2r<t_real>(60*rot_idx));
 		const t_mat rotRlu = tl2::transform<t_mat>(rotLab, m_Bmat, 0);
 
-		for(std::size_t peak_idx=0; peak_idx<m_peaks60rlu.size(); ++peak_idx)
+		for(std::size_t peak_idx=0; peak_idx<m_peaks60_rlu.size(); ++peak_idx)
 		{
-			const t_vec pk_rlu = tl2::prod_mv(rotRlu, m_peaks60rlu[peak_idx]);
+			const t_vec pk_rlu = tl2::prod_mv(rotRlu, m_peaks60_rlu[peak_idx]);
 			const int hk[2] = { lattidx(pk_rlu[0]), lattidx(pk_rlu[1]) };
 
 			t_vec_cplx& M = get_comp(m_M, hk[0], hk[1]);
@@ -239,8 +233,11 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 			if(hk[0] != 0 || hk[1] != 0)  // avoid singularity at (0, 0)
 			{
-				m[0] = m_peaks60lab[peak_idx][1] * m_fourier[peak_idx+1][1];
-				m[1] = m_peaks60lab[peak_idx][0] * m_fourier[peak_idx+1][0];
+				t_vec pk_lab = tl2::prod_mv(m_Bmat, m_peaks60_rlu[peak_idx]);
+				pk_lab /= tl2::veclen(pk_lab);
+
+				m[0] = pk_lab[1] * m_fourier[peak_idx+1][1];
+				m[1] = pk_lab[0] * m_fourier[peak_idx+1][0];
 				m = tl2::prod_mv(rotLab, m);
 			}
 

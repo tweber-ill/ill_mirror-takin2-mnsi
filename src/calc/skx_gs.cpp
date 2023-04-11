@@ -225,7 +225,7 @@ int main(int argc, char **argv)
 	skx.SetB(B_theo, false);
 	//skx.SetB(25., false);
 
-	const auto& peaks60 = skx.GetPeaks60(true);
+	const auto& peaks60 = skx.GetPeaks60();
 
 	std::cout << "Bc2_exp = " << skx.GetBC2(true) << ", "
 		<< "Bc2_theo = " << skx.GetBC2(false) << "."

@@ -116,10 +116,7 @@ public:
 
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
 
-	const std::vector<t_vec>& GetPeaks60(bool rlu = true)
-	{
-		return rlu ? m_peaks60rlu : m_peaks60lab;
-	}
+	const std::vector<t_vec>& GetPeaks60() { return m_peaks60_rlu; }
 
 
 protected:
@@ -151,10 +148,8 @@ private:
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<std::pair<int, int>> m_idx2[3], m_idx3[4];
 
-	// one sixth of the magnetic lattice
-	std::vector<t_vec> m_peaks60lab{}, m_peaks60rlu{};
-	// all satellite peaks
-	std::vector<t_vec> m_allpeaks_rlu{};
+	// all satellite peaks and one sixth of them, respectively
+	std::vector<t_vec> m_allpeaks_rlu{}, m_peaks60_rlu{};
 
 	ublas::matrix<t_vec_cplx> m_M{};
 	t_vec m_Grlu{};
