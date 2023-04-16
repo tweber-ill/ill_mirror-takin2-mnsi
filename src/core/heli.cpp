@@ -83,21 +83,18 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
-	// phi^2
-	cF += (m_T_theo + 1.) * m0_sq;
-
-	// phi^4
-	cF += m0_sq*m0_sq;
+	cF += (m_T_theo + 1.) * m0_sq;  // phi^2
+	cF += m0_sq * m0_sq;            // phi^4
 
 	const t_real mult = 2.;   // 2 * top peaks
 	for(int i=/*-ORDER*/ 1; i<=ORDER; ++i)
 	{
+		const t_real q = t_real(i); // q_vec = [0, 0, q]
+		const t_real q_sq = q*q;
+
 		const t_vec_cplx& mi = get_comp(m_fourier, i);
 		t_vec_cplx mj = tl2::conjugate_vec(mi);
 		const auto m_sq = tl2::inner(mi, mj);
-
-		const t_real q = t_real(i); // q_vec = [0, 0, q]
-		const t_real q_sq = q*q;
 
 		// dipolar interaction
 		cF += mult * g_chi<t_real> * mi[2]/**q*/ * mj[2]/**q / q_sq*/;
@@ -105,12 +102,9 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		// dmi, mi * ([0,0,q] x mj) = mi * (-q*mj[1], q*mj[0], 0])
 		cF += -mult * t_cplx(0., 2.) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
-		// phi^2
-		cF += mult * m_sq * q_sq;
-		cF += mult * (m_T_theo + 1.) * m_sq;
-
-		// phi^4
-		cF += mult * m0_sq * m_sq;
+		cF += mult * m_sq * q_sq;             // phi^2
+		cF += mult * (m_T_theo + 1.) * m_sq;  // phi^2
+		cF += mult * m0_sq * m_sq;            // phi^4
 
 		// high-order correction
 		cF += mult * g_hoc_b<t_real, HELI_USE_HOC> * m_sq * q_sq*q_sq;
