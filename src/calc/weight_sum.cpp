@@ -172,10 +172,10 @@ void calc_disp(const t_vec& Gvec,
 		<< " " << std::left << std::setw(COL_SIZE) << "weight_heli_sum_bose"
 		<< "\n";
 
-	auto iterHeliNSF = boost::histogram::indexed(histWeightsHeliNSF).begin();
-	auto iterHeliSF = boost::histogram::indexed(histWeightsHeliSF).begin();
-	auto iterNSF = boost::histogram::indexed(histWeightsNSF).begin();
-	for(const auto& val : boost::histogram::indexed(histWeightsSF))
+	auto iterHeliNSF = hist::indexed(histWeightsHeliNSF).begin();
+	auto iterHeliSF = hist::indexed(histWeightsHeliSF).begin();
+	auto iterNSF = hist::indexed(histWeightsNSF).begin();
+	for(const auto& val : hist::indexed(histWeightsSF))
 	{
 		t_real E = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
 		t_real w = *val / t_real{E_BINS};
