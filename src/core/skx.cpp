@@ -108,7 +108,7 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 
 
 /**
- * free energy
+ * free energy, equ. 3.37 in [waizner17]
  */
 template<class t_real, class t_cplx, int ORDER>
 t_real Skx<t_real, t_cplx, ORDER>::F()
@@ -133,12 +133,12 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	const t_vec_cplx& m0 = m_M(0, 0);
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dipolar interaction
+	// dipolar interaction involving m0
 	static const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
-	cF += (m_T + 1.) * m0_sq; // phi^2
-	cF += m0_sq * m0_sq;      // phi^4
+	cF += (m_T + 1.) * m0_sq; // m^2 involving m0
+	cF += m0_sq * m0_sq;      // m^4 involving m0
 
 	const t_real mult = 2.;   // 2 * top 180 degree peaks
 	for(const t_vec& q_rlu : m_allpeaks_rlu)
@@ -154,18 +154,18 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 		t_vec_cplx mj = tl2::conjugate_vec(m);
 		const t_cplx m_sq = tl2::inner(m, mj);
 
-		// dipolar interaction
+		// dipolar interaction, equ. 3.24 in [waizner17]
 		if(!tl2::float_equal<t_real>(q_sq, 0., m_eps))
 			cF += mult * g_chi<t_real> * tl2::inner(m, qc) * tl2::inner(mj, qc) / q_sq;
 
 		cF += -mult * t_cplx(0., 2.) * tl2::inner(m, tl2::cross_3(qc, mj)); // dmi
-		cF += mult * m_sq * q_sq;        // phi^2
-		cF += mult * (m_T + 1.) * m_sq;  // phi^2
-		cF += mult * m0_sq * m_sq;       // phi^4
+		cF += mult * m_sq * q_sq;        // (del m)^2
+		cF += mult * (m_T + 1.) * m_sq;  // m^2
+		cF += mult * m0_sq * m_sq;       // m^4
 		cF += mult * g_hoc_b<t_real, SKX_USE_HOC> * m_sq * q_sq*q_sq; // high-order correction
 	}
 
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // phi^4 involving m0
+	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // m^4 involving m0
 	{
 		if(!is_hk_in_top_half(-m_idx2[0][i].first, -m_idx2[0][i].second))
 			continue;
@@ -176,7 +176,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 
 		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
-	for(std::size_t i=0; i<m_idx3[0].size(); ++i)  // phi^4
+	for(std::size_t i=0; i<m_idx3[0].size(); ++i)  // m^4
 	{
 		if(!is_hk_in_top_half(-m_idx3[0][i].first, -m_idx3[0][i].second))
 			continue;
@@ -248,7 +248,7 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 
 
 /**
- * energies and spectral weights
+ * energies and spectral weights, see pp. 64-68 in [waizner17]
  */
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -259,7 +259,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 	avoid_G(qh, qk, ql, m_eps);
 	const t_vec q_lab = tl2::make_vec<t_vec>({ qh, qk, -ql });
 
-	// M-cross tensor
+	// M-cross tensor, p. 67 in [waizner17]
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx2[2].size(); ++i)
@@ -271,7 +271,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 					get_comp(m_M, m_idx2[2][i].first, m_idx2[2][i].second));
 	}
 
-	// fluctuation tensor
+	// fluctuation tensor, equ. 6.13 in [waizner17]
 	auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
 
 	for(std::size_t i=0; i<m_idx3[3].size(); ++i)
@@ -294,24 +294,24 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		const t_vec Q = pk_lab + q_lab;
 		const t_real Q_sq = tl2::inner(Q, Q);
 
-		auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
-		{
+		auto get_demag = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+		{ // equ. 6.14 in [waizner17]
 			if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
 				return 0.;
 			return g_chi<t_real>/Q_sq * Qi*Qj;
 		};
 
 		t_mat_cplx mat(3, 3);
-		for(int i=0; i<3; ++i)  // diagonal
-			mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq
+		for(int i=0; i<3; ++i)  // diagonal part of equ. between 6.13 and 6.14 in [waizner17]
+			mat(i, i) = get_demag(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq
 				+ g_hoc_b<t_real, SKX_USE_HOC>*Q_sq*Q_sq;
-		for(int i=0; i<2; ++i)  // off-diagonal
+		for(int i=0; i<2; ++i)  // off-diagonal part
 		{
 			for(int j=i+1; j<3; ++j)
 			{
 				int k = 3 - i - j;                // third index in {0,1,2}
 				t_real sign = (k==1 ? 1. : -1.);  // - + -
-				mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*t_cplx(0., 2.)*Q[k];
+				mat(i, j) = get_demag(Q[i], Q[j], Q_sq) + sign*t_cplx(0., 2.)*Q[k];
 				mat(j, i) = std::conj(mat(i, j));
 			}
 		}

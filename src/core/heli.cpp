@@ -71,7 +71,7 @@ Heli<t_real, t_cplx, ORDER>::Heli()
 
 
 /**
- * free energy
+ * free energy, equ. 3.37 in [waizner17]
  */
 template<class t_real, class t_cplx, int ORDER>
 t_real Heli<t_real, t_cplx, ORDER>::F()
@@ -79,12 +79,12 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	const t_vec_cplx& m0 = m_fourier[0];
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dipolar interaction
+	// dipolar interaction involving m0
 	const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
 	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
 
-	cF += (m_T_theo + 1.) * m0_sq;  // phi^2
-	cF += m0_sq * m0_sq;            // phi^4
+	cF += (m_T_theo + 1.) * m0_sq;  // m^2 involving m0
+	cF += m0_sq * m0_sq;            // m^4 involving m0
 
 	const t_real mult = 2.;   // 2 * top peaks
 	for(int i=/*-ORDER*/ 1; i<=ORDER; ++i)
@@ -96,22 +96,21 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		t_vec_cplx mj = tl2::conjugate_vec(mi);
 		const auto m_sq = tl2::inner(mi, mj);
 
-		// dipolar interaction
+		// dipolar interaction, equ. 3.24 in [waizner17]
 		cF += mult * g_chi<t_real> * mi[2]/**q*/ * mj[2]/**q / q_sq*/;
 
 		// dmi, mi * ([0,0,q] x mj) = mi * (-q*mj[1], q*mj[0], 0])
 		cF += -mult * t_cplx(0., 2.) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
 
-		cF += mult * m_sq * q_sq;             // phi^2
-		cF += mult * (m_T_theo + 1.) * m_sq;  // phi^2
-		cF += mult * m0_sq * m_sq;            // phi^4
+		cF += mult * m_sq * q_sq;             // (del m)^2
+		cF += mult * (m_T_theo + 1.) * m_sq;  // m^2
+		cF += mult * m0_sq * m_sq;            // m^4
 
 		// high-order correction
 		cF += mult * g_hoc_b<t_real, HELI_USE_HOC> * m_sq * q_sq*q_sq;
 	}
 
-	// phi^4
-	for(std::size_t i=0; i<m_idx2[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx2[0].size(); ++i)  // m^4 involving m0
 	{
 		if(-m_idx2[0][i] <= 0) continue;
 
@@ -121,7 +120,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 
 		cF += mult * tl2::inner(m0, m1) * tl2::inner(m2, m3);
 	}
-	for(std::size_t i=0; i<m_idx3[0].size(); ++i)
+	for(std::size_t i=0; i<m_idx3[0].size(); ++i)  // m^4
 	{
 		if(-m_idx3[0][i] <= 0) continue;
 
@@ -133,8 +132,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += mult * tl2::inner(m1, m2) * tl2::inner(m3, m4);
 	}
 
-	// zeeman shift
-	cF += -m_B_theo * std::sqrt(m0_sq);
+	cF += -m_B_theo * std::sqrt(m0_sq);  // zeeman shift
 	return cF.real();
 }
 
@@ -166,7 +164,7 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &four
 
 
 /**
- * energies and spectral weights
+ * energies and spectral weights, see pp. 64-68 in [waizner17]
  */
 template<class t_real, class t_cplx, int ORDER>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -182,8 +180,8 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	std::size_t mxrowbegin = 0;
 	std::vector<t_mat_cplx> polMat(3);
 
-	auto get_dip = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
-	{
+	auto get_demag = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+	{ // equ. 6.14 in [waizner17]
 		if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
 			return 0.;
 		return g_chi<t_real>/Q_sq * Qi*Qj;
@@ -191,7 +189,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 
 	if(!m_explicitcalc)  // calculate using ground state magnetisation
 	{
-		// M-cross tensor
+		// M-cross tensor, p. 67 in [waizner17]
 		auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
 
 		for(std::size_t i=0; i<m_idx2[2].size(); ++i)
@@ -201,7 +199,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 				tl2::skew<t_mat_cplx>(vecM);
 		}
 
-		// fluctuation tensor
+		// fluctuation tensor, equ. 6.13 in [waizner17]
 		auto Fluc = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE>>();
 
 		for(std::size_t i=0; i<m_idx3[3].size(); ++i)
@@ -221,16 +219,16 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 			const t_real Q_sq = tl2::inner(Q, Q);
 
 			t_mat_cplx mat(3, 3);
-			for(int i=0; i<3; ++i)  // diagonal
-				mat(i, i) = get_dip(Q[i], Q[i], Q_sq) + 1. + m_T_theo +
+			for(int i=0; i<3; ++i)  // diagonal part of equ. between 6.13 and 6.14 in [waizner17]
+				mat(i, i) = get_demag(Q[i], Q[i], Q_sq) + 1. + m_T_theo +
 					Q_sq + g_hoc_b<t_real, HELI_USE_HOC>*Q_sq*Q_sq;
-			for(int i=0; i<2; ++i)  // off-diagonal
+			for(int i=0; i<2; ++i)  // off-diagonal part
 			{
 				for(int j=i+1; j<3; ++j)
 				{
 					int k = 3 - i - j;                // third index in {0,1,2}
 					t_real sign = (k==1 ? 1. : -1.);  // - + -
-					mat(i, j) = get_dip(Q[i], Q[j], Q_sq) + sign*2.*imag*Q[k];
+					mat(i, j) = get_demag(Q[i], Q[j], Q_sq) + sign*2.*imag*Q[k];
 					mat(j, i) = std::conj(mat(i, j));
 				}
 			}
@@ -318,18 +316,18 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 
 			// fluctuation matrix
 			Fluc2d(3*pk + 0, 3*pk + 0) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*heli_amp*heli_amp
-				+ 0.5*get_dip(qh*qh + qk*qk, 1., q2) + 2.*Dqmin*qz;
-			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_dip(1., 1., q2) * hx * hx;
-			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_dip(qz, 1., q2) - Dqmin) * std::sqrt(2) * hx;
+				+ 0.5*get_demag(qh*qh + qk*qk, 1., q2) + 2.*Dqmin*qz;
+			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_demag(1., 1., q2) * hx * hx;
+			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_demag(qz, 1., q2) - Dqmin) * std::sqrt(2) * hx;
 
 			Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
 			Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*Dqmin*qz;
-			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_dip(qz, 1., q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
+			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_demag(qz, 1., q2) + Dqmin) * std::sqrt(2.) * std::conj(hx);
 
 			Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
 			Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
 			Fluc2d(3*pk + 2, 3*pk + 2) = q2 + Aqmin4*q2*q2 + pitch_qmin + interact/3.*M_amp*M_amp
-				+ get_dip(qz*qz, 1., q2);
+				+ get_demag(qz*qz, 1., q2);
 
 			if(pk > 0)
 				Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
