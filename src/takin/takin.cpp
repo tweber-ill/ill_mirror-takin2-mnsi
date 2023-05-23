@@ -62,7 +62,7 @@ protected:
 	t_real m_dB = 0.35;
 	t_real m_dcut = 0.02;
 	t_real m_dlowE = 1e-3;
-	t_real m_dhighq = 0.22;
+	t_real m_dhighq = 0.2;
 
 	int m_iOnlyMode = -1;
 	int m_iPolChan = 0;

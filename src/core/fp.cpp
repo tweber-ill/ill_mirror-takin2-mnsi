@@ -35,7 +35,7 @@ void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real /*Px*
 
 /**
  * query the dispersion
- * warning: at high q (ca. q > 11*k_h) the dispersion branches oscillate back, which is unphysical
+ * warning: at high q (ca. q > 10*k_h) the dispersion branches oscillate back, which is unphysical
  */
 template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
