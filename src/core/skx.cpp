@@ -395,7 +395,7 @@ Skx<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, t
 
 			return tl2::veclen_sq(q1) < tl2::veclen_sq(q2);
 		}); iterClosest != m_allpeaks_rlu.end())
-			Gmagrlu = *iterClosest;
+		Gmagrlu = *iterClosest;
 	t_vec qmagrlu = Qmagrlu - Gmagrlu;
 	t_vec qmaglab = tl2::prod_mv(m_Bmat, qmagrlu);
 

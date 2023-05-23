@@ -35,6 +35,7 @@ void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real /*Px*
 
 /**
  * query the dispersion
+ * warning: at high q (ca. q > 11*k_h) the dispersion branches oscillate back, which is unphysical
  */
 template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -74,8 +75,7 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 		t_mat_cplx H = (q*q + g_hoc<t_real>*q*q*q*q + 1. + dh0) * ident2;
 		H += 2.*sigma[2] * qvec[2];
 		H += g_chi<t_real>/(2.*q*q) * tl2::make_mat<t_mat_cplx>(
-			{{ qm*qp, qm*qm },
-			{ qp*qp, qm*qp } });
+			{{ qm*qp, qm*qm }, { qp*qp, qm*qp } });
 
 		// eigenvectors and -values
 		std::vector<t_vec_cplx> evecs;

@@ -62,6 +62,7 @@ protected:
 	t_real m_dB = 0.35;
 	t_real m_dcut = 0.02;
 	t_real m_dlowE = 1e-3;
+	t_real m_dhighq = 0.22;
 
 	int m_iOnlyMode = -1;
 	int m_iPolChan = 0;
@@ -69,6 +70,7 @@ protected:
 	int m_iProjNeutron = 1;
 	int m_ionlylf = 0;
 	int m_iFilterLowE = 0;
+	int m_iFilterHighq = 0;
 
 	t_vec m_vecG = tl2::make_vec<t_vec>({1,1,0});
 	t_vec m_vecB = tl2::make_vec<t_vec>({1,1,0});
@@ -127,6 +129,7 @@ SkxMod::SkxMod()
 
 	m_fp.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
 	m_fp.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
+	m_fp.SetFilterZeroWeight(true);
 
 	m_heli.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
 	m_heli.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
@@ -214,12 +217,19 @@ t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	// only calculate dispersion if global weight factor is not 0
 	if(!tl2::float_equal(m_dS0, t_real(0)))
 	{
-		if(m_iwhich_disp == 0)
-			std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_skx.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
-		else if(m_iwhich_disp == 1)
-			std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_fp.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
-		else if(m_iwhich_disp == 2)
-			std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_heli.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
+		bool filter_high_q = false;
+		if(m_iFilterHighq)
+			filter_high_q = (tl2::veclen(vecq) > m_dhighq);
+
+		if(!filter_high_q)
+		{
+			if(m_iwhich_disp == 0)
+				std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_skx.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
+			else if(m_iwhich_disp == 1)
+				std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_fp.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
+			else if(m_iwhich_disp == 2)
+				std::tie(vecE, vecW[0], vecW[1], vecW[2], vecW[3]) = m_heli.GetDisp(dh, dk, dl, dE-m_dErange, dE+m_dErange);
+		}
 
 		if(m_iFilterLowE)
 		{
@@ -262,7 +272,9 @@ std::vector<SkxMod::t_var> SkxMod::GetVars() const
 	vecVars.push_back(SqwBase::t_var{"E_range", "real", tl2::var_to_str(m_dErange)});
 	vecVars.push_back(SqwBase::t_var{"bose_cutoff", "real", tl2::var_to_str(m_dcut)});
 	vecVars.push_back(SqwBase::t_var{"low_E", "real", tl2::var_to_str(m_dlowE)});
+	vecVars.push_back(SqwBase::t_var{"high_q", "real", tl2::var_to_str(m_dhighq)});
 	vecVars.push_back(SqwBase::t_var{"filter_low_E", "int", tl2::var_to_str(m_iFilterLowE)});
+	vecVars.push_back(SqwBase::t_var{"filter_high_q", "int", tl2::var_to_str(m_iFilterHighq)});
 	vecVars.push_back(SqwBase::t_var{"only_mode", "int", tl2::var_to_str(m_iOnlyMode)});
 	vecVars.push_back(SqwBase::t_var{"sigma", "real", tl2::var_to_str(m_dSigma)});
 	vecVars.push_back(SqwBase::t_var{"inc_amp", "real", tl2::var_to_str(m_dIncAmp)});
@@ -315,9 +327,17 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		{
 			m_dlowE = tl2::str_to_var<t_real>(strVal);
 		}
+		else if(strVar == "high_q")
+		{
+			m_dhighq = tl2::str_to_var<t_real>(strVal);
+		}
 		else if(strVar == "filter_low_E")
 		{
 			m_iFilterLowE = tl2::str_to_var<decltype(m_iFilterLowE)>(strVal);
+		}
+		else if(strVar == "filter_high_q")
+		{
+			m_iFilterHighq = tl2::str_to_var<decltype(m_iFilterHighq)>(strVal);
 		}
 		else if(strVar == "sigma")
 		{
@@ -378,17 +398,18 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		{
 			m_vecB = str_to_vec<decltype(m_vecB)>(strVal);
 
-			m_skx.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2], m_vecPin[0],m_vecPin[1],m_vecPin[2]);
+			m_skx.SetCoords(m_vecB[0], m_vecB[1], m_vecB[2],
+				m_vecPin[0], m_vecPin[1], m_vecPin[2]);
 			m_skx.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
 
-			m_fp.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
+			m_fp.SetCoords(m_vecB[0], m_vecB[1], m_vecB[2]);
 			m_fp.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
 
-			m_heli.SetCoords(m_vecB[0],m_vecB[1],m_vecB[2]);
+			m_heli.SetCoords(m_vecB[0], m_vecB[1], m_vecB[2]);
 			m_heli.SetG(m_vecG[0], m_vecG[1], m_vecG[2]);
 
-			m_lf.SetPinning(m_vecPin[0],m_vecPin[1],m_vecPin[2],
-				m_vecB[0],m_vecB[1],m_vecB[2]);
+			m_lf.SetPinning(m_vecPin[0], m_vecPin[1], m_vecPin[2],
+				m_vecB[0], m_vecB[1], m_vecB[2]);
 		}
 		else if(strVar == "Pin_dir")
 		{
@@ -463,7 +484,9 @@ SqwBase* SkxMod::shallow_copy() const
 	pMod->m_dErange = this->m_dErange;
 	pMod->m_dcut = this->m_dcut;
 	pMod->m_dlowE = this->m_dlowE;
+	pMod->m_dhighq = this->m_dhighq;
 	pMod->m_iFilterLowE = this->m_iFilterLowE;
+	pMod->m_iFilterHighq = this->m_iFilterHighq;
 
 	return pMod;
 }
