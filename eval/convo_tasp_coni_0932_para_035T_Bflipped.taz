@@ -19,35 +19,35 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1684936119.134547</timestamp>
+		<timestamp>1684928370.091398</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
 		<user>tw</user>
 		<version>2.5.2</version>
 	</meta>
 	<monteconvo>
-		<E_from>-4.041000e-01</E_from>
-		<E_to>7.658000e-01</E_to>
+		<E_from>-4.004000e-01</E_from>
+		<E_to>7.996000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>1e-4</S_offs>
-		<S_scale>2</S_scale>
+		<S_scale>1.5</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
 		<algo_idx>2</algo_idx>
 		<ana_foc>0</ana_foc>
-		<autosave>/tmp/convo_tasp_089_diag.dat</autosave>
+		<autosave>/tmp/convo_tasp_coni_0932_para_0_35T_Bflipped.dat</autosave>
 		<crys>MnSi.taz</crys>
 		<filter_col/>
 		<filter_val/>
 		<fixedk>1</fixedk>
-		<h_from>8.897000e-01</h_from>
-		<h_to>8.899000e-01</h_to>
+		<h_from>9.322000e-01</h_from>
+		<h_to>9.321000e-01</h_to>
 		<h_to_2>9.300000e-01</h_to_2>
 		<has_scanfile>1</has_scanfile>
 		<instr>instr/tasp.taz</instr>
-		<k_from>1.000300e+00</k_from>
-		<k_to>1.000000e+00</k_to>
+		<k_from>9.318000e-01</k_from>
+		<k_to>9.320000e-01</k_to>
 		<k_to_2>1.070000e+00</k_to_2>
-		<kfix>1.449900e+00</kfix>
+		<kfix>1.450100e+00</kfix>
 		<l_from>0.000000e+00</l_from>
 		<l_to>0.000000e+00</l_to>
 		<l_to_2>0.000000e+00</l_to_2>
@@ -55,7 +55,7 @@
 		<neutron_count>250</neutron_count>
 		<sample_step_count>1</sample_step_count>
 		<scan_2d>0</scan_2d>
-		<scanfile>data/psi_tasp/exp_20181324_2/tasp2018n003287.dat;data/psi_tasp/exp_20181324_2/tasp2018n003300.dat</scanfile>
+		<scanfile>data/psi_tasp/exp_20181324_1/tasp2018n001214.dat</scanfile>
 		<sqw>skxmod</sqw>
 		<sqw_conf/>
 		<sqw_errors>
@@ -111,19 +111,19 @@
 			<which_disp>0</which_disp>
 		</sqw_fitvar>
 		<sqw_params>
-			<B>0.169845</B>
-			<B_dir>-1 -1 0 </B_dir>
+			<B>0.30485</B>
+			<B_dir>1 1 0 </B_dir>
 			<E_range>1</E_range>
 			<G>1 1 0 </G>
 			<Pin_dir>1 -1 0 </Pin_dir>
 			<S0>1</S0>
-			<T>28.52</T>
+			<T>28.59</T>
 			<bose_cutoff>0.001</bose_cutoff>
 			<explicit_calc>1</explicit_calc>
 			<filter_high_q>0</filter_high_q>
 			<filter_low_E>0</filter_low_E>
 			<high_q>0.22</high_q>
-			<inc_amp>20</inc_amp>
+			<inc_amp>12</inc_amp>
 			<inc_sigma>0.015</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0.5</lf_gamma>
@@ -134,7 +134,7 @@
 			<pol_chan>0</pol_chan>
 			<proj_neutron>1</proj_neutron>
 			<sigma>0.015</sigma>
-			<which_disp>0</which_disp>
+			<which_disp>2</which_disp>
 		</sqw_params>
 		<sqw_ranges>
 			<B>open : open</B>
