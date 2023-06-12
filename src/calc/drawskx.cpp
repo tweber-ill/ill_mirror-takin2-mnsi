@@ -5,6 +5,9 @@
  */
 
 #include <fstream>
+#include <vector>
+#include <string>
+
 #include "tlibs2/libs/math17.h"
 
 
@@ -20,8 +23,7 @@ t_vec helix_vec(const t_vec& vecCoord)
 	// helix angles
 	for(t_real dAngle : {0., 120., 240.})
 	{
-		dAngle = tl2::d2r(dAngle);
-		t_mat matRot = tl2::rotation_matrix_3d_z(dAngle);
+		t_mat matRot = tl2::rotation_matrix_3d_z(tl2::d2r(dAngle));
 		t_vec vecCoordRot = ublas::prod(ublas::trans(matRot), vecCoord);
 
 		// helix position
@@ -38,29 +40,24 @@ t_vec helix_vec(const t_vec& vecCoord)
 }
 
 
-void calcskx(const char* pcFile)
+void calcskx(const char* pcFile, int iCnt = 24, t_real dPhaseScale = 2., t_real dVecLen = 0.3)
 {
-	const int iCntX = 24, iCntY = 24;
-	const t_real dXScale = 2., dYScale = 2.;
-	const t_real dDirScale = 0.3;
-
 	std::ofstream ofstr(pcFile);
 	ofstr.precision(8);
 
-	for(int iX=0; iX<iCntX; ++iX)
+	std::vector<t_real> phi = tl2::linspace<t_real>(
+		-tl2::pi<t_real>*dPhaseScale, tl2::pi<t_real>*dPhaseScale, iCnt);
+
+	for(t_real dX : phi)
 	{
-		t_real dX = -tl2::pi<t_real> + t_real(iX)/t_real(iCntX-1) * 2.*tl2::pi<t_real>;
-
-		for(int iY=0; iY<iCntY; ++iY)
+		for(t_real dY : phi)
 		{
-			t_real dY = -tl2::pi<t_real> + t_real(iY)/t_real(iCntY-1) * 2.*tl2::pi<t_real>;
-
 			t_vec vecCoord(3);
-			vecCoord[0] = dXScale*dX;
-			vecCoord[1] = dYScale*dY;
+			vecCoord[0] = dX;
+			vecCoord[1] = dY;
 			vecCoord[2] = 0.;
 
-			t_vec vec = helix_vec(vecCoord)*dDirScale;
+			t_vec vec = helix_vec(vecCoord) * dVecLen;
 
 			ofstr << vecCoord[0] << "\t" << vecCoord[1] << "\t" << vecCoord[2] << "\t\t";
 			ofstr << vec[0] << "\t" << vec[1] << "\t" << vec[2] << std::endl;
@@ -69,8 +66,19 @@ void calcskx(const char* pcFile)
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
-	calcskx("drawskx.dat");
+	int iCnt = 24;
+	t_real dPhaseScale = 2.;
+	t_real dVecLen = 0.3;
+
+	if(argc > 1)
+		iCnt = std::stoi(argv[1]);
+	if(argc > 2)
+		dPhaseScale = std::stod(argv[2]);
+	if(argc > 3)
+		dVecLen = std::stod(argv[3]);
+
+	calcskx("drawskx.dat", iCnt, dPhaseScale, dVecLen);
 	return 0;
 }
