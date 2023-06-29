@@ -69,7 +69,7 @@
 		<pop_sample_wq>1.000000e+00</pop_sample_wq>
 		<pop_source_rect>1</pop_source_rect>
 		<pop_src_h>1.200000e+01</pop_src_h>
-		<pop_src_w>2.500000e+00</pop_src_w>
+		<pop_src_w>4.000000e+00</pop_src_w>
 		<sample_mosaic>1.400000e+01</sample_mosaic>
 		<sample_scatter_sense>0</sample_scatter_sense>
 		<scatter_kf_vert>0</scatter_kf_vert>
