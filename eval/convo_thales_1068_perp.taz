@@ -29,7 +29,7 @@
 		<E_to>-8.009000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>1.25e-5</S_offs>
-		<S_scale>5</S_scale>
+		<S_scale>4</S_scale>
 		<S_slope>0</S_slope>
 		<algo>1</algo>
 		<ana_foc>0</ana_foc>

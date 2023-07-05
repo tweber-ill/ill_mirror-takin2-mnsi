@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <taz>
 	<meta>
-		<comment/>
+		<comment>Thales instrument, see: https://doi.org/10.1080/10448632.2015.1057050</comment>
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Reso.</info>
 		<module>takin/res</module>
-		<timestamp>1656505115.682478</timestamp>
+		<timestamp>1688463030.653406</timestamp>
 		<url>https://code.ill.fr/scientific-software/takin</url>
-		<user>tweber</user>
-		<version>2.2</version>
+		<user>tw</user>
+		<version>2.5.3</version>
 	</meta>
 	<reso>
 		<E>0</E>
 		<Q>1.06667</Q>
 		<algo>pop</algo>
 		<algo_idx>3</algo_idx>
-		<ana_d>3.355</ana_d>
+		<ana_d>3.355000e+00</ana_d>
 		<ana_effic>1.000000e+00</ana_effic>
-		<ana_mosaic>3.000000e+01</ana_mosaic>
+		<ana_effic_file/>
+		<ana_mosaic>4.000000e+01</ana_mosaic>
 		<ana_scatter_sense>1</ana_scatter_sense>
-		<eck_ana_mosaic_v>3.000000e+01</eck_ana_mosaic_v>
-		<eck_mono_mosaic_v>3.000000e+01</eck_mono_mosaic_v>
-		<eck_sample_mosaic_v>14</eck_sample_mosaic_v>
-		<eck_sample_pos_x>0</eck_sample_pos_x>
-		<eck_sample_pos_y>0</eck_sample_pos_y>
-		<eck_sample_pos_z>0</eck_sample_pos_z>
-		<h_coll_after_sample>3.000000e+01</h_coll_after_sample>
+		<eck_ana_mosaic_v>4.000000e+01</eck_ana_mosaic_v>
+		<eck_mono_mosaic_v>4.000000e+01</eck_mono_mosaic_v>
+		<eck_sample_mosaic_v>1.400000e+01</eck_sample_mosaic_v>
+		<eck_sample_pos_x>0.000000e+00</eck_sample_pos_x>
+		<eck_sample_pos_y>0.000000e+00</eck_sample_pos_y>
+		<eck_sample_pos_z>0.000000e+00</eck_sample_pos_z>
+		<h_coll_after_sample>30</h_coll_after_sample>
 		<h_coll_ana>9.999000e+03</h_coll_ana>
 		<h_coll_before_sample>30</h_coll_before_sample>
 		<h_coll_mono>9.999000e+03</h_coll_mono>
@@ -33,34 +34,35 @@
 		<ki>1.4</ki>
 		<mc_live_neutrons>0</mc_live_neutrons>
 		<mc_live_sample_neutrons>1</mc_live_sample_neutrons>
-		<mono_d>3.355</mono_d>
-		<mono_mosaic>3.000000e+01</mono_mosaic>
+		<mono_d>3.355000e+00</mono_d>
+		<mono_mosaic>4.000000e+01</mono_mosaic>
 		<mono_refl>1.000000e+00</mono_refl>
+		<mono_refl_file/>
 		<mono_scatter_sense>1</mono_scatter_sense>
 		<pop_ana_curvh>0.000000e+00</pop_ana_curvh>
 		<pop_ana_curvv>1.400000e+02</pop_ana_curvv>
-		<pop_ana_h>9.000000e+00</pop_ana_h>
-		<pop_ana_thick>4.000000e-01</pop_ana_thick>
+		<pop_ana_h>1.300000e+01</pop_ana_h>
+		<pop_ana_thick>2.000000e-01</pop_ana_thick>
 		<pop_ana_use_curvh>0</pop_ana_use_curvh>
 		<pop_ana_use_curvv>2</pop_ana_use_curvv>
-		<pop_ana_w>1.450000e+01</pop_ana_w>
-		<pop_det_h>5.000000e+00</pop_det_h>
+		<pop_ana_w>1.750000e+01</pop_ana_w>
+		<pop_det_h>8.000000e+00</pop_det_h>
 		<pop_det_rect>1</pop_det_rect>
-		<pop_det_w>2.500000e+00</pop_det_w>
-		<pop_dist_ana_det>7.400000e+01</pop_dist_ana_det>
+		<pop_det_w>5.000000e+00</pop_det_w>
+		<pop_dist_ana_det>8.600000e+01</pop_dist_ana_det>
 		<pop_dist_mono_monitor>1.000000e+02</pop_dist_mono_monitor>
 		<pop_dist_mono_sample>2.000000e+02</pop_dist_mono_sample>
-		<pop_dist_sample_ana>1.256700e+02</pop_dist_sample_ana>
+		<pop_dist_sample_ana>116.35</pop_dist_sample_ana>
 		<pop_dist_src_mono>2.000000e+02</pop_dist_src_mono>
-		<pop_guide_divh>1.500000e+01</pop_guide_divh>
-		<pop_guide_divv>1.500000e+01</pop_guide_divv>
-		<pop_monitor_h>1.200000e+01</pop_monitor_h>
-		<pop_monitor_w>5.000000e+00</pop_monitor_w>
+		<pop_guide_divh>3.600000e+01</pop_guide_divh>
+		<pop_guide_divv>3.600000e+01</pop_guide_divv>
+		<pop_monitor_h>1.100000e+01</pop_monitor_h>
+		<pop_monitor_w>1.100000e+01</pop_monitor_w>
 		<pop_mono_curvh>0.000000e+00</pop_mono_curvh>
 		<pop_mono_curvv>1.200000e+02</pop_mono_curvv>
-		<pop_mono_h>1.500000e+01</pop_mono_h>
-		<pop_mono_thick>4.000000e-01</pop_mono_thick>
-		<pop_mono_use_curvh>0</pop_mono_use_curvh>
+		<pop_mono_h>2.000000e+01</pop_mono_h>
+		<pop_mono_thick>2.000000e-01</pop_mono_thick>
+		<pop_mono_use_curvh>1</pop_mono_use_curvh>
 		<pop_mono_use_curvv>2</pop_mono_use_curvv>
 		<pop_mono_w>2.500000e+01</pop_mono_w>
 		<pop_sample_cuboid>0</pop_sample_cuboid>
@@ -73,8 +75,8 @@
 		<sample_mosaic>1.400000e+01</sample_mosaic>
 		<sample_scatter_sense>0</sample_scatter_sense>
 		<scatter_kf_vert>0</scatter_kf_vert>
-		<use_guide>0</use_guide>
 		<use_general_R0>1</use_general_R0>
+		<use_guide>1</use_guide>
 		<use_kf3>0</use_kf3>
 		<use_kfki>0</use_kfki>
 		<use_ki3>0</use_ki3>
@@ -84,6 +86,6 @@
 		<v_coll_ana>9.999000e+03</v_coll_ana>
 		<v_coll_before_sample>9.999000e+03</v_coll_before_sample>
 		<v_coll_mono>9.999000e+03</v_coll_mono>
-		<r0_scale>0.0002</r0_scale>
+		<r0_scale>0.00036</r0_scale>
 	</reso>
 </taz>
