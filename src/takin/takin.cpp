@@ -206,12 +206,13 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 
 t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	t_vec vecq = tl2::make_vec<t_vec>({dh, dk, dl}) - m_vecG;
+	const t_vec vecq = tl2::make_vec<t_vec>({dh, dk, dl}) - m_vecG;
+	const t_real bose = tl2::bose_cutoff(dE, m_dT, m_dcut);
 
 	// longitudinal fluctuations
 	t_real dS_lf = m_lf.S_para(vecq, dE);
 	if(m_ionlylf)
-		return dS_lf;
+		return m_dS0 * dS_lf * bose;
 
 	std::vector<t_real> vecE, vecW[4];
 	// only calculate dispersion if global weight factor is not 0
@@ -243,18 +244,22 @@ t_real SkxMod::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	}
 
 	// incoherent
-	t_real dInc=0;
+	t_real dInc = 0.;
 	if(!tl2::float_equal(m_dIncAmp, t_real(0)))
 		dInc = tl2::gauss_model(dE, t_real(0), m_dIncSigma, m_dIncAmp, t_real(0));
 
-	t_real dS = 0;
+	t_real dS = 0.;
 	for(std::size_t iE=0; iE<vecE.size(); ++iE)
 	{
 		if(!tl2::float_equal(vecW[m_iPolChan][iE], t_real(0)))
 			dS += tl2::gauss_model(dE, vecE[iE], m_dSigma, vecW[m_iPolChan][iE], t_real(0));
 	}
 
-	return m_dS0*dS * tl2::bose_cutoff(dE, m_dT, m_dcut) + dInc + dS_lf;
+	// longitudinal
+	dS += dS_lf;
+
+	// total
+	return m_dS0*dS*bose + dInc;
 }
 // ----------------------------------------------------------------------------
 
@@ -293,6 +298,7 @@ std::vector<SkxMod::t_var> SkxMod::GetVars() const
 	vecVars.push_back(SqwBase::t_var{"lf_invcorrel", "real", tl2::var_to_str(m_lf.GetInvCorrel())});
 	vecVars.push_back(SqwBase::t_var{"lf_A", "real", tl2::var_to_str(m_lf.GetA())});
 	vecVars.push_back(SqwBase::t_var{"lf_gamma", "real", tl2::var_to_str(m_lf.GetGamma())});
+	vecVars.push_back(SqwBase::t_var{"lf_lorentzian", "int", tl2::var_to_str((int)m_lf.GetUseLorentzian())});
 
 	return vecVars;
 }
@@ -445,6 +451,10 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		{
 			t_real dG = tl2::str_to_var<t_real>(strVal);
 			m_lf.SetGamma(dG);
+		}
+		else if(strVar == "lf_lorentzian")
+		{
+			m_lf.SetUseLorentzian(tl2::str_to_var<int>(strVal) != 0);
 		}
 	}
 }

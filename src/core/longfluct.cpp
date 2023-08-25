@@ -45,6 +45,11 @@ Longfluct::t_real Longfluct::S_para(const Longfluct::t_vec& q, Longfluct::t_real
 	if(tl2::float_equal<t_real>(m_A, 0))
 		return 0.;
 
+	// simple lorentzian approximation
+	if(m_use_lorentzian)
+		return tl2::lorentz_model_amp(E, 0., m_Gamma, m_A, 0.);
+
+	// full model
 	constexpr t_real Ec2 = 0.04;
 	constexpr t_real kh = g_kh_rlu_29K<t_real>;
 

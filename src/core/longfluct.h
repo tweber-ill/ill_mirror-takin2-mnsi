@@ -33,11 +33,13 @@ public:
 	void SetGamma(t_real G) { m_Gamma = G; }
 	void SetInvCorrel(t_real k) { m_inv_correl = k; }
 	void SetA(t_real A) { m_A = A; }
+	void SetUseLorentzian(bool b) { m_use_lorentzian = b; }
 
 	t_real GetT() const { return m_T; }
 	t_real GetGamma() const { return m_Gamma; }
 	t_real GetInvCorrel() const { return m_inv_correl; }
 	t_real GetA() const { return m_A; }
+	bool GetUseLorentzian() const { return m_use_lorentzian; }
 
 private:
 	// skx satellites
@@ -49,6 +51,8 @@ private:
 	t_real m_Gamma = 0.5;
 	t_real m_inv_correl = 0.1;
 	t_real m_A = 0.;
+
+	bool m_use_lorentzian = false;
 };
 
 #endif
