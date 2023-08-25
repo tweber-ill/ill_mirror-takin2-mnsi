@@ -302,16 +302,18 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		};
 
 		t_mat_cplx mat(3, 3);
-		for(int i=0; i<3; ++i)  // diagonal part of equ. between 6.13 and 6.14 in [waizner17]
+		for(int i=0; i<3; ++i)
+		{
+			// diagonal part of equ. between 6.13 and 6.14 in [waizner17]
 			mat(i, i) = get_demag(Q[i], Q[i], Q_sq) + 1. + m_T + Q_sq
 				+ g_hoc_b<t_real, SKX_USE_HOC>*Q_sq*Q_sq;
-		for(int i=0; i<2; ++i)  // off-diagonal part
-		{
+
+			// off-diagonal part of equ. between 6.13 and 6.14 in [waizner17]
 			for(int j=i+1; j<3; ++j)
 			{
-				int k = 3 - i - j;                // third index in {0,1,2}
-				t_real sign = (k==1 ? 1. : -1.);  // - + -
-				mat(i, j) = get_demag(Q[i], Q[j], Q_sq) + sign*t_cplx(0., 2.)*Q[k];
+				int k = 3 - i - j;               // third index in {0,1,2}
+				t_real eps = (k==1 ? -1. : 1.);  // even permutation of {i,j,k}?, here: +-+
+				mat(i, j) = get_demag(Q[i], Q[j], Q_sq) - eps*t_cplx(0., 2.)*Q[k];
 				mat(j, i) = std::conj(mat(i, j));
 			}
 		}
