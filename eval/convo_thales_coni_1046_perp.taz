@@ -57,7 +57,7 @@
 		<scan_2d>0</scan_2d>
 		<scanfile>data/ill_thales/exp_INTER-436/rawdata/022143</scanfile>
 		<sqw>skxmod</sqw>
-		<sqw_conf>/Users/t_weber/Projects/takin/plugins/mnsi/bin/heli_gs_20.bin</sqw_conf>
+		<sqw_conf>/users/tw/Projects/repos/takin-dev/mnsi/bin/heli_gs_20.bin</sqw_conf>
 		<sqw_errors>
 			<B>0</B>
 			<B_dir>0</B_dir>

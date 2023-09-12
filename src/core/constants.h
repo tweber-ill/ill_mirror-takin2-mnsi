@@ -71,7 +71,7 @@ constexpr t_real g_kh_rlu(t_real T)
  *	- Experimental values were measured and provided by A. Bauer (http://doi.org/10.1103/PhysRevB.85.214418).
  */
 template<class t_real = double>
-t_real get_bc2(t_real T, bool use_theo_units = true, bool use_dipole = true)
+t_real get_bc2(t_real T, bool use_theo_units = true, bool use_hoc_dipole = true)
 {
 	if(use_theo_units)
 	{
@@ -83,9 +83,11 @@ t_real get_bc2(t_real T, bool use_theo_units = true, bool use_dipole = true)
 		//const t_real ex1 = 0.49965808;  // critical exponent
 		//return amp1 * std::pow(-T, ex1);
 
+		// hoc dipole correction, calculated with "heliphase"
 		t_real amp2 = 1.;
-		if(use_dipole)
+		if(use_hoc_dipole)
 			amp2 = 1.11966394;
+
 		return g_g<t_real> * amp2 * std::sqrt(-0.5 - 0.5*T);
 	}
 	else
@@ -117,10 +119,10 @@ t_real get_bc2(t_real T, bool use_theo_units = true, bool use_dipole = true)
  * get field magnitude in theoretical units from experimental one
  */
 template<class t_real = double>
-t_real get_B_theo(t_real T_theo, t_real T_exp, t_real B_exp, bool use_dipole = true)
+t_real get_B_theo(t_real T_theo, t_real T_exp, t_real B_exp, bool use_hoc_dipole = true)
 {
-	t_real bc2_theo = get_bc2(T_theo, true, use_dipole);
-	t_real bc2_exp = get_bc2(T_exp, false, use_dipole);
+	t_real bc2_theo = get_bc2(T_theo, true, use_hoc_dipole);
+	t_real bc2_exp = get_bc2(T_exp, false, use_hoc_dipole);
 
 	return B_exp / bc2_exp * bc2_theo;
 }

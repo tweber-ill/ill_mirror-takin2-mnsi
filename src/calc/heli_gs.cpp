@@ -58,6 +58,11 @@ int main(int argc, char** argv)
 	args.add(boost::make_shared<opts::option_description>(
 		"B_from_exp", opts::bool_switch(&B_from_exp), "set B from experimental value"));
 
+	t_real B_exp = 0.171;
+	args.add(boost::make_shared<opts::option_description>(
+		"B_exp", opts::value<decltype(B_theo)>(&B_theo),
+		("experimental field, default: " + std::to_string(B_exp)).c_str()));
+
 	t_real scale0 = 10.;
 	args.add(boost::make_shared<opts::option_description>(
 		"scale0", opts::value<decltype(scale0)>(&scale0),
@@ -135,7 +140,7 @@ int main(int argc, char** argv)
 	if(B_half_BC2)
 		B_theo = bc2/2.;
 	else if(B_from_exp)
-		B_theo = get_B_theo(T_theo, T_exp, 0.171, !HELI_USE_HOC);
+		B_theo = get_B_theo(T_theo, T_exp, B_exp, !HELI_USE_HOC);
 	heli.SetB(B_theo, false);
 
 	// print the table of fourier components
