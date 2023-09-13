@@ -267,8 +267,6 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	}
 	else  // calculate using closed form
 	{
-		constexpr const t_real interact = 88.;
-
 #if HELI_USE_HOC != 0
 		constexpr const t_real A1 = g_hoc<t_real>, A2 = A1*A1, A3 = A2*A1;
 		static const t_real D_qmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
@@ -293,7 +291,9 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 #endif
 
 		const t_real M_amp = m_B / m_Bc2;
-		const t_real heli_amp = std::sqrt(0.5 - 0.5*M_amp*M_amp);
+		const t_real heli_amp_sq = 0.5 * (1. - M_amp*M_amp);
+		const t_real heli_amp = std::sqrt(heli_amp_sq);
+		constexpr const t_real interact = 88. / 3.;
 		const t_cplx hx = qh - imag*qk;
 
 		Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
@@ -308,7 +308,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 
 			// M-cross matrix
 			Mx2d(3*pk + 0, 3*pk + 0) = -imag*M_amp;
-			Mx2d(3*pk + 1, 3*pk + 1) = imag*M_amp;
+			Mx2d(3*pk + 1, 3*pk + 1) = +imag*M_amp;
 
 			if(pk > 0)
 			{
@@ -321,29 +321,29 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 				Mx2d(3*pk + 2, 3*(pk+1) + 1) = -imag*heli_amp;
 			}
 
-			// fluctuation matrix
+			// fluctuation matrix block, diagonal elements
 			Fluc2d(3*pk + 0, 3*pk + 0) = 0.5*get_demag(qh*qh + qk*qk, 1., Q_sq) + pitch_qmin
-				+ interact/3.*heli_amp*heli_amp + 2.*D_qmin*Qz + Q_sq + hoc_qmin*Q_sq*Q_sq;
-			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_demag(1., 1., Q_sq) * hx * hx;
-			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_demag(Qz, 1., Q_sq) - D_qmin) * std::sqrt(2) * hx;
-
-			Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
+				+ interact * heli_amp_sq + 2.*D_qmin*Qz + Q_sq + hoc_qmin*Q_sq*Q_sq;
 			Fluc2d(3*pk + 1, 3*pk + 1) = Fluc2d(3*pk + 0, 3*pk + 0) - 4.*D_qmin*Qz;
-			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_demag(Qz, 1., Q_sq) + D_qmin) * std::sqrt(2.) * std::conj(hx);
+			Fluc2d(3*pk + 2, 3*pk + 2) = get_demag(Qz*Qz, 1., Q_sq) + pitch_qmin
+				+ interact * M_amp*M_amp + Q_sq + hoc_qmin*Q_sq*Q_sq;
 
+			// fluctuation matrix block, off-diagonal elements
+			Fluc2d(3*pk + 0, 3*pk + 1) = 0.5*get_demag(1., 1., Q_sq) * hx * hx;
+			Fluc2d(3*pk + 0, 3*pk + 2) = (0.5*get_demag(Qz, 1., Q_sq) - D_qmin) * std::sqrt(2.) * hx;
+			Fluc2d(3*pk + 1, 3*pk + 2) = (0.5*get_demag(Qz, 1., Q_sq) + D_qmin) * std::sqrt(2.) * std::conj(hx);
+			Fluc2d(3*pk + 1, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 1));
 			Fluc2d(3*pk + 2, 3*pk + 0) = std::conj(Fluc2d(3*pk + 0, 3*pk + 2));
 			Fluc2d(3*pk + 2, 3*pk + 1) = std::conj(Fluc2d(3*pk + 1, 3*pk + 2));
-			Fluc2d(3*pk + 2, 3*pk + 2) = get_demag(Qz*Qz, 1., Q_sq) + pitch_qmin
-				+ interact/3.*M_amp*M_amp + Q_sq + hoc_qmin*Q_sq*Q_sq;
 
 			if(pk > 0)
-				Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact/3.*M_amp*heli_amp;
+				Fluc2d(3*pk + 1, 3*(pk-1) + 2) = Fluc2d(3*pk + 2, 3*(pk-1) + 0) = interact * M_amp*heli_amp;
 			if(pk < SIZE-1)
-				Fluc2d(3*pk + 2, 3*(pk+1) + 1) = Fluc2d(3*pk + 0, 3*(pk+1) + 2) = interact/3.*M_amp*heli_amp;
+				Fluc2d(3*pk + 2, 3*(pk+1) + 1) = Fluc2d(3*pk + 0, 3*(pk+1) + 2) = interact * M_amp*heli_amp;
 			if(pk > 1)
-				Fluc2d(3*pk + 1, 3*(pk-2) + 0) = interact/3.*heli_amp*heli_amp;
+				Fluc2d(3*pk + 1, 3*(pk-2) + 0) = interact * heli_amp_sq;
 			if(pk < SIZE-2)
-				Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact/3.*heli_amp*heli_amp;
+				Fluc2d(3*pk + 0, 3*(pk+2) + 1) = interact * heli_amp_sq;
 		}
 
 		polMat[0] = get_polmat<t_mat_cplx>(2); // SF1
