@@ -458,11 +458,13 @@ int main(int argc, char **argv)
 
 static const char* pcModIdent = "skxmod_grid";
 static const char* pcModName = "MnSi Magnon Dynamics (Grid)";
+static const char* pcModHelp = R"RAWSTR(MnSi Magnon Dynamics Grid Module.
+This module uses a pre-calculated grid for the magnons in MnSi.)RAWSTR";
 
 
-std::tuple<std::string, std::string, std::string> sqw_info()
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
-	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
+	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName, pcModHelp);
 }
 
 
@@ -480,7 +482,7 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& strCfgFile)
 	// hack because BOOST_DLL_ALIAS does not seem to work with Mingw
 
 	extern "C" __declspec(dllexport)
-	std::tuple<std::string, std::string, std::string> takin_sqw_info()
+	std::tuple<std::string, std::string, std::string, std::string> takin_sqw_info()
 	{
 		return sqw_info();
 	}

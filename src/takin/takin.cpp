@@ -509,15 +509,19 @@ SqwBase* SkxMod::shallow_copy() const
 
 static const char* pcModIdent = "skxmod";
 static const char* pcModName = "MnSi Magnon Dynamics";
+static const char* pcModHelp = R"RAWSTR(MnSi Magnon Dynamics Module.
+This module calculates the conical, field-polarised ferromagnetic, and
+skyrmion dispersion in MnSi.)RAWSTR";
+
 
 
 #ifndef PLUGIN_APPLI
 
 
 // exported symbols
-std::tuple<std::string, std::string, std::string> sqw_info()
+std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
-	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName);
+	return std::make_tuple(TAKIN_VER, pcModIdent, pcModName, pcModHelp);
 }
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& gs_file)
@@ -534,7 +538,7 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& gs_file)
 	// hack because BOOST_DLL_ALIAS does not seem to work with Mingw
 
 	extern "C" __declspec(dllexport)
-	std::tuple<std::string, std::string, std::string> takin_sqw_info()
+	std::tuple<std::string, std::string, std::string, std::string> takin_sqw_info()
 	{
 		return sqw_info();
 	}
@@ -546,8 +550,7 @@ std::shared_ptr<SqwBase> sqw_construct(const std::string& gs_file)
 	}
 #endif
 
-
-#else
+#else  // PLUGIN_APPLI
 
 
 int main(int argc, char** argv)
@@ -558,6 +561,7 @@ int main(int argc, char** argv)
 		std::cout << "module_ident: " << pcModIdent << "\n";
 		std::cout << "module_name: " << pcModName << "\n";
 		std::cout << "required_takin_version: " << TAKIN_VER << "\n";
+		std::cout << "module_help:begin\n" << pcModHelp << "\nmodule_help:end\n";
 		std::cout.flush();
 		return 0;
 	}
@@ -569,5 +573,5 @@ int main(int argc, char** argv)
 }
 
 
-#endif
+#endif  // PLUGIN_APPLI
 // ----------------------------------------------------------------------------
