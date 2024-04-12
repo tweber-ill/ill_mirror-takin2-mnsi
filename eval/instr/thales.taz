@@ -86,6 +86,6 @@
 		<v_coll_ana>9.999000e+03</v_coll_ana>
 		<v_coll_before_sample>9.999000e+03</v_coll_before_sample>
 		<v_coll_mono>9.999000e+03</v_coll_mono>
-		<r0_scale>0.00036</r0_scale>
+		<r0_scale>0.0007</r0_scale>
 	</reso>
 </taz>
