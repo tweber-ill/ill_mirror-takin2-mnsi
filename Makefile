@@ -182,7 +182,7 @@ bin/dyn: src/calc/dyn.o \
 
 bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o \
