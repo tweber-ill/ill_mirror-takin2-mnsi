@@ -113,6 +113,8 @@ static bool calc_weight(char dyntype,
 	auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = dyn->GetDisp(Qx, Qy, Qz, -Erange, Erange);
 
 	ostr
+		<< "# B = " << B << "\n"
+		<< "# T = " << T << "\n"
 		<< "# Magnetic phase: " << dyntype << "\n"
 		<< std::setw(15) << std::left << "# No." << " "
 		<< std::setw(15) << std::left << "E (meV)" << " "

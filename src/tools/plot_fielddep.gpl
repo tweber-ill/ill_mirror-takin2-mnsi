@@ -1,0 +1,193 @@
+#!/usr/local/bin/gnuplot -p
+
+#
+# plots the field-dependent magnon energies
+# @author Tobias Weber <tweber@ill.fr>
+# @date 14-jun-2024
+# @license GPLv2 (see 'LICENSE' file)
+#
+
+Erange_m      = 0
+Erange_p      = 0.25
+Brange        = 1.55
+
+scale_weight  = 2.0   # weight scale for plot
+key_pointsize = 2.0   # symbol size in legend
+
+show_key      = 0     # show legend
+
+
+#kh_A   = 0.039        # at 29 K
+kh_A   = 0.036        # at 20 K
+a      = 4.558        # lattice constant
+kh_rlu = kh_A / (2*pi / a)
+
+#Bc2      = 0.3223
+Bc2      = 0.53
+g        = 2.
+muB      = 5.78838e-02  # codata value
+meVtoGHz = 241.799      # codata value
+
+
+if(!exists("out_term")) {
+	out_term = 1          # 1: pdf, 2: png, others: screen
+}
+
+if(out_term == 1) {
+	set term pdf color enhanced font "NimbusSans-Regular, 50" size 20, 15
+}
+if(out_term == 2) {
+	set term pngcairo enhanced font "NimbusSans-Regular, 56" size 2666, 2000
+
+	scale_weight = 2.0 * scale_weight
+	key_pointsize = 2.0 * key_pointsize
+}
+
+set clip points
+set border lw 8
+
+
+# output plot file
+if(!exists("file_out")) {
+	if(out_term == 1) {
+		file_out = "fielddep.pdf"
+	}
+	if(out_term == 2) {
+		file_out = "fielddep.png"
+	}
+}
+
+if(exists("file_out")) {
+	set output file_out
+	print(sprintf("Plotting %s.", file_out))
+}
+
+
+# colours
+col_axis = "#000000"  # colour for coordinate cross
+col_skx  = "#00aa00"  # colour for skx weights
+col_heli = "#ff0000"  # colour for heli/coni weights
+col_fp   = "#0000ff"  # colour for field-polarised weights
+
+
+
+# ranges
+set xrange  [ -Brange                 : Brange                 ]
+set yrange  [ Erange_m                : Erange_p               ]
+set y2range [ -Erange_m * meVtoGHz    : Erange_p * meVtoGHz    ]
+#set y2range [ -Erange_m / (g*muB*Bc2) : Erange_p / (g*muB*Bc2) ]
+
+
+# ticks
+set xtics 0.5 nomirror
+set mxtics 5
+
+set ytics 0.1 nomirror
+#set y2tics 5
+set y2tics 20
+set mytics 5
+#set my2tics 5
+set my2tics 2
+
+
+# labels
+set xlabel "{/NimbusSans-Italic B} (T)" \
+	offset 0, 0.25
+
+set ylabel \
+	"{/NimbusSans-Italic E} (meV)" \
+	offset 2, 0
+#set y2label \
+#	"{/NimbusSans-Italic E} ({/NimbusSans-Italic g} {/NimbusSans-Italic μ_0} {/NimbusSans-Italic μ_B} {/NimbusSans-Italic H}_{c2}^{int})" \
+#	offset -0.25, 0
+set y2label \
+	"{/NimbusSans-Italic E} (GHz)" \
+	offset -0.25, 0
+
+
+# legend
+if(show_key != 0) {
+        set key at graph 0.49, graph 0.97 height 0.3 samplen 0 Left reverse box opaque
+}
+else {
+        unset key
+}
+
+
+# show coordinate cross
+set arrow 1 from 0,Erange_m to 0,Erange_p lw 2 dt 2 lc rgb col_axis nohead
+set arrow 2 from -Brange,0 to Brange,0 lw 2 dt 2 lc rgb col_axis nohead
+
+
+# weight factor
+weight_raw(w)         = (w > 5.) ? 5. : sqrt(w) * 2.5
+weight(w)             = (weight_raw(w) < 0.04) ? 0 : weight_raw(w)
+weight_ifminusE(w, E) = (E < 0) ? weight(w) : 0
+
+
+E_sign = 1.
+
+plot \
+	"weight_heli_p0.dat" using (0.0):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.05.dat" using (0.05):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.1.dat" using (0.1):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.15.dat" using (0.15):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.2.dat" using (0.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.25.dat" using (0.25):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.3.dat" using (0.3):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.35.dat" using (0.35):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.4.dat" using (0.4):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.45.dat" using (0.45):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.5.dat" using (0.5):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_p0.55.dat" using (0.55):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.05.dat" using (-0.05):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.1.dat" using (-0.1):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.15.dat" using (-0.15):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.2.dat" using (-0.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.25.dat" using (-0.25):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.3.dat" using (-0.3):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.35.dat" using (-0.35):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.4.dat" using (-0.4):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.45.dat" using (-0.45):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.5.dat" using (-0.5):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_heli_m0.55.dat" using (-0.55):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_heli notitle, \
+	"weight_fp_p0.6.dat" using (0.6):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.65.dat" using (0.65):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.7.dat" using (0.7):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.75.dat" using (0.75):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.8.dat" using (0.8):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.85.dat" using (0.85):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.9.dat" using (0.9):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p0.95.dat" using (0.95):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.dat" using (1.0):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.05.dat" using (1.05):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.1.dat" using (1.1):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.15.dat" using (1.15):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.2.dat" using (1.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.25.dat" using (1.25):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.3.dat" using (1.3):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.35.dat" using (1.35):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.4.dat" using (1.4):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.45.dat" using (1.45):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_p1.5.dat" using (1.5):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.6.dat" using (-0.6):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.65.dat" using (-0.65):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.7.dat" using (-0.7):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.75.dat" using (-0.75):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.8.dat" using (-0.8):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.85.dat" using (-0.85):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.9.dat" using (-0.9):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m0.95.dat" using (-0.95):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.dat" using (-1.0):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.05.dat" using (-1.05):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.1.dat" using (-1.1):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.15.dat" using (-1.15):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.2.dat" using (-1.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.25.dat" using (-1.25):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.3.dat" using (-1.3):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.35.dat" using (-1.35):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.4.dat" using (-1.4):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.45.dat" using (-1.45):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_fp_m1.5.dat" using (-1.5):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_fp notitle, \
+	"weight_skx_p.dat" using (0.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_skx notitle, \
+	"weight_skx_m.dat" using (-0.2):(E_sign*$2):(weight($3)*scale_weight) with points pt 7 ps var lc rgb col_skx notitle, \
