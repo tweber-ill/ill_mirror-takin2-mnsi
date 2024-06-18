@@ -1,7 +1,7 @@
 /**
- * calculates the weights/energies at a specific q
+ * calculates the field-dependent weights/energies at a specific q
  * @author Tobias Weber <tweber@ill.fr>
- * @date sep-19
+ * @date 18-jun-2024
  * @license GPLv2 (see 'LICENSE' file)
  */
 
@@ -31,7 +31,8 @@ static bool calc_weight(char dyntype,
 	t_real Bx, t_real By, t_real Bz,
 	t_real Px, t_real Py, t_real Pz,
 	t_real Qx, t_real Qy, t_real Qz,
-	bool do_proj = true, t_real T = -1., t_real B = -1.,
+	bool do_proj = true, t_real T = -1.,
+	t_real B_start = 0., t_real B_end = 0.5, t_real B_inc = 0.05,
 	const std::string& gs_file = "", bool explicit_calc = true,
 	std::ostream& ostr = std::cout)
 {
@@ -101,37 +102,43 @@ static bool calc_weight(char dyntype,
 	}
 
 
-	dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
-	dyn->SetT(T, true);
-	dyn->SetB(B, true);
-	dyn->SetFilterZeroWeight(1);
-	dyn->SetProjNeutron(do_proj);
-	dyn->SetG(Gx, Gy, Gz);
-
-
-	t_real Erange = -1.;	// negative: disable range
-	auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = dyn->GetDisp(Qx, Qy, Qz, -Erange, Erange);
-
 	ostr
-		<< "# B = " << B << "\n"
 		<< "# T = " << T << "\n"
 		<< "# Magnetic phase: " << dyntype << "\n"
-		<< std::setw(15) << std::left << "# No." << " "
+		<< std::setw(15) << std::left << "# B (meV)" << " "
+		<< std::setw(15) << std::left << "No." << " "
 		<< std::setw(15) << std::left << "E (meV)" << " "
 		<< std::setw(15) << std::left << "w_total" << " "
 		<< std::setw(15) << std::left << "w_SF1" << " "
 		<< std::setw(15) << std::left << "w_SF2" << " "
 		<< std::setw(15) << std::left << "w_NSF" << "\n";
 
-	for(std::size_t i=0; i<Es.size(); ++i)
+	for(t_real B = B_start; B < B_end; B += B_inc)
 	{
-		ostr
-			<< std::setw(15) << std::left << (i+1) << " "
-			<< std::setw(15) << std::left /*<< std::scientific*/ << Es[i] << " "
-			<< std::setw(15) << std::left /*<< std::scientific*/ << wsUnpol[i] << " "
-			<< std::setw(15) << std::left /*<< std::scientific*/ << wsSF1[i] << " "
-			<< std::setw(15) << std::left /*<< std::scientific*/ << wsSF2[i] << " "
-			<< std::setw(15) << std::left /*<< std::scientific*/ << wsNSF[i] << "\n";
+		if(B < 0.)
+			dyn->SetCoords(-Bx,-By,-Bz, Px,Py,Pz);
+		else
+			dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
+		dyn->SetT(T, true);
+		dyn->SetB(std::abs(B), true);
+		dyn->SetFilterZeroWeight(true);
+		dyn->SetProjNeutron(do_proj);
+		dyn->SetG(Gx, Gy, Gz);
+
+		t_real Erange = -1.;	// negative: disable range
+		auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = dyn->GetDisp(Qx, Qy, Qz, -Erange, Erange);
+
+		for(std::size_t i=0; i<Es.size(); ++i)
+		{
+			ostr
+				<< std::setw(15) << std::left /*<< std::scientific*/ << B << " "
+				<< std::setw(15) << std::left << (i+1) << " "
+				<< std::setw(15) << std::left /*<< std::scientific*/ << Es[i] << " "
+				<< std::setw(15) << std::left /*<< std::scientific*/ << wsUnpol[i] << " "
+				<< std::setw(15) << std::left /*<< std::scientific*/ << wsSF1[i] << " "
+				<< std::setw(15) << std::left /*<< std::scientific*/ << wsSF2[i] << " "
+				<< std::setw(15) << std::left /*<< std::scientific*/ << wsNSF[i] << "\n";
+		}
 	}
 
 	return true;
@@ -149,7 +156,8 @@ int main(int argc, char** argv)
 	t_real Bx = 1., By = 1., Bz = 0.;
 	t_real Qx = 1.068, Qy = 0.932, Qz = 0.;
 	t_real Px = 1., Py = -1., Pz = 0.;
-	t_real B = 0.17, T = 20.;
+	t_real B_start = 0., B_end = 0.5, B_step = 0.05;
+	t_real T = 20.;
 
 	char dyntype = 'h';
 	std::string gs_file = "";
@@ -176,8 +184,13 @@ int main(int argc, char** argv)
 			std::cin >> Bx >> By >> Bz;
 			if(dyntype == 'h' || dyntype == 'f')
 			{
-				std::cout << "|B| = ";
-				std::cin >> B;
+				std::cout << "B_start = ";
+				std::cin >> B_start;
+				std::cout << "B_end = ";
+				std::cin >> B_end;
+				std::cout << "B_step = ";
+				std::cin >> B_step;
+
 				std::cout << "T = ";
 				std::cin >> T;
 			}
@@ -193,7 +206,7 @@ int main(int argc, char** argv)
 			if(dyntype == 'h' || dyntype == 'f')
 			{
 				std::cout << "# T = " << T << "\n";
-				std::cout << "# |B| = " << B << "\n";
+				std::cout << "# B = [ " << B_start << ", " << B_end << " ]" << "\n";
 			}
 			std::cout << "# B = (" << Bx << ", " << By << ", " << Bz << ")\n";
 			std::cout << "# G = (" << Gx << ", " << Gy << ", " << Gz << ")\n";
@@ -278,8 +291,14 @@ int main(int argc, char** argv)
 				"T", opts::value<decltype(T)>(&T),
 				"temperature"));
 			args.add(boost::make_shared<opts::option_description>(
-				"B", opts::value<decltype(B)>(&B),
-				"magnetic field magnitude"));
+				"B_start", opts::value<decltype(B_start)>(&B_start),
+				"initial magnetic field magnitude"));
+			args.add(boost::make_shared<opts::option_description>(
+				"B_end", opts::value<decltype(B_end)>(&B_end),
+				"final magnetic field magnitude"));
+			args.add(boost::make_shared<opts::option_description>(
+				"B_step", opts::value<decltype(B_step)>(&B_step),
+				"magnetic field magnitude stepping"));
 
 
 			clparser.options(args);
@@ -293,7 +312,7 @@ int main(int argc, char** argv)
 			{
 				std::cout << args << std::endl;
 				std::cout << "example usage:\n\t"
-					<< argv[0] << " --dyntype=h --outfile=weight.dat --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=1.05 --Qy=1.05 --Qz=0 --T=28.5 --B=0.15\n"
+					<< argv[0] << " --dyntype=h --outfile=weight.dat --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=1.05 --Qy=1.05 --Qz=0 --T=10 --B_start=0 --B_end=0.5 --B_step=0.05\n"
 					<< std::endl;
 				return 0;
 			}
@@ -319,7 +338,7 @@ int main(int argc, char** argv)
 	ostr->precision(8);
 
 	if(!calc_weight(dyntype, Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz, Qx,Qy,Qz,
-		do_proj, T, B, gs_file, explicit_calc, *ostr))
+		do_proj, T, B_start, B_end, B_step, gs_file, explicit_calc, *ostr))
 	{
 		std::cerr << "Calculation failed!" << std::endl;
 		return -1;

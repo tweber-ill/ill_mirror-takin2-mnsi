@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # calculates the field-dependent magnon energies
 # @author Tobias Weber <tweber@ill.fr>

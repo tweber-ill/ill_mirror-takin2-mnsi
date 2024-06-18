@@ -1,7 +1,7 @@
 #!/usr/local/bin/gnuplot -p
-
 #
 # plots the field-dependent magnon energies
+# (uses the output from gen_fielddep.sh)
 # @author Tobias Weber <tweber@ill.fr>
 # @date 14-jun-2024
 # @license GPLv2 (see 'LICENSE' file)
