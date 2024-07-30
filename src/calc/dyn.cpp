@@ -357,6 +357,7 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	t_real Px, t_real Py, t_real Pz,
 	t_real qh_start, t_real qk_start, t_real ql_start,
 	t_real qh_end, t_real qk_end, t_real ql_end,
+	t_real qh_offs, t_real qk_offs, t_real ql_offs,
 	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
 	t_real T=-1., t_real B=-1., bool explicit_calc = true,
@@ -377,11 +378,16 @@ static void calc_disp_path(char dyntype, bool do_proj,
 
 	t_vec qstart = tl2::make_vec<t_vec>({ qh_start, qk_start, ql_start });
 	t_vec qend = tl2::make_vec<t_vec>({ qh_end, qk_end, ql_end });
+	t_vec qoffs = tl2::make_vec<t_vec>({ qh_offs, qk_offs, ql_offs });
 
 	t_vec Rdir = tl2::make_vec<t_vec>({ Rx, Ry, Rz });
 	t_mat rot = tl2::rotation_matrix<t_mat, t_vec>(Rdir, Ralpha);
 	qstart = tl2::prod_mv(rot, qstart);
 	qend = tl2::prod_mv(rot, qend);
+
+	// add (non-rotated) offset
+	qstart += qoffs;
+	qend += qoffs;
 
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(T, true);
@@ -552,6 +558,7 @@ int main(int argc, char **argv)
 	// arguments for arbitrary Q path calculation
 	t_real qh_start = 0., qk_start = 0., ql_start = 0.;
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
+	t_real qh_offs = 0., qk_offs = 0., ql_offs = 0.;
 	t_real Rx = 0., Ry = 0., Rz = 1., Ralpha = 0.;
 	std::size_t num_points = 256;
 	unsigned int num_threads =
@@ -739,6 +746,16 @@ int main(int argc, char **argv)
 				"end reduced momentum transfer q_l"));
 
 			args.add(boost::make_shared<opts::option_description>(
+				"qh_offs", opts::value<decltype(qh_offs)>(&qh_offs),
+				"offset reduced momentum transfer q_h"));
+			args.add(boost::make_shared<opts::option_description>(
+				"qk_offs", opts::value<decltype(qk_offs)>(&qk_offs),
+				"offset reduced momentum transfer q_k"));
+			args.add(boost::make_shared<opts::option_description>(
+				"ql_offs", opts::value<decltype(ql_offs)>(&ql_offs),
+				"offset reduced momentum transfer q_l"));
+
+			args.add(boost::make_shared<opts::option_description>(
 				"Rx", opts::value<decltype(Rx)>(&Rx),
 				"q rotation axis x component"));
 			args.add(boost::make_shared<opts::option_description>(
@@ -804,6 +821,7 @@ int main(int argc, char **argv)
 			Gx,Gy,Gz, Bx,By,Bz, Px,Py,Pz,
 			qh_start, qk_start, ql_start,
 			qh_end, qk_end, ql_end,
+			qh_offs, qk_offs, ql_offs,
 			Rx,Ry,Rz, tl2::d2r(Ralpha),
 			num_points, outfile,
 			T, B, explicit_calc,
