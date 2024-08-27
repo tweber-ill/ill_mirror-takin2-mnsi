@@ -3,8 +3,8 @@
  * @author Tobias Weber <tweber@ill.fr>
  * @date dec-16, sep-18
  * @desc This file implements the theoretical magnon model by M. Garst and J. Waizner, see:
- *	- M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
- *	- J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
+ *	- [garst17] M. Garst, J. Waizner, and D. Grundler, J. Phys. D: Appl. Phys. 50, 293002 (2017), https://doi.org/10.1088/1361-6463/aa7573
+ *	- [waizner17] J. Waizner, PhD thesis (2017), Universität zu Köln, https://kups.ub.uni-koeln.de/7937/
  *	- personal communications with M. Garst, 2016-2019.
  * @desc This file is based on:
  *	- the descriptions and Mathematica implementations of the field-polarised magnon model by M. Garst, 2016.
@@ -13,6 +13,28 @@
 
 #include "fp.h"
 #include "fp_inst.cxx"
+
+
+// static constants
+template<class t_real, class t_cplx>
+const typename FP<t_real, t_cplx>::t_vec_cplx FP<t_real, t_cplx>::m_x =
+	tl2::make_vec<FP<t_real, t_cplx>::t_vec_cplx>({ 1, 0, 0 });
+
+template<class t_real, class t_cplx>
+const typename FP<t_real, t_cplx>::t_vec_cplx FP<t_real, t_cplx>::m_y =
+	tl2::make_vec<FP<t_real, t_cplx>::t_vec_cplx>({ 0, 1, 0 });
+
+template<class t_real, class t_cplx>
+const typename FP<t_real, t_cplx>::t_vec FP<t_real, t_cplx>::m_z =
+	tl2::make_vec<FP<t_real, t_cplx>::t_vec>({ 0, 0, 1 });
+
+template<class t_real, class t_cplx>
+const typename FP<t_real, t_cplx>::t_mat_cplx FP<t_real, t_cplx>::m_sigma2 =
+	tl2::get_spin_matrices<ublas::matrix, std::vector, t_real>()[2];
+
+template<class t_real, class t_cplx>
+const typename FP<t_real, t_cplx>::t_mat_cplx FP<t_real, t_cplx>::m_ident2 =
+	tl2::unit_m<FP<t_real, t_cplx>::t_mat_cplx>(2);
 
 
 template<class t_real, class t_cplx>
@@ -27,7 +49,7 @@ template<class t_real, class t_cplx>
 void FP<t_real, t_cplx>::SetCoords(t_real Bx, t_real By, t_real Bz, t_real /*Px*/, t_real /*Py*/, t_real /*Pz*/)
 {
 	t_vec B = tl2::make_vec<t_vec>({ Bx, By, Bz });
-	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>({ 0, 0, 1 }));
+	t_quat quatB = tl2::rotation_quat(B, m_z);
 
 	m_rotCoord = quatB;
 }
@@ -41,8 +63,6 @@ template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_real /*maxE*/) const
 {
-	constexpr auto imag = t_cplx(0,1);
-
 	const t_real dh0_shift = 0.007523;
 	const t_real dh0 = dh0_shift + (m_B - m_Bc2) / m_Bc2;	// for given g_hoc
 
@@ -62,27 +82,27 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 	}
 
 	// eigensystems
-	auto get_evecs = [&qvec, &dh0, &imag]() -> auto
+	auto get_evecs = [this, &qvec, &dh0]() -> auto
 	{
-		const t_mat_cplx ident2 = tl2::unit_m<t_mat_cplx>(2);
-		const t_mat_cplx sigma2 = tl2::get_spin_matrices<ublas::matrix, std::vector, t_real>()[2];
-
+		static constexpr t_cplx imag = t_cplx(0, 1);
 		const t_real q = tl2::veclen(qvec);
 
-		// Hamiltonian
-		t_cplx qp = qvec[0] + imag*qvec[1];
-		t_cplx qm = qvec[0] - imag*qvec[1];
+		// Hamiltonian, see equ. 10 in [garst17]
+		const t_cplx qp = qvec[0] + imag*qvec[1];
+		const t_cplx qm = qvec[0] - imag*qvec[1];
+		const t_mat_cplx dip_mat = tl2::make_mat<t_mat_cplx>(
+			{ { qm*qp, qm*qm },
+			  { qp*qp, qm*qp } });
 
-		t_mat_cplx H = (q*q + g_hoc<t_real>*q*q*q*q + 1. + dh0) * ident2;
-		H += 2.*sigma2 * qvec[2];
-		H += g_chi<t_real>/(2.*q*q) * tl2::make_mat<t_mat_cplx>(
-			{{ qm*qp, qm*qm }, { qp*qp, qm*qp }});
+		t_mat_cplx H = (q*q + g_hoc<t_real>*q*q*q*q + 1. + dh0) * m_ident2;
+		H += 2.*m_sigma2 * qvec[2];
+		H += g_chi<t_real>/(2.*q*q) * dip_mat;
 
 		// eigenvectors and -values
 		std::vector<t_vec_cplx> evecs;
 		std::vector<t_real> evals;
 		bool ev_ok = tl2::eigenvecsel_herm<t_real>(
-			tl2::prod_mm(sigma2, H), evecs, evals, true);
+			tl2::prod_mm(m_sigma2, H), evecs, evals, true);
 
 		return std::make_tuple(ev_ok, evals, evecs);
 	};
@@ -95,24 +115,22 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 	 * G(x, x') = sum{j} |v_j'> <v_j| / E_j
 	 * with eigenvectors |v_j> and eigenvalues E_j.
 	 */
-	auto get_weights = [&imag, &projNeutron](
-		const t_vec_cplx& evec, const t_vec_cplx& evec_m) -> auto
+	auto get_weights = [this, &projNeutron](const t_vec_cplx& evec, const t_vec_cplx& evec_m) -> auto
 	{
+		static constexpr t_cplx imag = t_cplx(0, 1);
+
 		t_mat_cplx kernel = tl2::outer<t_vec_cplx, t_mat_cplx>(evec, evec_m);
 		t_mat_cplx weight(3, 3);
-
-		const t_vec_cplx x = tl2::make_vec<t_vec_cplx>({ 1, 0, 0 });
-		const t_vec_cplx y = tl2::make_vec<t_vec_cplx>({ 0, 1, 0 });
 
 		for(int i = 0; i < 3; ++i)
 		{
 			t_vec_cplx veci = tl2::make_vec<t_vec_cplx>(
-				{ x[i] - imag*y[i], x[i] + imag*y[i] });
+				{ m_x[i] - imag*m_y[i], m_x[i] + imag*m_y[i] });
 
 			for(int j = 0; j < 3; ++j)
 			{
 				t_vec_cplx vecj = tl2::make_vec<t_vec_cplx>(
-					{ x[j] - imag*y[j], x[j] + imag*y[j] });
+					{ m_x[j] - imag*m_y[j], m_x[j] + imag*m_y[j] });
 				weight(i, j) = tl2::mat_elem(veci, kernel, vecj);
 			}
 		}

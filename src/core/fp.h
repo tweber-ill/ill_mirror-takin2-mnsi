@@ -53,13 +53,13 @@ public:
 		return copy();
 	}
 
-
-	virtual void SetB(t_real B, bool exp=true) override
+	virtual void SetB(t_real B, bool exp = true) override
 	{
-		if(exp) m_B = B;
+		if(exp)
+			m_B = B;
 	}
 
-	virtual void SetT(t_real T, bool exp=true) override
+	virtual void SetT(t_real T, bool exp = true) override
 	{
 		if(exp)
 		{
@@ -87,6 +87,7 @@ public:
 
 
 private:
+	// constants
 	t_real m_Bc2 = 0.55;
 	t_real m_B = 0.7;
 	t_real m_T = 20;
@@ -95,6 +96,10 @@ private:
 	t_quat m_rotCoord{};
 
 	bool m_bProjNeutron = true;
+
+	static const t_vec_cplx m_x, m_y;
+	static const t_vec m_z;
+	static const t_mat_cplx m_sigma2, m_ident2;
 };
 
 
