@@ -44,3 +44,5 @@ ext/data/**
 # Figures
 *.jpg
 *.png
+eval/results/tasp/**
+eval/results/thales/**

@@ -8,7 +8,7 @@
 #
 
 set term pngcairo enhanced font "NimbusSans-Regular, 72" size 2666, 2000
-set output "mira_10675_para.png"
+set output "mira/mira_10675_para.png"
 
 set xlabel "E (meV)"
 set ylabel "S(Q,E) (a.u.)"

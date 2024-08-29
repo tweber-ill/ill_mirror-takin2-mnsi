@@ -19,10 +19,10 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1712912498.838225</timestamp>
+		<timestamp>1724934401.043185</timestamp>
 		<url>https://github.com/ILLGrenoble/takin</url>
 		<user>tw</user>
-		<version>2.6.0</version>
+		<version>2.8.0</version>
 	</meta>
 	<monteconvo>
 		<E_from>-1.508000e-01</E_from>
@@ -35,7 +35,7 @@
 		<algo_idx>2</algo_idx>
 		<allow_scan_merging>0</allow_scan_merging>
 		<ana_foc>0</ana_foc>
-		<autosave>/tmp/coni_107_perp.dat</autosave>
+		<autosave>/tmp/coni_107_perp_Bvert_25K.dat</autosave>
 		<crys>MnSi.taz</crys>
 		<eps_plane_dist>0.0005</eps_plane_dist>
 		<eps_rlu>0.001</eps_rlu>
@@ -71,12 +71,17 @@
 			<T>0</T>
 			<bose_cutoff>0</bose_cutoff>
 			<explicit_calc>0</explicit_calc>
+			<filter_high_q>0</filter_high_q>
+			<filter_low_E>0</filter_low_E>
+			<high_q>0</high_q>
 			<inc_amp>0</inc_amp>
 			<inc_sigma>0</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0</lf_gamma>
 			<lf_invcorrel>0</lf_invcorrel>
+			<lf_lorentzian>0</lf_lorentzian>
 			<lf_only>0</lf_only>
+			<low_E>0</low_E>
 			<only_mode>0</only_mode>
 			<pol_chan>0</pol_chan>
 			<proj_neutron>0</proj_neutron>
@@ -93,12 +98,17 @@
 			<T>0</T>
 			<bose_cutoff>0</bose_cutoff>
 			<explicit_calc>0</explicit_calc>
+			<filter_high_q>0</filter_high_q>
+			<filter_low_E>0</filter_low_E>
+			<high_q>0</high_q>
 			<inc_amp>0</inc_amp>
 			<inc_sigma>0</inc_sigma>
 			<lf_A>0</lf_A>
 			<lf_gamma>0</lf_gamma>
 			<lf_invcorrel>0</lf_invcorrel>
+			<lf_lorentzian>0</lf_lorentzian>
 			<lf_only>0</lf_only>
+			<low_E>0</low_E>
 			<only_mode>0</only_mode>
 			<pol_chan>0</pol_chan>
 			<proj_neutron>0</proj_neutron>
@@ -142,12 +152,17 @@
 			<T>open : open</T>
 			<bose_cutoff>open : open</bose_cutoff>
 			<explicit_calc>open : open</explicit_calc>
+			<filter_high_q>open : open</filter_high_q>
+			<filter_low_E>open : open</filter_low_E>
+			<high_q>open : open</high_q>
 			<inc_amp>open : open</inc_amp>
 			<inc_sigma>open : open</inc_sigma>
 			<lf_A>open : open</lf_A>
 			<lf_gamma>open : open</lf_gamma>
 			<lf_invcorrel>open : open</lf_invcorrel>
+			<lf_lorentzian>open : open</lf_lorentzian>
 			<lf_only>open : open</lf_only>
+			<low_E>open : open</low_E>
 			<only_mode>open : open</only_mode>
 			<pol_chan>open : open</pol_chan>
 			<proj_neutron>open : open</proj_neutron>
