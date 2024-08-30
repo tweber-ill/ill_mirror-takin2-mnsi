@@ -29,7 +29,7 @@
 		<E_to>7.608000e-01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>1e-4</S_offs>
-		<S_scale>2</S_scale>
+		<S_scale>3.5</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
 		<algo_idx>2</algo_idx>
@@ -169,6 +169,6 @@
 			<sigma>open : open</sigma>
 			<which_disp>open : open</which_disp>
 		</sqw_ranges>
-		<step_count>64</step_count>
+		<step_count>128</step_count>
 	</monteconvo>
 </taz>

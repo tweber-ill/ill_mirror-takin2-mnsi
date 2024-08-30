@@ -35,7 +35,7 @@ def get_E(ki, kf):
 #
 # load an instrument data file
 #
-def load_data(datfile, mergefiles = [], Iscale = 1.):
+def load_data(datfile, mergefiles = [], I_scale = 1.):
 	print("Loading \"%s\"." % (datfile))
 	dat = instr.FileInstrBaseD.LoadInstr(datfile)
 	if dat == None:
@@ -78,8 +78,8 @@ def load_data(datfile, mergefiles = [], Iscale = 1.):
 			mon_err = mon**0.5
 
 		[I, I_err] = norm_counts_to_mon(counts, counts_err, mon, mon_err)
-		Is.append(I * Iscale)
-		Is_err.append(I_err * Iscale)
+		Is.append(I * I_scale)
+		Is_err.append(I_err * I_scale)
 
 	return (hs, ks, ls, Es, Is, Is_err, T)
 
@@ -115,6 +115,7 @@ def get_col(idx, num_cols, style = 1):
 	return "#%02x%02x%02x" % (r, g, b)
 
 
+
 # =============================================================================
 outdir = "./tasp/"
 
@@ -131,10 +132,10 @@ cs = 6
 inc_sig_145 = 0.163753 / 2. / (2. * numpy.log(2.))**0.5
 inc_amp_145 = 0.5
 
-Iscale = 1e3
-def Iscale_func(T):
-	return Iscale * 0.9
-	#return (-0.0625 * T + 2.5) * Iscale
+I_scale = 1e3
+def S_scale(T):
+	#return I_scale * 0.9
+	return (-0.0625 * T + 2.5) * I_scale
 
 
 # -----------------------------------------------------------------------------
@@ -142,36 +143,40 @@ print("Generating plot 1...")
 fig, (plt) = mplt.subplots(1, 1)
 
 plt.set_xlim(-0.625, 0.625)
-#plt.set_ylim(0, 2)
+plt.set_ylim(0, 4)
 
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003343.dat", Iscale=Iscale)
+scale = 4
+offs = 1e-4
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003343.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(0,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_18K.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_18K.dat")
-	plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(0,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(0,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003219.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003219.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(1,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_24K.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_24K.dat")
-	plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(1,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(1,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003225.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003225.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(2,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_27K.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_27K.dat")
-	plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(2,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(2,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003238.dat", Iscale=Iscale)
+#scale = 3.5
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003238.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(3,4), label="%.1f K (skx)" % T)
 if os.path.exists("convo_tasp_0944_para.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para.dat")
-	plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
 plt.legend()
 fig.tight_layout()
@@ -192,19 +197,19 @@ plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003238.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003238.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(0,4,2), label="%.1f K (skx)" % T)
 if os.path.exists("convo_tasp_0944_para.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003242.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003242.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(1,4,2), label="%.1f K (fd)" % T)
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003251.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003251.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(2,4,2), label="%.1f K (fd)" % T)
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003255.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003255.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(3,4,2), label="%.1f K (pm)" % T)
 
 plt.legend()
@@ -219,36 +224,39 @@ print("Generating plot 3...")
 fig, (plt) = mplt.subplots(1, 1)
 
 plt.set_xlim(-0.625, 0.625)
-#plt.set_ylim(0, 2)
+plt.set_ylim(0, 4)
 
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003339.dat", Iscale=Iscale)
+scale = 4
+offs = 1e-4
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003339.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(0,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_18K_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_18K_Bflipped.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(0,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(0,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003222.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003222.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(1,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_24K_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_24K_Bflipped.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(1,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(1,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003228.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003228.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(2,4), label="%.1f K (coni)" % T)
 if os.path.exists("convo_tasp_0944_para_27K_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_27K_Bflipped.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(2,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(2,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003233.dat", Iscale=Iscale)
+#scale = 3.5
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003233.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(3,4), label="%.1f K (skx)" % T)
 if os.path.exists("convo_tasp_0944_para_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_Bflipped.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
 plt.legend()
 fig.tight_layout()
@@ -269,19 +277,19 @@ plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003233.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003233.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(0,4,2), label="%.1f K (skx)" % T)
 if os.path.exists("convo_tasp_0944_para_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_Bflipped.dat")
-	plt.plot(convo[:,3], convo[:,5]**Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003245.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003245.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(1,4,2), label="%.1f K (fd)" % T)
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003248.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003248.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(2,4,2), label="%.1f K (fd)" % T)
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003258.dat", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003258.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(3,4,2), label="%.1f K (pm)" % T)
 
 plt.legend()

@@ -154,6 +154,6 @@
 			<sigma>open : open</sigma>
 			<which_disp>open : open</which_disp>
 		</sqw_ranges>
-		<step_count>64</step_count>
+		<step_count>128</step_count>
 	</monteconvo>
 </taz>

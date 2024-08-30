@@ -35,7 +35,7 @@ def get_E(ki, kf):
 #
 # load an instrument data file
 #
-def load_data(datfile, mergefiles = [], Iscale = 1.):
+def load_data(datfile, mergefiles = [], I_scale = 1.):
 	print("Loading \"%s\"." % (datfile))
 	dat = instr.FileInstrBaseD.LoadInstr(datfile)
 	if dat == None:
@@ -78,8 +78,8 @@ def load_data(datfile, mergefiles = [], Iscale = 1.):
 			mon_err = mon**0.5
 
 		[I, I_err] = norm_counts_to_mon(counts, counts_err, mon, mon_err)
-		Is.append(I * Iscale)
-		Is_err.append(I_err * Iscale)
+		Is.append(I * I_scale)
+		Is_err.append(I_err * I_scale)
 
 	return (hs, ks, ls, Es, Is, Is_err, T)
 
@@ -134,10 +134,10 @@ inc_amp_14 = 1.2
 inc_sig_12 = 0.0626775 / 2. / (2. * numpy.log(2.))**0.5
 inc_amp_12 = 0.55
 
-Iscale = 1e4
-def Iscale_func(T):
-	return Iscale
-	#return (-0.0625 * T + 2.5) * Iscale
+I_scale = 1e4
+def S_scale(T):
+	return I_scale
+	#return (-0.0625 * T + 2.5) * I_scale
 
 
 # -----------------------------------------------------------------------------
@@ -155,26 +155,26 @@ plt.annotate("(1.07 0.93 0)", xy=(0.62, 0.55), xycoords="axes fraction")
 scale = 1.9 # 1.4
 offs = 5e-6
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024813", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024813", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(0,3), label="%.1f K (coni)" % T)
 if os.path.exists("coni_107_perp_Bvert_25K.dat"):
 	convo = numpy.loadtxt("coni_107_perp_Bvert_25K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(0,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(0,3))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(0,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(0,3))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024808", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024808", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(1,3), label="%.1f K (coni)" % T)
 if os.path.exists("coni_107_perp_Bvert_27K.dat"):
 	convo = numpy.loadtxt("coni_107_perp_Bvert_27K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(1,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(1,3))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(1,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(1,3))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024801", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024801", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(2,3), label="%.1f K (skx)" % T)
 if os.path.exists("skx_107_perp_Bvert.dat"):
 	convo = numpy.loadtxt("skx_107_perp_Bvert.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(2,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(2,3))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(2,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_14, inc_amp_14, 0.), color=get_col(2,3))
 
 plt.legend()
 fig.tight_layout()
@@ -198,35 +198,35 @@ plt.annotate("(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
 scale = 1.4
 offs = 5e-6
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024828", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024828", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(0,4), label="%.1f K (coni)" % T)
 if os.path.exists("coni_106_perp_Bvert_20K.dat"):
 	convo = numpy.loadtxt("coni_106_perp_Bvert_20K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,4))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024823", Iscale=Iscale,
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024823", I_scale=I_scale,
 	mergefiles=["../data/ill_thales/exp_INTER-477/rawdata/024793"])
 plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(1,4), label="%.1f K (coni)" % T)
 if os.path.exists("coni_106_perp_Bvert_25K.dat"):
 	convo = numpy.loadtxt("coni_106_perp_Bvert_25K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,4))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024788", Iscale=Iscale)
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024788", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(2,4), label="%.1f K (coni)" % T)
 if os.path.exists("coni_106_perp_Bvert_27K.dat"):
 	convo = numpy.loadtxt("coni_106_perp_Bvert_27K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,4))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,4))
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024816", Iscale=Iscale,
+(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024816", I_scale=I_scale,
 	mergefiles=["../data/ill_thales/exp_INTER-477/rawdata/024781"])
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(3,4), label="%.1f K (skx)" % T)
 if os.path.exists("skx_106_perp_Bvert.dat"):
 	convo = numpy.loadtxt("skx_106_perp_Bvert.dat")
-	#plt.plot(convo[:,3], convo[:,5]*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*Iscale_func(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(3,4))
+	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,3))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(3,4))
 
 plt.legend()
 fig.tight_layout()
