@@ -201,7 +201,7 @@ plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(0,4,2), label="%.1f K (skx)" % T)
 if os.path.exists("convo_tasp_0944_para.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para.dat")
-	plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003242.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(1,4,2), label="%.1f K (fd)" % T)
