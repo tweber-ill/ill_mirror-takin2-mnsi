@@ -136,8 +136,8 @@ inc_amp_12 = 0.55
 
 I_scale = 1e4
 def S_scale(T):
-	return I_scale
-	#return (-0.0625 * T + 2.5) * I_scale
+	#return I_scale
+	return (-0.0625 * T + 2.5) * I_scale
 
 
 # -----------------------------------------------------------------------------
@@ -145,14 +145,14 @@ print("Generating plot 1...")
 fig, (plt) = mplt.subplots(1, 1)
 
 plt.set_xlim(-0.175, 1.075)
-plt.set_ylim(0, 1.5)
+plt.set_ylim(0, 1.)
 
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(1.07 0.93 0)", xy=(0.62, 0.55), xycoords="axes fraction")
 
-scale = 1.9 # 1.4
+scale = 2.0  # 1.4
 offs = 5e-6
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024813", I_scale=I_scale)
@@ -188,14 +188,14 @@ print("Generating plot 2...")
 fig, (plt) = mplt.subplots(1, 1)
 
 plt.set_xlim(-0.175, 1.075)
-plt.set_ylim(0, 0.8)
+plt.set_ylim(0, 0.7)
 
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
 
-scale = 1.4
+scale = 1.15
 offs = 5e-6
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024828", I_scale=I_scale)

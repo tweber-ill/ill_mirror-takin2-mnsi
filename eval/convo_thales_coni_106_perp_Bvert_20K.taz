@@ -19,7 +19,7 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1724939051.746071</timestamp>
+		<timestamp>1725430425.196093</timestamp>
 		<url>https://github.com/ILLGrenoble/takin</url>
 		<user>tw</user>
 		<version>2.8.0</version>
@@ -139,7 +139,7 @@
 			<only_mode>-1</only_mode>
 			<pol_chan>0</pol_chan>
 			<proj_neutron>1</proj_neutron>
-			<sigma>0.05</sigma>
+			<sigma>0.035</sigma>
 			<which_disp>2</which_disp>
 		</sqw_params>
 		<sqw_ranges>

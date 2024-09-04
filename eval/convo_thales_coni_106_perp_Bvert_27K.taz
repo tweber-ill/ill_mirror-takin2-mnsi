@@ -19,7 +19,7 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1724938053.606453</timestamp>
+		<timestamp>1725430690.589937</timestamp>
 		<url>https://github.com/ILLGrenoble/takin</url>
 		<user>tw</user>
 		<version>2.8.0</version>
@@ -29,7 +29,7 @@
 		<E_to>1.040900e+00</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>0.5e-5</S_offs>
-		<S_scale>1.</S_scale>
+		<S_scale>1.1</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
 		<algo_idx>2</algo_idx>
@@ -54,7 +54,7 @@
 		<l_from>0.000000e+00</l_from>
 		<l_to>0.000000e+00</l_to>
 		<l_to_2>0.000000e+00</l_to_2>
-		<mono_foc>2</mono_foc>
+		<mono_foc>0</mono_foc>
 		<neutron_count>250</neutron_count>
 		<sample_step_count>1</sample_step_count>
 		<scan_2d>0</scan_2d>
@@ -139,7 +139,7 @@
 			<only_mode>-1</only_mode>
 			<pol_chan>0</pol_chan>
 			<proj_neutron>1</proj_neutron>
-			<sigma>0.05</sigma>
+			<sigma>0.045</sigma>
 			<which_disp>2</which_disp>
 		</sqw_params>
 		<sqw_ranges>
@@ -169,6 +169,6 @@
 			<sigma>open : open</sigma>
 			<which_disp>open : open</which_disp>
 		</sqw_ranges>
-		<step_count>50</step_count>
+		<step_count>128</step_count>
 	</monteconvo>
 </taz>
