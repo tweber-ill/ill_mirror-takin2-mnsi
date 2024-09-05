@@ -197,36 +197,45 @@ plt.annotate("(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
 
 scale = 1.15
 offs = 5e-6
+num_scans = 4
+idx = 0
+show_25K = False
+if not show_25K:
+	num_scans = 3
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024828", I_scale=I_scale)
-plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(0,4), label="%.1f K (coni)" % T)
+plt.errorbar(Es, Is, Is_err, marker="o", markersize=ms, capsize=cs, ls="none", color=get_col(idx, num_scans), label="%.1f K (coni)" % T)
 if os.path.exists("coni_106_perp_Bvert_20K.dat"):
 	convo = numpy.loadtxt("coni_106_perp_Bvert_20K.dat")
 	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(idx, num_scans))
+idx += 1
 
-(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024823", I_scale=I_scale,
-	mergefiles=["../data/ill_thales/exp_INTER-477/rawdata/024793"])
-plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(1,4), label="%.1f K (coni)" % T)
-if os.path.exists("coni_106_perp_Bvert_25K.dat"):
-	convo = numpy.loadtxt("coni_106_perp_Bvert_25K.dat")
-	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,4))
+if show_25K:
+	(hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024823", I_scale=I_scale,
+		mergefiles=["../data/ill_thales/exp_INTER-477/rawdata/024793"])
+	plt.errorbar(Es, Is, Is_err, marker="s", markersize=ms, capsize=cs, ls="none", color=get_col(idx, num_scans), label="%.1f K (coni)" % T)
+	if os.path.exists("coni_106_perp_Bvert_25K.dat"):
+		convo = numpy.loadtxt("coni_106_perp_Bvert_25K.dat")
+		#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(1,3))
+		plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(idx, num_scans))
+	idx += 1
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024788", I_scale=I_scale)
-plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(2,4), label="%.1f K (coni)" % T)
+plt.errorbar(Es, Is, Is_err, marker="^", markersize=ms, capsize=cs, ls="none", color=get_col(idx, num_scans), label="%.1f K (coni)" % T)
 if os.path.exists("coni_106_perp_Bvert_27K.dat"):
 	convo = numpy.loadtxt("coni_106_perp_Bvert_27K.dat")
 	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(0,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(idx, num_scans))
+idx += 1
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/ill_thales/exp_INTER-477/rawdata/024816", I_scale=I_scale,
 	mergefiles=["../data/ill_thales/exp_INTER-477/rawdata/024781"])
-plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(3,4), label="%.1f K (skx)" % T)
+plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(idx, num_scans), label="%.1f K (skx)" % T)
 if os.path.exists("skx_106_perp_Bvert.dat"):
 	convo = numpy.loadtxt("skx_106_perp_Bvert.dat")
 	#plt.plot(convo[:,3], convo[:,5]*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(2,3))
-	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(3,4))
+	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_12, inc_amp_12, 0.), color=get_col(idx, num_scans))
 
 plt.legend()
 fig.tight_layout()
