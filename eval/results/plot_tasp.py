@@ -148,7 +148,7 @@ plt.set_ylim(0, 4)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
 scale = 4
 offs = 1e-4
@@ -195,7 +195,7 @@ plt.set_xlim(-0.625, 0.625)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003238.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(0,4,2), label="%.1f K (skx)" % T)
@@ -229,7 +229,7 @@ plt.set_ylim(0, 4)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
 scale = 4
 offs = 1e-4
@@ -275,7 +275,7 @@ plt.set_xlim(-0.625, 0.625)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
 
 (hs, ks, ls, Es, Is, Is_err, T) = load_data("../data/psi_tasp/exp_20181324_2/tasp2018n003233.dat", I_scale=I_scale)
 plt.errorbar(Es, Is, Is_err, marker="v", markersize=ms, capsize=cs, ls="none", color=get_col(0,4,2), label="%.1f K (skx)" % T)
