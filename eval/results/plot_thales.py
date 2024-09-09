@@ -150,7 +150,7 @@ plt.set_ylim(0, 1.)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(1.07 0.93 0)", xy=(0.62, 0.55), xycoords="axes fraction")
+plt.annotate("scan (v), Thales\n(1.07 0.93 0)", xy=(0.62, 0.53), xycoords="axes fraction")
 
 scale = 2.0  # 1.4
 offs = 5e-6
@@ -193,7 +193,7 @@ plt.set_ylim(0, 0.7)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
+plt.annotate("scan (iv), Thales\n(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
 
 scale = 1.15
 offs = 5e-6
