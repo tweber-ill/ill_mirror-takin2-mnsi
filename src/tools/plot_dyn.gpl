@@ -13,6 +13,8 @@ scale_weight  = 1.5   # weight scale for plot
 key_pointsize = 2.0   # symbol size in legend
 eps_E         = 1e-3  # low energy for filtering diverging weights
 filter_lowE   = 1     # filter diverging weights at E=0 (on satellite peaks)
+max_w         = 5.    # maximum weight to plot
+min_w         = 0.04  # minimum weight to plot
 
 show_pol      = 1
 show_key      = 1     # show legend
@@ -180,8 +182,8 @@ if(show_scans != 0) {
 
 
 # weight factor
-weight_raw(w, E)      = (abs(E) < eps_E && filter_lowE) ? 0. : ((w > 5.) ? 5. : sqrt(w) * 2.5)
-weight(w, E)          = (weight_raw(w, E) < 0.04) ? 0 : weight_raw(w, E)
+weight_raw(w, E)      = (abs(E) < eps_E && filter_lowE) ? 0. : ((w > max_w) ? max_w : sqrt(w) * 2.5)
+weight(w, E)          = (weight_raw(w, E) < min_w) ? 0 : weight_raw(w, E)
 weight_ifminusE(w, E) = (E < 0) ? weight(w, E) : 0
 
 E_sign = 1.
