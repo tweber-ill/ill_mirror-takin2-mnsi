@@ -224,7 +224,7 @@ public:
 	virtual ~Chi2Function() = default;
 
 
-	const Chi2Function<t_real> operator=(const Chi2Function<t_real>& other)
+	const Chi2Function<t_real>& operator=(const Chi2Function<t_real>& other)
 	{
 		this->m_pfkt = other.m_pfkt;
 		this->m_px = other.m_px;
@@ -232,6 +232,8 @@ public:
 		this->m_pdy = other.m_pdy;
 		this->m_dSigma = other.m_dSigma;
 		this->m_bDebug = other.m_bDebug;
+
+		return *this;
 	}
 
 	Chi2Function(const Chi2Function<t_real>& other)
@@ -290,10 +292,12 @@ public:
 		: m_pfkt(other.m_pfkt), m_dSigma(other.m_dSigma)
 	{}
 
-	const MiniFunction<t_real> operator=(const MiniFunction<t_real>& other)
+	const MiniFunction<t_real>& operator=(const MiniFunction<t_real>& other)
 	{
 		this->m_pfkt = other.m_pfkt;
 		this->m_dSigma = other.m_dSigma;
+
+		return *this;
 	}
 
 	virtual t_real_min Up() const override { return m_dSigma*m_dSigma; }
