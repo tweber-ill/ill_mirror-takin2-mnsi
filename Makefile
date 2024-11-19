@@ -77,6 +77,9 @@ DEFS = -DDEF_SKX_ORDER=7 -DDEF_HELI_ORDER=7 \
 	-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI
 INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
+
+LAPACKE_LIBS = -llapacke -llapack -lblas -lgfortran
+MINUIT_LIBS = -lMinuit2 -lMinuit2Math
 # -----------------------------------------------------------------------------
 
 
@@ -111,16 +114,14 @@ lib/skxmod.so: src/takin/takin.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		ext/takin/tools/monteconvo/sqwbase.o \
 		ext/tlibs2/libs/log.o ext/tlibs/log/log.o
 	@echo "Linking Takin module $@..."
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ \
-		-llapacke
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ ${LAPACKE_LIBS}
 	$(STRIP) $@
 
 lib/skxmod_grid.so: src/takin/takin_grid.o \
 		ext/takin/tools/monteconvo/sqwbase.o \
 		ext/tlibs2/libs/log.o ext/tlibs/log/log.o
 	@echo "Linking Takin grid module $@..."
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ \
-		$(LIBBOOSTSYS) -lQt5Core
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ $(LIBBOOSTSYS) -lQt5Core
 	$(STRIP) $@
 # -----------------------------------------------------------------------------
 
@@ -130,12 +131,12 @@ lib/skxmod_grid.so: src/takin/takin_grid.o \
 # -----------------------------------------------------------------------------
 bin/genskx: src/takin/genskx.o src/core/skx.o \
 	src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/genheli: src/takin/genheli.o src/core/heli.o \
 	src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSTFILESYS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/merge: src/takin/merge.o
@@ -156,7 +157,7 @@ bin/drawskx: src/calc/drawskx.o
 
 bin/tof_pol: src/calc/tof_pol.o ext/tlibs2/libs/log.o
 	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ \
-		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng -lMinuit2 -lMinuit2Math
+		$(LIBBOOSTSYS) $(LIBBOOSTFILESYS) $(LIBBOOSTIO) -lpng ${MINUIT_LIBS}
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/tof_unite: src/calc/tof_unite.o
@@ -177,22 +178,22 @@ bin/tof_img: src/calc/tof_img.o
 bin/dyn: src/calc/dyn.o \
 	src/core/skx.o src/core/fp.o src/core/heli.o \
 	src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight: src/calc/weight.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/fielddep: src/calc/fielddep.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ -llapacke -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 
@@ -204,7 +205,7 @@ bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp \
 	src/core/magsys.cpp ext/tlibs2/libs/log.cpp
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=4 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
-		$(LIBDIRS) -o $@ $+ -lMinuit2 -lMinuit2Math -llapacke
+		$(LIBDIRS) -o $@ $+ ${MINUIT_LIBS} ${LAPACKE_LIBS}
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/heli_gs: src/calc/heli_gs.cpp \
@@ -213,7 +214,7 @@ bin/heli_gs: src/calc/heli_gs.cpp \
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=9 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
-		-lMinuit2 -lMinuit2Math -llapacke
+		${MINUIT_LIBS} ${LAPACKE_LIBS}
 	$(STRIP) $@$(BIN_SUFFIX)
 
 bin/skx_gs: src/calc/skx_gs.cpp \
@@ -222,7 +223,7 @@ bin/skx_gs: src/calc/skx_gs.cpp \
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=9 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
-		-lMinuit2 -lMinuit2Math -llapacke
+		${MINUIT_LIBS} ${LAPACKE_LIBS}
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 
