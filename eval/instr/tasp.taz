@@ -21,7 +21,7 @@
 		<ana_scatter_sense>0</ana_scatter_sense>
 		<eck_ana_mosaic_v>4.500000e+01</eck_ana_mosaic_v>
 		<eck_mono_mosaic_v>4.500000e+01</eck_mono_mosaic_v>
-		<eck_sample_mosaic_v>14</eck_sample_mosaic_v>
+		<eck_sample_mosaic_v>7</eck_sample_mosaic_v>
 		<eck_sample_pos_x>0</eck_sample_pos_x>
 		<eck_sample_pos_y>0</eck_sample_pos_y>
 		<eck_sample_pos_z>0</eck_sample_pos_z>
@@ -70,7 +70,7 @@
 		<pop_source_rect>1</pop_source_rect>
 		<pop_src_h>1.200000e+01</pop_src_h>
 		<pop_src_w>3.500000e+00</pop_src_w>
-		<sample_mosaic>1.400000e+01</sample_mosaic>
+		<sample_mosaic>7</sample_mosaic>
 		<sample_scatter_sense>1</sample_scatter_sense>
 		<scatter_kf_vert>0</scatter_kf_vert>
 		<use_guide>1</use_guide>
