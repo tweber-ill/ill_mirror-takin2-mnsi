@@ -1353,10 +1353,11 @@ t_vec prod_vm(const t_vec& vec, const t_mat& mat)
 
 
 /**
- * squared vector length
+ * squared vector length, real version
  * useful when just comparing two vector lengths
  */
-template<class t_vec = ublas::vector<double>>
+template<class t_vec = ublas::vector<double>,
+	typename std::enable_if<std::is_floating_point<typename t_vec::value_type>::value, char>::type=0>
 typename t_vec::value_type veclen_sq(const t_vec& vec)
 {
 	using T = typename t_vec::value_type;
@@ -1364,6 +1365,24 @@ typename t_vec::value_type veclen_sq(const t_vec& vec)
 
 	for(std::size_t i=0; i<vec.size(); ++i)
 		len_sq += vec[i]*vec[i];
+
+	return len_sq;
+}
+
+
+/**
+ * squared vector length, complex version
+ * useful when just comparing two vector lengths
+ */
+template<class t_vec = ublas::vector<double>,
+	typename std::enable_if<!std::is_floating_point<typename t_vec::value_type>::value, char>::type=0>
+typename t_vec::value_type::value_type veclen_sq(const t_vec& vec)
+{
+	using T = typename t_vec::value_type::value_type;
+	T len_sq(0);
+
+	for(std::size_t i=0; i<vec.size(); ++i)
+		len_sq += (std::conj(vec[i])*vec[i]).real();
 
 	return len_sq;
 }
