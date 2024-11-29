@@ -24,7 +24,8 @@ ifneq ($(mingw_build), 1)
 		-I/usr/local/include/Minuit2 \
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
-	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib
+	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib \
+		-L/usr/local/Cellar/gcc/14.2.0_1/lib/gcc/current
 
 	LIBBOOSTSYS = -lboost_system
 	LIBBOOSTFILESYS = -lboost_filesystem
