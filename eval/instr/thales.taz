@@ -58,6 +58,7 @@
 		<pop_guide_divv>3.600000e+01</pop_guide_divv>
 		<pop_monitor_h>11.000000e+00</pop_monitor_h>
 		<pop_monitor_w>11.000000e+00</pop_monitor_w>
+		<pop_monitor_thick>0.100000e+00</pop_monitor_thick>
 		<pop_mono_curvh>0.000000e+00</pop_mono_curvh>
 		<pop_mono_curvv>1.200000e+02</pop_mono_curvv>
 		<pop_mono_h>1.500000e+01</pop_mono_h>
@@ -86,6 +87,6 @@
 		<v_coll_ana>9.999000e+03</v_coll_ana>
 		<v_coll_before_sample>9.999000e+03</v_coll_before_sample>
 		<v_coll_mono>9.999000e+03</v_coll_mono>
-		<r0_scale>0.00035</r0_scale>
+		<r0_scale>0.0030625</r0_scale>
 	</reso>
 </taz>
