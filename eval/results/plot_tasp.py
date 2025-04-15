@@ -149,6 +149,18 @@ plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("B = 195 mT", xy=(0.1, 0.5), xycoords="axes fraction")
+
+# arrows
+arrow_len = 0.35
+plt.annotate("18K (c)", xytext=(0.32, 1.3), xy=(0.32, 1.3-arrow_len), color=get_col(0,4), \
+	arrowprops={"color" : get_col(0,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("24K (c)", xytext=(0.25, 1.75), xy=(0.25, 1.75-arrow_len), color=get_col(1,4), \
+	arrowprops={"color" : get_col(1,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("27K (c)", xytext=(0.185, 2.5), xy=(0.185, 2.5-arrow_len), color=get_col(2,4), \
+	arrowprops={"color" : get_col(2,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("28.5K (s)", xytext=(0.125, 3.1), xy=(0.125, 3.1-arrow_len), color=get_col(3,4), \
+	arrowprops={"color" : get_col(3,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
 
 scale = 4
 offs = 1e-4
