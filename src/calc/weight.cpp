@@ -164,43 +164,40 @@ int main(int argc, char** argv)
 			<< "Use \"" << argv[0] << " --help\" to show all options.\n"
 			<< std::endl;
 
-		while(true)
+		std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
+		std::cin >> dyntype; dyntype = std::tolower(dyntype);
+		std::cout << "G = ";
+		std::cin >> Gx >> Gy >> Gz;
+		std::cout << "Q = ";
+		std::cin >> Qx >> Qy >> Qz;
+		std::cout << "B = ";
+		std::cin >> Bx >> By >> Bz;
+		if(dyntype == 'h' || dyntype == 'f')
 		{
-			std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
-			std::cin >> dyntype; dyntype = std::tolower(dyntype);
-			std::cout << "G = ";
-			std::cin >> Gx >> Gy >> Gz;
-			std::cout << "Q = ";
-			std::cin >> Qx >> Qy >> Qz;
-			std::cout << "B = ";
-			std::cin >> Bx >> By >> Bz;
-			if(dyntype == 'h' || dyntype == 'f')
-			{
-				std::cout << "|B| = ";
-				std::cin >> B;
-				std::cout << "T = ";
-				std::cin >> T;
-			}
-			else if(dyntype == 's')
-			{
-				std::cout << "pinning = ";
-				std::cin >> Px >> Py >> Pz;
-			}
-			std::cout << "Q projector [0/1]: ";
-			std::cin >> do_proj;
-
-			std::cout << "\n";
-			if(dyntype == 'h' || dyntype == 'f')
-			{
-				std::cout << "# T = " << T << "\n";
-				std::cout << "# |B| = " << B << "\n";
-			}
-			std::cout << "# B = (" << Bx << ", " << By << ", " << Bz << ")\n";
-			std::cout << "# G = (" << Gx << ", " << Gy << ", " << Gz << ")\n";
-			std::cout << "# Q = (" << Qx << ", " << Qy << ", " << Qz << ")\n";
-			std::cout << "# q = (" << Qx-Gx << ", " << Qy-Gy << ", " << Qz-Gz << ")\n";
-			std::cout << "# Q_proj = " << do_proj << "\n";
+			std::cout << "|B| = ";
+			std::cin >> B;
+			std::cout << "T = ";
+			std::cin >> T;
 		}
+		else if(dyntype == 's')
+		{
+			std::cout << "pinning = ";
+			std::cin >> Px >> Py >> Pz;
+		}
+		std::cout << "Q projector [0/1]: ";
+		std::cin >> do_proj;
+
+		std::cout << "\n";
+		if(dyntype == 'h' || dyntype == 'f')
+		{
+			std::cout << "# T = " << T << "\n";
+			std::cout << "# |B| = " << B << "\n";
+		}
+		std::cout << "# B = (" << Bx << ", " << By << ", " << Bz << ")\n";
+		std::cout << "# G = (" << Gx << ", " << Gy << ", " << Gz << ")\n";
+		std::cout << "# Q = (" << Qx << ", " << Qy << ", " << Qz << ")\n";
+		std::cout << "# q = (" << Qx-Gx << ", " << Qy-Gy << ", " << Qz-Gz << ")\n";
+		std::cout << "# Q_proj = " << do_proj << "\n";
 	}
 	else
 	{

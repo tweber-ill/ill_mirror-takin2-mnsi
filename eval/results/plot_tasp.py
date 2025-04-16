@@ -149,17 +149,21 @@ plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
-plt.annotate("B = 195 mT", xy=(0.1, 0.5), xycoords="axes fraction")
+plt.annotate("B = -195 mT", xy=(0.1, 0.5), xycoords="axes fraction")
 
 # arrows
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=-1 --By=-1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=18.03 --B=0.169845
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=-1 --By=-1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=24.04 --B=0.169845
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=-1 --By=-1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=27.01 --B=0.169845
+# ./weight --dyntype=s --Gx=1 --Gy=1 --Gz=0 --Bx=-1 --By=-1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=28.52 --B=0.169845
 arrow_len = 0.35
-plt.annotate("18K (c)", xytext=(0.32, 1.3), xy=(0.32, 1.3-arrow_len), color=get_col(0,4), \
+plt.annotate("18K (c)", xytext=(0.289, 1.4), xy=(0.289, 1.4-arrow_len), color=get_col(0,4), \
 	arrowprops={"color" : get_col(0,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
-plt.annotate("24K (c)", xytext=(0.25, 1.75), xy=(0.25, 1.75-arrow_len), color=get_col(1,4), \
+plt.annotate("24K (c)", xytext=(0.221, 1.9), xy=(0.221, 1.9-arrow_len), color=get_col(1,4), \
 	arrowprops={"color" : get_col(1,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
-plt.annotate("27K (c)", xytext=(0.185, 2.5), xy=(0.185, 2.5-arrow_len), color=get_col(2,4), \
+plt.annotate("27K (c)", xytext=(0.174, 2.5), xy=(0.174, 2.5-arrow_len), color=get_col(2,4), \
 	arrowprops={"color" : get_col(2,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
-plt.annotate("28.5K (s)", xytext=(0.125, 3.1), xy=(0.125, 3.1-arrow_len), color=get_col(3,4), \
+plt.annotate("28.5K (s)", xytext=(0.132, 3.1), xy=(0.132, 3.1-arrow_len), color=get_col(3,4), \
 	arrowprops={"color" : get_col(3,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
 
 scale = 4
@@ -241,7 +245,30 @@ plt.set_ylim(0, 4)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.6, 0.85), xycoords="axes fraction")
+plt.annotate("scan (i), TASP\n(0.944 0.944 0)", xy=(0.05, 0.85), xycoords="axes fraction")
+plt.annotate("B = 195 mT", xy=(0.05, 0.7), xycoords="axes fraction")
+
+# arrows
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=18.03 --B=0.169845
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=24.04 --B=0.169845
+# ./weight --dyntype=h --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=27.01 --B=0.169845
+# ./weight --dyntype=s --Gx=1 --Gy=1 --Gz=0 --Bx=1 --By=1 --Bz=0 --Px=1 --Py=-1 --Pz=0 --Qx=0.944 --Qy=0.944 --Qz=0 --T=28.52 --B=0.169845
+arrow_len = 0.35
+plt.annotate("", xytext=(-0.289, 1.2), xy=(-0.289, 1.2-arrow_len), color=get_col(0,4), \
+	arrowprops={"color" : get_col(0,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("", xytext=(-0.221, 1.6), xy=(-0.221, 1.6-arrow_len), color=get_col(1,4), \
+	arrowprops={"color" : get_col(1,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("", xytext=(-0.174, 2.1), xy=(-0.174, 2.1-arrow_len), color=get_col(2,4), \
+	arrowprops={"color" : get_col(2,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+plt.annotate("", xytext=(-0.132, 2.5), xy=(-0.132, 2.5-arrow_len), color=get_col(3,4), \
+	arrowprops={"color" : get_col(3,4), "width":2., "headwidth":8., "headlength":8., "shrink":0.1})
+
+label_offs_x = -0.225
+label_offs_y = -0.2
+plt.annotate("18K (c)", xy=(-0.289+label_offs_x, 1.2+label_offs_y), color=get_col(0,4))
+plt.annotate("24K (c)", xy=(-0.221+label_offs_x, 1.6+label_offs_y), color=get_col(1,4))
+plt.annotate("27K (c)", xy=(-0.174+label_offs_x, 2.1+label_offs_y), color=get_col(2,4))
+plt.annotate("28.5K (s)", xy=(-0.132+label_offs_x-0.05, 2.5+label_offs_y), color=get_col(3,4))
 
 scale = 4
 offs = 1e-4
@@ -270,7 +297,7 @@ if os.path.exists("convo_tasp_0944_para_Bflipped.dat"):
 	convo = numpy.loadtxt("convo_tasp_0944_para_Bflipped.dat")
 	plt.plot(convo[:,3], (convo[:,4]*scale + offs)*S_scale(T) + gauss(convo[:,3], 0., inc_sig_145, inc_amp_145, 0.), color=get_col(3,4))
 
-plt.legend()
+plt.legend(handletextpad=0.)
 fig.tight_layout()
 fig.savefig(outdir + "0944_para_pB.pdf")
 print("Saved plot 3 as 0944_para_pB.pdf.\n")
