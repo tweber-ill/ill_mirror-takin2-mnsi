@@ -19,20 +19,20 @@
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Convo.</info>
 		<module>takin/convo</module>
-		<timestamp>1725438007.994333</timestamp>
+		<timestamp>1744992791.611094</timestamp>
 		<url>https://github.com/ILLGrenoble/takin</url>
-		<user>tw</user>
-		<version>2.8.0</version>
+		<user>t_weber</user>
+		<version>2.8.5</version>
 	</meta>
 	<monteconvo>
 		<E_from>-1.508000e-01</E_from>
 		<E_to>1.039500e+00</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
 		<S_offs>0.5e-5</S_offs>
-		<S_scale>1.8</S_scale>
+		<S_scale>3</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
-		<algo_idx>2</algo_idx>
+		<algo_idx>3</algo_idx>
 		<allow_scan_merging>0</allow_scan_merging>
 		<ana_foc>0</ana_foc>
 		<autosave>/tmp/coni_107_perp_Bvert_27K.dat</autosave>
