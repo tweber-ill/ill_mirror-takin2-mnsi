@@ -151,6 +151,8 @@ plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
 plt.annotate("scan (v), Thales\n(1.07 0.93 0)", xy=(0.62, 0.53), xycoords="axes fraction")
+plt.annotate("B = 180 mT", xy=(0.275, 0.85), xycoords="axes fraction")
+
 
 scale = 2.0  # 1.4
 offs = 5e-6
@@ -179,7 +181,7 @@ if os.path.exists("skx_107_perp_Bvert.dat"):
 plt.legend()
 fig.tight_layout()
 fig.savefig(outdir + "107_perp_Bvert.pdf")
-print("Saved plot 1 as 107_perp_Bvert.pdf.\n")
+print("Saved plot 1 as %s107_perp_Bvert.pdf.\n" % outdir)
 # -----------------------------------------------------------------------------
 
 
@@ -193,7 +195,7 @@ plt.set_ylim(0, 0.7)
 plt.set_xlabel("E (meV)")
 plt.set_ylabel("S (a.u.)")
 
-plt.annotate("scan (iv), Thales\n(1.06 0.94 0)", xy=(0.62, 0.5), xycoords="axes fraction")
+plt.annotate("scan (iv), Thales\n(1.06 0.94 0)\nB = 180 mT", xy=(0.62, 0.45), xycoords="axes fraction")
 
 scale = 1.15
 offs = 5e-6
@@ -240,5 +242,5 @@ if os.path.exists("skx_106_perp_Bvert.dat"):
 plt.legend()
 fig.tight_layout()
 fig.savefig(outdir + "106_perp_Bvert.pdf")
-print("Saved plot 2 as 106_perp_Bvert.pdf.\n")
+print("Saved plot 2 as %s106_perp_Bvert.pdf.\n" % outdir)
 # -----------------------------------------------------------------------------
