@@ -164,7 +164,7 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	const std::string& outfile, bool bSwapQParaQPerp=0,
 	t_real T=-1., t_real B=-1.,
 	t_real qrange = 0.125, t_real delta = 0.001,
-	bool explicit_calc = true,
+	bool explicit_calc = true, bool calc_nonrecip = false,
 	const std::string& gs_file = "")
 {
 	tl2::Stopwatch<t_real> timer;
@@ -310,37 +310,106 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 		ofstr << "# WARNING: In the following, q_para_* and q_perp_* are swapped!\n";
 	ofstr << "#\n";
 
-	ofstr
-		<< "#" << std::setw(15) << "h" << " "
-		<< std::setw(16) << "k" << " "
-		<< std::setw(16) << "l" << " "
-		<< std::setw(16) << "E" << " "
-		<< std::setw(16) << "w_unpol" << " "
-		<< std::setw(16) << "w_sf1" << " "
-		<< std::setw(16) << "w_sf2" << " "
-		<< std::setw(16) << "w_nsf" << " "
-		<< std::setw(16) << "q_para_kh" << " "
-		<< std::setw(16) << "q_perp_kh" << " "
-		<< std::setw(16) << "q_para_rlu" << " "
-		<< std::setw(16) << "q_perp_rlu\n";
-
-	for(std::size_t i=0; i<std::get<0>(val0).size(); ++i)
+	if(calc_nonrecip)
 	{
-		for(std::size_t j=0; j<std::get<3>(val0)[i].size(); ++j)
+		// calculate non-reciprocal energy-shift
+		ofstr
+			<< "#" << std::setw(15) << "h" << " "
+			<< std::setw(16) << "k" << " "
+			<< std::setw(16) << "l" << " "
+			<< std::setw(16) << "E+" << " "
+			<< std::setw(16) << "E-" << " "
+			<< std::setw(16) << "dE" << " "
+			<< std::setw(16) << "S+" << " "
+			<< std::setw(16) << "S-" << "\n";
+	}
+	else
+	{
+		// calculate dispersion
+		ofstr
+			<< "#" << std::setw(15) << "h" << " "
+			<< std::setw(16) << "k" << " "
+			<< std::setw(16) << "l" << " "
+			<< std::setw(16) << "E" << " "
+			<< std::setw(16) << "w_unpol" << " "
+			<< std::setw(16) << "w_sf1" << " "
+			<< std::setw(16) << "w_sf2" << " "
+			<< std::setw(16) << "w_nsf" << " "
+			<< std::setw(16) << "q_para_kh" << " "
+			<< std::setw(16) << "q_perp_kh" << " "
+			<< std::setw(16) << "q_para_rlu" << " "
+			<< std::setw(16) << "q_perp_rlu\n";
+	}
+
+	// iterate Qs
+	for(std::size_t i = 0; i < std::get<0>(val0).size(); ++i)
+	{
+		std::size_t N = std::get<3>(val0)[i].size();
+		std::list<t_real> Ep, Em, Sp, Sm;
+
+		// iterate Es
+		for(std::size_t j = 0; j < N; ++j)
 		{
-			ofstr << std::setw(16) << std::get<0>(val0)[i] << " "       // 1: h
-				<< std::setw(16) << std::get<1>(val0)[i] << " "     // 2: k
-				<< std::setw(16) << std::get<2>(val0)[i] << " "     // 3: l
-				<< std::setw(16) << std::get<3>(val0)[i][j] << " "  // 4: E
-				<< std::setw(16) << std::get<4>(val0)[i][j] << " "  // 5: w_unpol
-				<< std::setw(16) << std::get<5>(val0)[i][j] << " "  // 6: w_sf1
-				<< std::setw(16) << std::get<6>(val0)[i][j] << " "  // 7: w_sf2
-				<< std::setw(16) << std::get<7>(val0)[i][j] << " "  // 8: w_nsf
-				<< std::setw(16) << std::get<8>(val0)[i] << " "     // 9: q_para_kh
-				<< std::setw(16) << std::get<9>(val0)[i] << " "     // 10: q_perp_kh
-				<< std::setw(16) << std::get<10>(val0)[i] << " "    // 11: q_para_rlu
-				<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // 12: q_perp_rlu
+			if(calc_nonrecip)
+			{
+				// calculate non-reciprocal energy-shift
+				t_real E = std::get<3>(val0)[i][j];
+				t_real S = std::get<4>(val0)[i][j];
+
+				if(E >= 0.)
+				{
+					Ep.push_back(E);
+					Sp.push_back(S);
+				}
+				else
+				{
+					Em.push_front(E);
+					Sm.push_front(S);
+				}
+			}
+			else
+			{
+				// calculate dispersion
+				ofstr
+					<< std::setw(16) << std::get<0>(val0)[i] << " "     // 1: h
+					<< std::setw(16) << std::get<1>(val0)[i] << " "     // 2: k
+					<< std::setw(16) << std::get<2>(val0)[i] << " "     // 3: l
+					<< std::setw(16) << std::get<3>(val0)[i][j] << " "  // 4: E
+					<< std::setw(16) << std::get<4>(val0)[i][j] << " "  // 5: w_unpol
+					<< std::setw(16) << std::get<5>(val0)[i][j] << " "  // 6: w_sf1
+					<< std::setw(16) << std::get<6>(val0)[i][j] << " "  // 7: w_sf2
+					<< std::setw(16) << std::get<7>(val0)[i][j] << " "  // 8: w_nsf
+					<< std::setw(16) << std::get<8>(val0)[i] << " "     // 9: q_para_kh
+					<< std::setw(16) << std::get<9>(val0)[i] << " "     // 10: q_perp_kh
+					<< std::setw(16) << std::get<10>(val0)[i] << " "    // 11: q_para_rlu
+					<< std::setw(16) << std::get<11>(val0)[i] << "\n";  // 12: q_perp_rlu
+			}
 		}
+
+		if(calc_nonrecip)
+		{
+			// calculate non-reciprocal energy-shift
+			for(std::size_t j = 0; j < std::min(Ep.size(), Em.size()); ++j)
+			{
+				if(N - j - 1 <= j)
+					continue;
+
+				t_real E1 = *std::next(Ep.begin(), j);
+				t_real E2 = *std::next(Em.begin(), j);
+				t_real dE = std::abs(std::abs(E1) - std::abs(E2));
+
+				ofstr
+					<< std::setw(16) << std::get<0>(val0)[i] << " "        // 1: h
+					<< std::setw(16) << std::get<1>(val0)[i] << " "        // 2: k
+					<< std::setw(16) << std::get<2>(val0)[i] << " "        // 3: l
+					<< std::setw(16) << E1 << " "                          // 4: E+
+					<< std::setw(16) << E2 << " "                          // 5: E-
+					<< std::setw(16) << dE << " "                          // 6: dE
+					<< std::setw(16) << *std::next(Sp.begin(), j) << " "   // 7: S+
+					<< std::setw(16) << *std::next(Sm.begin(), j) << "\n"; // 8: S-
+			}
+		}
+
 	}
 
 	std::cout << "Calculation took " << timer.GetDur() << " s." << std::endl;
@@ -360,7 +429,8 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	t_real qh_offs, t_real qk_offs, t_real ql_offs,
 	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
-	t_real T=-1., t_real B=-1., bool explicit_calc = true,
+	t_real T=-1., t_real B=-1.,
+	bool explicit_calc = true, bool calc_nonrecip = false,
 	const std::string& gs_file = "",
 	unsigned int num_threads = 4)
 {
@@ -421,7 +491,7 @@ static void calc_disp_path(char dyntype, bool do_proj,
 		allWsSF2(num_points), allWsNSF(num_points);
 	std::vector<t_real> allqs(num_points);
 
-	for(std::size_t pt_idx=0; pt_idx<num_points; ++pt_idx)
+	for(std::size_t pt_idx = 0; pt_idx < num_points; ++pt_idx)
 	{
 		t_vec q = qstart + t_real(pt_idx)/t_real(num_points-1) * (qend-qstart);
 		t_vec Q = G + q;
@@ -453,7 +523,7 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	}
 
 	show_progress(0, true);
-	for(std::size_t taskidx=0; taskidx<tasks.size(); ++taskidx)
+	for(std::size_t taskidx = 0; taskidx < tasks.size(); ++taskidx)
 	{
 		tasks[taskidx]->get_future().get();
 		t_real done = t_real(taskidx+1) / t_real(tasks.size());
@@ -489,31 +559,98 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	ofstr << "# F = " << F << "\n";
 	ofstr << "#\n";
 
-	ofstr
-		<< "#" << std::setw(15) << "h" << " "
-		<< std::setw(16) << "k" << " "
-		<< std::setw(16) << "l" << " "
-		<< std::setw(16) << "E" << " "
-		<< std::setw(16) << "w_unpol" << " "
-		<< std::setw(16) << "w_sf1" << " "
-		<< std::setw(16) << "w_sf2" << " "
-		<< std::setw(16) << "w_nsf" << " "
-		<< std::setw(16) << "q\n";
-
-	for(std::size_t i=0; i<num_points; ++i)
+	if(calc_nonrecip)
 	{
-		for(std::size_t j=0; j<allEs[i].size(); ++j)
+		// calculate non-reciprocal energy-shift
+		ofstr
+			<< "#" << std::setw(15) << "h" << " "
+			<< std::setw(16) << "k" << " "
+			<< std::setw(16) << "l" << " "
+			<< std::setw(16) << "E+" << " "
+			<< std::setw(16) << "E-" << " "
+			<< std::setw(16) << "dE" << " "
+			<< std::setw(16) << "S+" << " "
+			<< std::setw(16) << "S-" << "\n";
+	}
+	else
+	{
+		// calculate dispersion
+		ofstr
+			<< "#" << std::setw(15) << "h" << " "
+			<< std::setw(16) << "k" << " "
+			<< std::setw(16) << "l" << " "
+			<< std::setw(16) << "E" << " "
+			<< std::setw(16) << "w_unpol" << " "
+			<< std::setw(16) << "w_sf1" << " "
+			<< std::setw(16) << "w_sf2" << " "
+			<< std::setw(16) << "w_nsf" << " "
+			<< std::setw(16) << "q\n";
+	}
+
+	// iterate Qs
+	for(std::size_t i = 0; i < num_points; ++i)
+	{
+		std::size_t N = allEs[i].size();
+		std::list<t_real> Ep, Em, Sp, Sm;
+
+		// iterate Es
+		for(std::size_t j = 0; j < N; ++j)
 		{
-			ofstr
-				<< std::setw(16) << allh[i] << " "           // 1: h
-				<< std::setw(16) << allk[i] << " "           // 2: k
-				<< std::setw(16) << alll[i] << " "           // 3: l
-				<< std::setw(16) << allEs[i][j] << " "       // 4: E
-				<< std::setw(16) << allWsUnpol[i][j] << " "  // 5: w_unpol
-				<< std::setw(16) << allWsSF1[i][j] << " "    // 6: w_sf1
-				<< std::setw(16) << allWsSF2[i][j] << " "    // 7: w_sf2
-				<< std::setw(16) << allWsNSF[i][j] << " "    // 8: w_nsf
-				<< std::setw(16) << allqs[i] << "\n";        // 9: q
+			if(calc_nonrecip)
+			{
+				// calculate non-reciprocal energy-shift
+				t_real E = allEs[i][j];
+				t_real S = allWsUnpol[i][j];
+
+				if(E >= 0.)
+				{
+					Ep.push_back(E);
+					Sp.push_back(S);
+				}
+				else
+				{
+					Em.push_front(E);
+					Sm.push_front(S);
+				}
+			}
+			else
+			{
+				// calculate dispersion
+				ofstr
+					<< std::setw(16) << allh[i] << " "           // 1: h
+					<< std::setw(16) << allk[i] << " "           // 2: k
+					<< std::setw(16) << alll[i] << " "           // 3: l
+					<< std::setw(16) << allEs[i][j] << " "       // 4: E
+					<< std::setw(16) << allWsUnpol[i][j] << " "  // 5: w_unpol
+					<< std::setw(16) << allWsSF1[i][j] << " "    // 6: w_sf1
+					<< std::setw(16) << allWsSF2[i][j] << " "    // 7: w_sf2
+					<< std::setw(16) << allWsNSF[i][j] << " "    // 8: w_nsf
+					<< std::setw(16) << allqs[i] << "\n";        // 9: q
+			}
+		}
+
+		if(calc_nonrecip)
+		{
+			// calculate non-reciprocal energy-shift
+			for(std::size_t j = 0; j < std::min(Ep.size(), Em.size()); ++j)
+			{
+				if(N - j - 1 <= j)
+					continue;
+
+				t_real E1 = *std::next(Ep.begin(), j);
+				t_real E2 = *std::next(Em.begin(), j);
+				t_real dE = std::abs(std::abs(E1) - std::abs(E2));
+
+				ofstr
+					<< std::setw(16) << allh[i] << " "                     // 1: h
+					<< std::setw(16) << allk[i] << " "                     // 2: k
+					<< std::setw(16) << alll[i] << " "                     // 3: l
+					<< std::setw(16) << E1 << " "                          // 4: E+
+					<< std::setw(16) << E2 << " "                          // 5: E-
+					<< std::setw(16) << dE << " "                          // 6: dE
+					<< std::setw(16) << *std::next(Sp.begin(), j) << " "   // 7: S+
+					<< std::setw(16) << *std::next(Sm.begin(), j) << "\n"; // 8: S-
+			}
 		}
 	}
 
@@ -551,6 +688,7 @@ int main(int argc, char **argv)
 	bool alongqpara = false;
 	bool do_proj = true;
 	bool explicit_calc = true;
+	bool calc_nonrecip = false;
 	bool use_para_perp_calc = true;
 	std::string outfile = "dyn.dat";
 	std::string gs_file = "";
@@ -642,6 +780,10 @@ int main(int argc, char **argv)
 			args.add(boost::make_shared<opts::option_description>(
 				"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
 				"use explicit calculation"));
+
+			args.add(boost::make_shared<opts::option_description>(
+				"calc_nonrecip", opts::value<decltype(calc_nonrecip)>(&calc_nonrecip),
+				"calculation non-reciprocal energy shift"));
 
 			args.add(boost::make_shared<opts::option_description>(
 				"along_qpara", opts::value<decltype(alongqpara)>(&alongqpara),
@@ -809,7 +951,7 @@ int main(int argc, char **argv)
 			qperp, qperp2,
 			outfile, !alongqpara,
 			T, B, qrange, qdelta,
-			explicit_calc,
+			explicit_calc, calc_nonrecip,
 			gs_file);
 	}
 	else
@@ -824,7 +966,7 @@ int main(int argc, char **argv)
 			qh_offs, qk_offs, ql_offs,
 			Rx,Ry,Rz, tl2::d2r(Ralpha),
 			num_points, outfile,
-			T, B, explicit_calc,
+			T, B, explicit_calc, calc_nonrecip,
 			gs_file, num_threads);
 	}
 

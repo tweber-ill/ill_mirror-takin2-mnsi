@@ -123,7 +123,7 @@ static bool calc_weight(char dyntype,
 		<< std::setw(15) << std::left << "w_SF2" << " "
 		<< std::setw(15) << std::left << "w_NSF" << "\n";
 
-	for(std::size_t i=0; i<Es.size(); ++i)
+	for(std::size_t i = 0; i < Es.size(); ++i)
 	{
 		ostr
 			<< std::setw(15) << std::left << (i+1) << " "
