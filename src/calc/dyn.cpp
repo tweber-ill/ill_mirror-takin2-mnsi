@@ -164,7 +164,7 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	const std::string& outfile, bool bSwapQParaQPerp=0,
 	t_real T=-1., t_real B=-1.,
 	t_real qrange = 0.125, t_real delta = 0.001,
-	bool explicit_calc = true, bool calc_nonrecip = false,
+	bool explicit_calc = true, bool calc_nonrecip = false, bool filter_zero_weight = false,
 	const std::string& gs_file = "")
 {
 	tl2::Stopwatch<t_real> timer;
@@ -192,6 +192,7 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
+	dyn->SetFilterZeroWeight(filter_zero_weight);
 	dyn->SetProjNeutron(do_proj);
 	dyn->SetG(G[0], G[1], G[2]);
 
@@ -430,7 +431,7 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	t_real Rx, t_real Ry, t_real Rz, t_real Ralpha,
 	std::size_t num_points, const std::string& outfile,
 	t_real T=-1., t_real B=-1.,
-	bool explicit_calc = true, bool calc_nonrecip = false,
+	bool explicit_calc = true, bool calc_nonrecip = false, bool filter_zero_weight = false,
 	const std::string& gs_file = "",
 	unsigned int num_threads = 4)
 {
@@ -462,6 +463,7 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	dyn->SetCoords(Bdir[0],Bdir[1],Bdir[2], Pdir[0],Pdir[1],Pdir[2]);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
+	dyn->SetFilterZeroWeight(filter_zero_weight);
 	dyn->SetProjNeutron(do_proj);
 	dyn->SetG(G[0], G[1], G[2]);
 
@@ -689,6 +691,7 @@ int main(int argc, char **argv)
 	bool do_proj = true;
 	bool explicit_calc = true;
 	bool calc_nonrecip = false;
+	bool filter_zero_weight = false;
 	bool use_para_perp_calc = true;
 	std::string outfile = "dyn.dat";
 	std::string gs_file = "";
@@ -780,10 +783,12 @@ int main(int argc, char **argv)
 			args.add(boost::make_shared<opts::option_description>(
 				"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
 				"use explicit calculation"));
-
 			args.add(boost::make_shared<opts::option_description>(
 				"calc_nonrecip", opts::value<decltype(calc_nonrecip)>(&calc_nonrecip),
 				"calculation non-reciprocal energy shift"));
+			args.add(boost::make_shared<opts::option_description>(
+				"filter_zero_weight", opts::value<decltype(filter_zero_weight)>(&filter_zero_weight),
+				"filter out modes with zero spectral weight"));
 
 			args.add(boost::make_shared<opts::option_description>(
 				"along_qpara", opts::value<decltype(alongqpara)>(&alongqpara),
@@ -951,7 +956,7 @@ int main(int argc, char **argv)
 			qperp, qperp2,
 			outfile, !alongqpara,
 			T, B, qrange, qdelta,
-			explicit_calc, calc_nonrecip,
+			explicit_calc, calc_nonrecip, filter_zero_weight,
 			gs_file);
 	}
 	else
@@ -966,7 +971,7 @@ int main(int argc, char **argv)
 			qh_offs, qk_offs, ql_offs,
 			Rx,Ry,Rz, tl2::d2r(Ralpha),
 			num_points, outfile,
-			T, B, explicit_calc, calc_nonrecip,
+			T, B, explicit_calc, calc_nonrecip, filter_zero_weight,
 			gs_file, num_threads);
 	}
 

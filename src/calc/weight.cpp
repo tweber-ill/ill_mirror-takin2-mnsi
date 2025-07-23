@@ -104,7 +104,7 @@ static bool calc_weight(char dyntype,
 	dyn->SetCoords(Bx,By,Bz, Px,Py,Pz);
 	dyn->SetT(T, true);
 	dyn->SetB(B, true);
-	dyn->SetFilterZeroWeight(1);
+	dyn->SetFilterZeroWeight(true);
 	dyn->SetProjNeutron(do_proj);
 	dyn->SetG(Gx, Gy, Gz);
 
