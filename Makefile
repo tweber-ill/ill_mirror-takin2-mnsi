@@ -22,10 +22,15 @@ ifneq ($(mingw_build), 1)
 		-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
 		-I/usr/local/include/Minuit2 \
+		-I/opt/homebrew/include \
+		-I/opt/homebrew/Cellar/boost/1.89.0_1/include
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
 	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib \
-		-L/usr/local/opt/gcc/lib/gcc/current
+		-L/usr/local/opt/gcc/lib/gcc/current \
+		-L/opt/homebrew/lib \
+		-L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current \
+		-L/opt/homebrew/Cellar/boost/1.89.0_1/lib
 
 	LIBBOOSTSYS = -lboost_system
 	LIBBOOSTFILESYS = -lboost_filesystem
