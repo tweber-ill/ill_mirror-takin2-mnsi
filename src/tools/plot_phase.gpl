@@ -1,9 +1,9 @@
 #!/usr/local/bin/gnuplot -p
 
 #
-# plots polarisations vs. spin-echo time
+# plots phase vs. spin-echo time
 # @author Tobias Weber <tweber@ill.fr>
-# @date may-2022
+# @date mar-2026
 # @license GPLv2 (see 'LICENSE' file)
 #
 
@@ -35,10 +35,10 @@ if(out_term == 2) {
 # output plot file
 if(!exists("file_out")) {
         if(out_term == 1) {
-                file_out = "pol.pdf"
+                file_out = "phase.pdf"
         }
         if(out_term == 2) {
-                file_out = "pol.png"
+                file_out = "phase.png"
         }
 }
 
@@ -49,37 +49,37 @@ if(exists("file_out")) {
 
 
 set xlabel "Spin-echo time τ (ps)"
-set ylabel "Polarisation"
+set ylabel "Phase (deg)"
 
 set logscale x
 #set xrange [0 : 5000]
-set yrange [0 : 1]
+set yrange [-360 : 360]
 
-set ytics 0.2
-set mytics 2
+set ytics 100
+set mytics 10
 
 plot \
-	"< join P_1.dat P0_1.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_1.dat P0_1.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 13 ps point_size lc rgb foil_cols[1] title "Foil 1", \
-	"< join P_2.dat P0_2.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_2.dat P0_2.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 15 ps point_size lc rgb foil_cols[2] title "Foil 2", \
-	"< join P_3.dat P0_3.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_3.dat P0_3.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 5 ps point_size lc rgb foil_cols[3] title "Foil 3", \
-	"< join P_4.dat P0_4.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_4.dat P0_4.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 7 ps point_size lc rgb foil_cols[4] title "Foil 4", \
-	"< join P_5.dat P0_5.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_5.dat P0_5.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 9 ps point_size lc rgb foil_cols[5] title "Foil 5", \
-	"< join P_6.dat P0_6.dat" u 4:($5/$12):(sqrt(($6/$12)**2 + ($5/$12**2 * $13)**2)) \
+	"< join P_6.dat P0_6.dat" u 4:($7 - $14):(sqrt($8**2 + $15**2)) \
 		w yerrorbars pt 11 ps point_size lc rgb foil_cols[6] title "Foil 6", \
-	"< join P_1.dat P0_1.dat" u 4:($5/$12) \
+	"< join P_1.dat P0_1.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[1] notitle, \
-	"< join P_2.dat P0_2.dat" u 4:($5/$12) \
+	"< join P_2.dat P0_2.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[2] notitle, \
-	"< join P_3.dat P0_3.dat" u 4:($5/$12) \
+	"< join P_3.dat P0_3.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[3] notitle, \
-	"< join P_4.dat P0_4.dat" u 4:($5/$12) \
+	"< join P_4.dat P0_4.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[4] notitle, \
-	"< join P_5.dat P0_5.dat" u 4:($5/$12) \
+	"< join P_5.dat P0_5.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[5] notitle, \
-	"< join P_6.dat P0_6.dat" u 4:($5/$12) \
+	"< join P_6.dat P0_6.dat" u 4:($7 - $14) \
 		w lines lw point_size*2 lc rgb foil_cols[6] notitle

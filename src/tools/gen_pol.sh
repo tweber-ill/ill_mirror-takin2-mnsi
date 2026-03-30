@@ -323,6 +323,7 @@ if [ $plot -ne 0 ]; then
 	echo -e "\x1b[0m"
 
 	gnuplot -p ../src/tools/plot_pol.gpl
+	gnuplot -p ../src/tools/plot_phase.gpl
 
 	echo -e "\x1b[1;34m"
 	echo -e "================================================================================"

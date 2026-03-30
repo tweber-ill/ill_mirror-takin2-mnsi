@@ -29,13 +29,14 @@ ifneq ($(mingw_build), 1)
 	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib \
 		-L/usr/local/opt/gcc/lib/gcc/current \
 		-L/opt/homebrew/lib \
-		-L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current \
+		-L/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current \
 		-L/opt/homebrew/Cellar/boost/1.89.0_1/lib
 
-	LIBBOOSTSYS = -lboost_system
 	LIBBOOSTFILESYS = -lboost_filesystem
 	LIBBOOSTIO = -lboost_iostreams
 	LIBBOOSOPTS = -lboost_program_options
+	#LIBBOOSTSYS = -lboost_system
+	LIBBOOSTSYS =
 
 	BIN_SUFFIX =
 else

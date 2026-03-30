@@ -33,7 +33,7 @@ using t_real = tl2::t_real_min;
 /**
  * extract image and count data from a tof file
  */
-std::tuple<bool, t_real, t_real, t_real>
+std::tuple<bool, t_real, t_real, t_real, t_real, t_real>
 process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 {
 	// tof file data type for counts
@@ -55,11 +55,11 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 				mask_bits = std::make_unique<t_mask>();
 
 				// load mask bits
-				for(unsigned y=0; y<PSD_HEIGHT; ++y)
+				for(unsigned y = 0; y < PSD_HEIGHT; ++y)
 				{
 					auto mask_row = mask_view.row_begin(y);
 
-					for(unsigned x=0; x<PSD_WIDTH; ++x)
+					for(unsigned x = 0; x < PSD_WIDTH; ++x)
 					{
 						bool b = (*(mask_row + x) != 0);
 						(*mask_bits)[y*PSD_WIDTH + x] = b;
@@ -83,7 +83,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 
 	// tof mask file giving tof foil start and end indices
 	unsigned tof_mask_start = foil * CHANNELS_PER_FOIL;
-	unsigned tof_mask_end = (foil+1) * CHANNELS_PER_FOIL;
+	unsigned tof_mask_end = (foil + 1) * CHANNELS_PER_FOIL;
 
 	// output file for tof channel counts
 	std::ostringstream cnts_file;
@@ -101,21 +101,21 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 	std::vector<t_real> tof_errors;
 
 	// iterate over tof channels
-	for(unsigned t=0; t<TOF_COUNT; ++t)
+	for(unsigned t = 0; t < TOF_COUNT; ++t)
 	{
 		ios::mapped_file_source file(tof_file,
 			PSD_WIDTH*PSD_HEIGHT*sizeof(t_data),
 			t*PSD_WIDTH*PSD_HEIGHT*sizeof(t_data));
 		if(!file.is_open())
-			return std::make_tuple(false, -1., -1., -1.);
+			return std::make_tuple(false, -1., -1., -1., -1., -1.);
 
 		const t_data* data = reinterpret_cast<const t_data*>(file.data());
 
 		std::uint64_t counts = 0;
 		std::uint64_t counts_mask = 0;
-		for(unsigned y=0; y<PSD_HEIGHT; ++y)
+		for(unsigned y = 0; y < PSD_HEIGHT; ++y)
 		{
-			for(unsigned x=0; x<PSD_WIDTH; ++x)
+			for(unsigned x = 0; x < PSD_WIDTH; ++x)
 			{
 				t_data cnt = data[y*PSD_WIDTH + x];
 				counts += cnt;
@@ -130,7 +130,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 		}
 
 		// counts inside tof mask
-		if(t>=tof_mask_start && t<tof_mask_end)
+		if(t >= tof_mask_start && t < tof_mask_end)
 		{
 			tof_channels.push_back(tof_channel++);
 			tof_counts.push_back(counts_mask);
@@ -228,6 +228,8 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 	t_real pol = fit_vals[0] / fit_vals[3];
 	t_real pol_err = std::sqrt(std::pow(fit_errs[0]/fit_vals[3], 2.)
 		+ std::pow(fit_vals[0]*fit_errs[3]/(fit_vals[3]*fit_vals[3]), 2.));
+	t_real phase = std::fmod(fit_vals[2], tl2::pi<t_real>); // + tl2::pi<t_real>;
+	t_real phase_err = std::abs(std::fmod(fit_errs[2], 2.*tl2::pi<t_real>));
 
 	ofstr_cnts << "#\n"
 		<< "# se sine fit valid: " << std::boolalpha << fit_ok << "\n"
@@ -241,7 +243,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 			<< fit_vals[3] << "\"\n"
 		<< "#" << std::endl;
 
-	return std::make_tuple(fit_ok, tau, pol, pol_err);
+	return std::make_tuple(fit_ok, tau, pol, pol_err, phase, phase_err);
 }
 
 
@@ -260,11 +262,13 @@ int main(int argc, char** argv)
 		<< std::setw(5) << std::right << "foil"
 		<< std::setw(48) << std::right << "file"
 		<< std::setw(12) << std::right << "tau (ps)"
-		<< std::setw(12) << std::right << "pol."
-		<< std::setw(12) << std::right << "err."
+		<< std::setw(12) << std::right << "pol"
+		<< std::setw(12) << std::right << "pol_err"
+		<< std::setw(12) << std::right << "phase"
+		<< std::setw(12) << std::right << "phase_err"
 		<< std::endl;
 
-	for(int i=1; i<argc; ++i)
+	for(int i = 1; i < argc; ++i)
 	{
 		fs::path file(argv[i]);
 
@@ -279,12 +283,14 @@ int main(int argc, char** argv)
 		fs::path file_out = file.filename();
 		file_out.replace_extension("");
 
-		for(int foil=0; foil<NUM_FOILS; ++foil)
+		for(int foil = 0; foil < NUM_FOILS; ++foil)
 		{
 			bool ok = false;
 			t_real tau = 0.;
 			t_real pol = 0., pol_err = -1.;
-			std::tie(ok, tau, pol, pol_err) = process_tof(file, file_out, foil);
+			t_real phase = 0., phase_err = 0.;
+			std::tie(ok, tau, pol, pol_err, phase, phase_err)
+				= process_tof(file, file_out, foil);
 			if(!ok)
 			{
 				std::cerr << "Error: Failed to process file \""
@@ -294,7 +300,7 @@ int main(int argc, char** argv)
 			}
 
 			std::ostringstream foil_data;
-			foil_data << "pol_" << (foil+1) << ".dat";
+			foil_data << "pol_" << (foil + 1) << ".dat";
 			std::ofstream ofstr(foil_data.str(), std::ios_base::app);
 			std::ostream* ostrs[]{ &std::cout, &ofstr };
 			for(std::ostream* ostr : ostrs)
@@ -306,6 +312,8 @@ int main(int argc, char** argv)
 					<< std::setw(12) << std::right << tau
 					<< std::setw(12) << std::right << pol
 					<< std::setw(12) << std::right << pol_err
+					<< std::setw(12) << std::right << phase / tl2::pi<t_real> * 180.
+					<< std::setw(12) << std::right << phase_err / tl2::pi<t_real> * 180.
 					<< std::endl;
 			}
 		}
