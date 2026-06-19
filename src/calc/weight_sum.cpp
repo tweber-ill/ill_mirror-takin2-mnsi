@@ -408,7 +408,7 @@ int main(int argc, char** argv)
 		{
 			std::cout << args << std::endl;
 			std::cout << "example usage:\n\t"
-				<< argv[0] << " --Gx=0 --Gy=0 --Gz=0 --Bx=1 --By=-1 --Bz=0 --Px=1 --Py=1 --Pz=0 --T=28.5 --B=0.15 --num_angles=256 --angle_begin=0 --angle_end=360 --q=0.1\n"
+				<< argv[0] << " --Gx=0 --Gy=0 --Gz=0 --Bx=1 --By=-1 --Bz=0 --Px=1 --Py=1 --Pz=0 --T=28.5 --B=0.15 --num_angles=256 --angle_begin=0 --angle_end=360 --q=0.025\n"
 				<< std::endl;
 			return 0;
 		}
