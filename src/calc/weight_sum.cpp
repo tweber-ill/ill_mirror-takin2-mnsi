@@ -13,7 +13,10 @@
 
 #include <fstream>
 
+#include <boost/make_shared.hpp>
+#include <boost/program_options.hpp>
 #include <boost/histogram.hpp>
+namespace opts = boost::program_options;
 namespace hist = boost::histogram;
 
 using t_real = double;
@@ -28,13 +31,16 @@ const t_real g_eps = 1e-5;
 const t_real g_weight_eps = 1e-6;
 
 #define E_BINS 200
-#define NUM_ANGLES 512
 #define COL_SIZE 15
 
 
 void calc_disp(const t_vec& Gvec,
 	const t_vec& Bvec, const t_vec& Pvec,
-	t_real q, t_real q_oop, bool bProj = true)
+	t_real q, t_real q_oop,
+	bool bProj = true, bool filter_zero_weight = true,
+	t_real T = 28.5, t_real B = 0.158,
+	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., int num_angles = 512,
+	std::string outfile = "weightsum")
 {
 	// vector perpendicular to the pinning, but in the skyrmion plane
 	t_vec Pperpvec = tl2::cross_3(Pvec, Bvec);
@@ -49,7 +55,6 @@ void calc_disp(const t_vec& Gvec,
 	skx.SetProjNeutron(bProj);
 	heli.SetProjNeutron(bProj);
 
-	t_real T = 28.5;
 	skx.SetT(skxgs_T, false);
 	heli.SetT(skxgs_T, false);
 	heli.SetT(T, true);
@@ -58,10 +63,10 @@ void calc_disp(const t_vec& Gvec,
 	skx.SetB(/*bc2/2.*/ skxgs_B, false);
 	heli.SetB(/*bc2/2.*/ skxgs_B, false);
 	//heli.SetB(0.17, true);
-	heli.SetB(0.158, true);
+	heli.SetB(B, true);
 
-	skx.SetFilterZeroWeight(1);
-	heli.SetFilterZeroWeight(1);
+	skx.SetFilterZeroWeight(filter_zero_weight);
+	heli.SetFilterZeroWeight(filter_zero_weight);
 
 	skx.SetWeightEps(g_weight_eps);
 	heli.SetWeightEps(g_weight_eps);
@@ -74,9 +79,9 @@ void calc_disp(const t_vec& Gvec,
 
 	t_real Erange = 0.1;
 
-	t_real angle_begin = -45/180.*M_PI;
-	t_real angle_end = 270/180.*M_PI - 45/180.*M_PI;
-	t_real angle_delta = 2*M_PI/t_real(NUM_ANGLES);
+	t_real angle_begin = angle_begin_deg/180.*M_PI;
+	t_real angle_end = angle_end_deg/180.*M_PI;
+	t_real angle_delta = 2*M_PI/t_real(num_angles);
 
 	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
 	auto histWeightsSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
@@ -85,8 +90,8 @@ void calc_disp(const t_vec& Gvec,
 	auto histWeightsHeliSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
 
 
-	std::ofstream ofstr_raw("weightsum_skx.dat");
-	std::ofstream ofstr_raw_heli("weightsum_heli.dat");
+	std::ofstream ofstr_raw(outfile + "_skx.dat");
+	std::ofstream ofstr_raw_heli(outfile + "_heli.dat");
 
 	// write file header
 	for(std::ostream* ostr : {&ofstr_raw, &ofstr_raw_heli})
@@ -118,7 +123,7 @@ void calc_disp(const t_vec& Gvec,
 		{
 			// skyrmion dispersion
 			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
-			for(std::size_t i=0; i<Es.size(); ++i)
+			for(std::size_t i = 0; i < Es.size(); ++i)
 			{
 				histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
 				histWeightsSF(Es[i], hist::weight(wsSF1[i]));
@@ -157,7 +162,7 @@ void calc_disp(const t_vec& Gvec,
 	}
 
 
-	std::ofstream ofstrBinned("weightbin.dat");
+	std::ofstream ofstrBinned(outfile + "_bin.dat");
 	ofstrBinned.precision(8);
 
 	ofstrBinned << std::left << std::setw(COL_SIZE) << "# E (meV)"
@@ -218,19 +223,138 @@ void calc_disp(const t_vec& Gvec,
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-	t_vec Gvec = tl2::make_vec<t_vec>({ 0., 0., 0. });  // lattice vector
-	t_vec Pvec = tl2::make_vec<t_vec>({ 1., 1., 0. });  // pinning vector
-	t_vec Bvec = tl2::make_vec<t_vec>({ 0., 0., 1. });  // field direction
+	t_real Gx = 0., Gy = 0., Gz = 0.;
+	t_real Bx = 1., By = 1., Bz = 0.;
+	t_real Px = 0., Py = 0., Pz = 1.;
+
+	t_real q = 0.0123;    // momentum transfer in skyrmion plane
+	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
+
+	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
+	bool filter_zero_weight = true;
+
+	std::string outfile = "weightsum";
+
+	t_real T = 28.5;
+	t_real B = 0.158;
+
+	// integration arc
+	t_real angle_begin = -45;
+	t_real angle_end = 270 - 45;
+	int num_angles = 512;
+
+
+	try
+	{
+		opts::basic_command_line_parser<char> clparser(argc, argv);
+		opts::options_description args("program arguments");
+		bool show_help = false;
+
+		args.add(boost::make_shared<opts::option_description>(
+			"help", opts::bool_switch(&show_help),
+			"show program usage"));
+		//args.add(boost::make_shared<opts::option_description>(
+		//	"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
+		//	"use explicit calculation"));
+		args.add(boost::make_shared<opts::option_description>(
+			"filter_zero_weight", opts::value<decltype(filter_zero_weight)>(&filter_zero_weight),
+			"filter out modes with zero spectral weight"));
+		args.add(boost::make_shared<opts::option_description>(
+			"do_proj", opts::value<decltype(proj)>(&proj),
+			"calculate orthogonal projection, S_perp"));
+		args.add(boost::make_shared<opts::option_description>(
+			"outfile", opts::value<decltype(outfile)>(&outfile),
+			"output file name"));
+		//args.add(boost::make_shared<opts::option_description>(
+		//	"gsfile", opts::value<decltype(gs_file)>(&gs_file),
+		//	"ground state file name"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Gx", opts::value<decltype(Gx)>(&Gx),
+			"lattice vector x component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Gy", opts::value<decltype(Gy)>(&Gy),
+			"lattice vector y component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Gz", opts::value<decltype(Gz)>(&Gz),
+			"lattice vector z component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Bx", opts::value<decltype(Bx)>(&Bx),
+			"magnetic field vector x component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"By", opts::value<decltype(By)>(&By),
+			"magnetic field vector y component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Bz", opts::value<decltype(Bz)>(&Bz),
+			"magnetic field vector z component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Px", opts::value<decltype(Px)>(&Px),
+			"pinning vector x component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Py", opts::value<decltype(Py)>(&Py),
+			"pinning vector y component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"Pz", opts::value<decltype(Pz)>(&Pz),
+			"pinning vector z component"));
+		args.add(boost::make_shared<opts::option_description>(
+			"T", opts::value<decltype(T)>(&T),
+			"temperature"));
+		args.add(boost::make_shared<opts::option_description>(
+			"B", opts::value<decltype(B)>(&B),
+			"magnetic field magnitude"));
+		args.add(boost::make_shared<opts::option_description>(
+			"q", opts::value<decltype(q)>(&q),
+			"reduced momentum transfer"));
+		args.add(boost::make_shared<opts::option_description>(
+			"q_oop", opts::value<decltype(q_oop)>(&q_oop),
+			"out-of-plane reduced momentum transfer"));
+		args.add(boost::make_shared<opts::option_description>(
+			"angle_begin", opts::value<decltype(angle_begin)>(&angle_begin),
+			"start angle of integration arc"));
+		args.add(boost::make_shared<opts::option_description>(
+			"angle_end", opts::value<decltype(angle_end)>(&angle_end),
+			"end angle of integration arc"));
+		args.add(boost::make_shared<opts::option_description>(
+			"num_angles", opts::value<decltype(num_angles)>(&num_angles),
+			"number of angles for integration arc"));
+		args.add(boost::make_shared<opts::option_description>(
+			"q", opts::value<decltype(q)>(&q),
+			"reduced momentum transfer"));
+		//args.add(boost::make_shared<opts::option_description>(
+		//	"num_threads", opts::value<decltype(num_threads)>(&num_threads),
+		//	"number of threads for calculation"));
+
+		clparser.options(args);
+		opts::basic_parsed_options<char> parsedopts = clparser.run();
+		opts::variables_map opts_map;
+		opts::store(parsedopts, opts_map);
+		opts::notify(opts_map);
+
+		if(show_help)
+		{
+			std::cout << args << std::endl;
+			return 0;
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+		return -1;
+	}
+
+
+	t_vec Gvec = tl2::make_vec<t_vec>({ Gx, Gy, Gz });  // lattice vector
+	t_vec Pvec = tl2::make_vec<t_vec>({ Px, Py, Pz });  // pinning vector
+	t_vec Bvec = tl2::make_vec<t_vec>({ Bx, By, Bz });  // field direction
 
 	Pvec /= tl2::veclen(Pvec);
 	Bvec /= tl2::veclen(Bvec);
 
-	t_real q = 0.0123;    // momentum transfer in skyrmion plane
-	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
-	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
-
-	calc_disp(Gvec, Bvec, Pvec, q, q_oop, proj);
+	calc_disp(Gvec, Bvec, Pvec,
+		q, q_oop, proj, filter_zero_weight,
+		T, B,
+		angle_begin, angle_end, num_angles,
+		outfile);
 	return 0;
 }

@@ -253,7 +253,7 @@ struct _float_equal_impl
 {
 	bool operator()(T t1, T t2, t_eps eps = get_epsilon<T>()) const
 	{
-		return std::abs<T>(t1-t2) < eps;
+		return std::abs(t1 - t2) < eps;
 	}
 };
 
@@ -263,8 +263,8 @@ struct _float_equal_impl<T, t_eps, LinalgType::COMPLEX>
 {
 	bool operator()(const T& t1, const T& t2, t_eps eps = get_epsilon<T>()) const
 	{
-		return std::abs<t_eps>(t1.real()-t2.real()) < eps &&
-			std::abs<t_eps>(t1.imag()-t2.imag()) < eps;
+		return std::abs(t1.real()-t2.real()) < eps &&
+			std::abs(t1.imag()-t2.imag()) < eps;
 	}
 };
 

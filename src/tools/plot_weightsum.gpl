@@ -8,7 +8,7 @@
 
 file_skx = "weightsum_skx.dat"
 file_heli = "weightsum_heli.dat"
-filebin = "weightbin.dat"
+filebin = "weightsum_bin.dat"
 
 # same angular range as in weight_sum.cpp
 startangle = -45

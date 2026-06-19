@@ -23,13 +23,14 @@ ifneq ($(mingw_build), 1)
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
 		-I/usr/local/include/Minuit2 \
 		-I/opt/homebrew/include \
-		-I/opt/homebrew/Cellar/boost/1.89.0_1/include
+		-I/opt/homebrew/Cellar/boost/1.89.0_1/include \
+		-I/opt/homebrew/Cellar/qt@5/5.15.18/include
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
 	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib \
 		-L/usr/local/opt/gcc/lib/gcc/current \
 		-L/opt/homebrew/lib \
-		-L/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current \
+		-L/opt/homebrew/Cellar/gcc/16.1.0/lib/gcc/current/ \
 		-L/opt/homebrew/Cellar/boost/1.89.0_1/lib
 
 	LIBBOOSTFILESYS = -lboost_filesystem
@@ -128,7 +129,9 @@ lib/skxmod_grid.so: src/takin/takin_grid.o \
 		ext/takin/tools/monteconvo/sqwbase.o \
 		ext/tlibs2/libs/log.o ext/tlibs/log/log.o
 	@echo "Linking Takin grid module $@..."
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ $(LIBBOOSTSYS) -lQt5Core
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) $(LIBDEFS) -shared -o $@ $+ $(LIBBOOSTSYS) \
+		-lQt5Core
+		#/opt/homebrew/Cellar/qt@5/5.15.18/lib/QtCore.framework/Versions/5/QtCore
 	$(STRIP) $@
 # -----------------------------------------------------------------------------
 
@@ -200,7 +203,7 @@ bin/fielddep: src/calc/fielddep.o src/core/skx.o src/core/fp.o src/core/heli.o \
 
 bin/weight_sum: src/calc/weight_sum.o src/core/skx.o src/core/fp.o src/core/heli.o \
 		src/core/magsys.o ext/tlibs2/libs/log.o
-	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ ${LAPACKE_LIBS} -lpthread
+	$(CXX) $(STD) $(OPT) $(DEFS) $(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) ${LAPACKE_LIBS} -lpthread
 	$(STRIP) $@$(BIN_SUFFIX)
 # -----------------------------------------------------------------------------
 

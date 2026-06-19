@@ -14,7 +14,11 @@
 #include "tlibs2/libs/file.h"
 
 #include <boost/dll/alias.hpp>
-#include <QtCore/QFile>
+#if __has_include(<QtCore/QFile>)
+	#include <QtCore/QFile>
+#else
+	#include <QFile>
+#endif
 
 
 using t_real = t_real_reso;
