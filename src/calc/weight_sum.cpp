@@ -9,6 +9,8 @@
 
 #include "core/heli.h"
 #include "core/skx.h"
+#include "core/load_gs.h"
+
 #include "tlibs2/libs/phys.h"
 
 #include <fstream>
@@ -25,6 +27,7 @@ using t_vec = ublas::vector<t_real>;
 using t_vec_cplx = ublas::vector<t_cplx>;
 
 #include "core/skx_default_gs.cxx"
+#include "core/heli_default_gs.cxx"
 
 
 const t_real g_eps = 1e-5;
@@ -34,11 +37,33 @@ const t_real g_weight_eps = 1e-6;
 #define COL_SIZE 15
 
 
+/**
+ * print ground state magnetisation
+ */
+static void print_groundstate(const std::string& phase, const std::vector<t_vec_cplx>& gs)
+{
+	std::cout << phase << " ground state:\n";
+
+	for(const auto& fourier : gs)
+	{
+		std::cout
+			<< "{ " << fourier[0].real() << ", " << fourier[0].imag() << " }, "
+			<< "{ " << fourier[1].real() << ", " << fourier[1].imag() << " }, "
+			<< "{ " << fourier[2].real() << ", " << fourier[2].imag() << " },"
+			<< std::endl;
+	}
+
+	std::cout << std::endl;
+}
+
+
 void calc_disp(const t_vec& Gvec,
 	const t_vec& Bvec, const t_vec& Pvec,
 	t_real q, t_real q_oop,
 	bool bProj = true, bool filter_zero_weight = true,
 	t_real T = 28.5, t_real B = 0.158,
+	const std::string& skx_gs_file = "", const std::string& heli_gs_file = "",
+	bool explicit_calc = true,
 	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., int num_angles = 512,
 	std::string outfile = "weightsum")
 {
@@ -49,16 +74,55 @@ void calc_disp(const t_vec& Gvec,
 	Skx<t_real, t_cplx, DEF_SKX_ORDER> skx;
 	Heli<t_real, t_cplx, DEF_HELI_ORDER> heli;
 
+
+	// get default ground state
 	auto [skxgs_T, skxgs_B, skxgs] = _get_skx_gs<t_vec_cplx>();
+	auto [heligs_T, heligs_B, heligs] = _get_heli_gs<t_vec_cplx>();
+
+	// optionally load a given skx ground state file
+	if(skx_gs_file != "")
+	{
+		bool ok = false;
+		std::tie(ok, skxgs_T, skxgs_B, skxgs, std::ignore) =
+			load_gs<std::decay_t<decltype(skxgs)>>(skx_gs_file, 's');
+
+		if(!ok)
+		{
+			std::cerr << "Error: Could not load skyrmion ground state \""
+				<< skx_gs_file << "\"." << std::endl;
+			return;
+		}
+	}
+
+	// optionally load a given helical ground state file
+	if(heli_gs_file != "")
+	{
+		bool ok = false;
+		std::tie(ok, heligs_T, heligs_B, heligs, std::ignore) =
+			load_gs<std::decay_t<decltype(heligs)>>(heli_gs_file, 'h');
+
+		if(!ok)
+		{
+			std::cerr << "Error: Could not load helical ground state \""
+				<< heli_gs_file << "\"." << std::endl;
+			return;
+		}
+	}
+
 	skx.SetFourier(skxgs);
+	heli.SetFourier(heligs);
+
+	heli.SetExplicitCalc(explicit_calc);
 
 	skx.SetProjNeutron(bProj);
 	heli.SetProjNeutron(bProj);
 
+	// use the same temperature for both phases
 	skx.SetT(skxgs_T, false);
 	heli.SetT(skxgs_T, false);
 	heli.SetT(T, true);
 
+	// use the same field for both phases
 	//t_real bc2 = skx.GetBC2(false);
 	skx.SetB(/*bc2/2.*/ skxgs_B, false);
 	heli.SetB(/*bc2/2.*/ skxgs_B, false);
@@ -89,7 +153,13 @@ void calc_disp(const t_vec& Gvec,
 	auto histWeightsHeliNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
 	auto histWeightsHeliSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
 
+	if(skx.GetFourier().size())
+		print_groundstate("Skx", skx.GetFourier());
+	if(heli.GetFourier().size())
+		print_groundstate("Heli", heli.GetFourier());
 
+
+	// result files
 	std::ofstream ofstr_raw(outfile + "_skx.dat");
 	std::ofstream ofstr_raw_heli(outfile + "_heli.dat");
 
@@ -109,7 +179,7 @@ void calc_disp(const t_vec& Gvec,
 	}
 
 
-	for(t_real angle=angle_begin; angle<angle_end; angle+=angle_delta)
+	for(t_real angle = angle_begin; angle < angle_end; angle += angle_delta)
 	{
 		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));  // in skx plane
 		qvec += q_oop * Bvec;                                                // out of skx plane
@@ -234,7 +304,10 @@ int main(int argc, char** argv)
 
 	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
 	bool filter_zero_weight = true;
+	bool explicit_calc = true;
 
+	std::string skx_gs_file = "";
+	std::string heli_gs_file = "";
 	std::string outfile = "weightsum";
 
 	t_real T = 28.5;
@@ -255,9 +328,9 @@ int main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"help", opts::bool_switch(&show_help),
 			"show program usage"));
-		//args.add(boost::make_shared<opts::option_description>(
-		//	"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
-		//	"use explicit calculation"));
+		args.add(boost::make_shared<opts::option_description>(
+			"explicit_calc", opts::value<decltype(explicit_calc)>(&explicit_calc),
+			"use explicit calculation"));
 		args.add(boost::make_shared<opts::option_description>(
 			"filter_zero_weight", opts::value<decltype(filter_zero_weight)>(&filter_zero_weight),
 			"filter out modes with zero spectral weight"));
@@ -267,9 +340,12 @@ int main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"outfile", opts::value<decltype(outfile)>(&outfile),
 			"output file name"));
-		//args.add(boost::make_shared<opts::option_description>(
-		//	"gsfile", opts::value<decltype(gs_file)>(&gs_file),
-		//	"ground state file name"));
+		args.add(boost::make_shared<opts::option_description>(
+			"gsfile_skx", opts::value<decltype(skx_gs_file)>(&skx_gs_file),
+			"skx ground state file name"));
+		args.add(boost::make_shared<opts::option_description>(
+			"gsfile_heli", opts::value<decltype(heli_gs_file)>(&heli_gs_file),
+			"heli ground state file name"));
 		args.add(boost::make_shared<opts::option_description>(
 			"Gx", opts::value<decltype(Gx)>(&Gx),
 			"lattice vector x component"));
@@ -353,7 +429,7 @@ int main(int argc, char** argv)
 
 	calc_disp(Gvec, Bvec, Pvec,
 		q, q_oop, proj, filter_zero_weight,
-		T, B,
+		T, B, skx_gs_file, heli_gs_file, explicit_calc,
 		angle_begin, angle_end, num_angles,
 		outfile);
 	return 0;
