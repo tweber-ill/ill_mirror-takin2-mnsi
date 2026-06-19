@@ -225,9 +225,9 @@ void calc_disp(const t_vec& Gvec,
 
 int main(int argc, char** argv)
 {
-	t_real Gx = 0., Gy = 0., Gz = 0.;
-	t_real Bx = 1., By = 1., Bz = 0.;
-	t_real Px = 0., Py = 0., Pz = 1.;
+	t_real Gx = 0.,  Gy = 0., Gz = 0.;
+	t_real Px = 1.,  Py = 1., Pz = 0.;
+	t_real Bx = 1., By = -1., Bz = 0.;
 
 	t_real q = 0.0123;    // momentum transfer in skyrmion plane
 	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
@@ -318,9 +318,6 @@ int main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"num_angles", opts::value<decltype(num_angles)>(&num_angles),
 			"number of angles for integration arc"));
-		args.add(boost::make_shared<opts::option_description>(
-			"q", opts::value<decltype(q)>(&q),
-			"reduced momentum transfer"));
 		//args.add(boost::make_shared<opts::option_description>(
 		//	"num_threads", opts::value<decltype(num_threads)>(&num_threads),
 		//	"number of threads for calculation"));
@@ -334,6 +331,9 @@ int main(int argc, char** argv)
 		if(show_help)
 		{
 			std::cout << args << std::endl;
+			std::cout << "example usage:\n\t"
+				<< argv[0] << " --Gx=0 --Gy=0 --Gz=0 --Bx=1 --By=-1 --Bz=0 --Px=1 --Py=1 --Pz=0 --T=28.5 --B=0.15 --num_angles=256 --angle_begin=0 --angle_end=360 --q=0.1\n"
+				<< std::endl;
 			return 0;
 		}
 	}
