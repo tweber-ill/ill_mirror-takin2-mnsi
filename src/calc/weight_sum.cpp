@@ -33,7 +33,6 @@ using t_vec_cplx = ublas::vector<t_cplx>;
 const t_real g_eps = 1e-5;
 const t_real g_weight_eps = 1e-6;
 
-#define E_BINS 200
 #define COL_SIZE 15
 
 
@@ -65,7 +64,7 @@ void calc_disp(const t_vec& Gvec,
 	const std::string& skx_gs_file = "", const std::string& heli_gs_file = "",
 	bool explicit_calc = true,
 	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., int num_angles = 512,
-	std::string outfile = "weightsum")
+	int num_E_bins = 200, std::string outfile = "weightsum")
 {
 	// vector perpendicular to the pinning, but in the skyrmion plane
 	t_vec Pperpvec = tl2::cross_3(Pvec, Bvec);
@@ -147,11 +146,11 @@ void calc_disp(const t_vec& Gvec,
 	t_real angle_end = angle_end_deg/180.*M_PI;
 	t_real angle_delta = 2*M_PI/t_real(num_angles);
 
-	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
-	auto histWeightsSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
+	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
+	auto histWeightsSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
 
-	auto histWeightsHeliNSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
-	auto histWeightsHeliSF = hist::make_histogram(hist::axis::regular<t_real>(E_BINS, -Erange, Erange, "E"));
+	auto histWeightsHeliNSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
+	auto histWeightsHeliSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
 
 	if(skx.GetFourier().size())
 		print_groundstate("Skx", skx.GetFourier());
@@ -253,16 +252,16 @@ void calc_disp(const t_vec& Gvec,
 	for(const auto& val : hist::indexed(histWeightsSF))
 	{
 		t_real E = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
-		t_real w = *val / t_real{E_BINS};
+		t_real w = *val / t_real(num_E_bins);
 
 		t_real E_nsf = iterNSF->bin().lower() + 0.5*(iterNSF->bin().upper() - iterNSF->bin().lower());
-		t_real w_nsf = **iterNSF / t_real{E_BINS};
+		t_real w_nsf = **iterNSF / t_real(num_E_bins);
 
 		t_real E_h = iterHeliSF->bin().lower() + 0.5*(iterHeliSF->bin().upper() - iterHeliSF->bin().lower());
-		t_real w_h = **iterHeliSF / t_real{E_BINS};
+		t_real w_h = **iterHeliSF / t_real(num_E_bins);
 
 		t_real E_h_nsf = iterHeliNSF->bin().lower() + 0.5*(iterHeliNSF->bin().upper() - iterHeliNSF->bin().lower());
-		t_real w_h_nsf = **iterHeliNSF / t_real{E_BINS};
+		t_real w_h_nsf = **iterHeliNSF / t_real(num_E_bins);
 
 		if(!tl2::float_equal<t_real>(E, E_h, g_eps) || !tl2::float_equal<t_real>(E, E_h_nsf, g_eps) ||
 			!tl2::float_equal<t_real>(E, E_nsf, g_eps))
@@ -301,6 +300,8 @@ int main(int argc, char** argv)
 
 	t_real q = 0.0123;    // momentum transfer in skyrmion plane
 	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
+
+	int num_E_bins = 200;
 
 	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
 	bool filter_zero_weight = true;
@@ -394,6 +395,9 @@ int main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"num_angles", opts::value<decltype(num_angles)>(&num_angles),
 			"number of angles for integration arc"));
+		args.add(boost::make_shared<opts::option_description>(
+			"num_E_bins", opts::value<decltype(num_E_bins)>(&num_E_bins),
+			"number of energy bins"));
 		//args.add(boost::make_shared<opts::option_description>(
 		//	"num_threads", opts::value<decltype(num_threads)>(&num_threads),
 		//	"number of threads for calculation"));
@@ -431,6 +435,6 @@ int main(int argc, char** argv)
 		q, q_oop, proj, filter_zero_weight,
 		T, B, skx_gs_file, heli_gs_file, explicit_calc,
 		angle_begin, angle_end, num_angles,
-		outfile);
+		num_E_bins, outfile);
 	return 0;
 }

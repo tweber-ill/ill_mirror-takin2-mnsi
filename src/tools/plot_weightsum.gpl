@@ -6,21 +6,37 @@
 # @license GPLv2 (see 'LICENSE' file)
 #
 
+# data files to load
 file_skx = "weightsum_skx.dat"
 file_heli = "weightsum_heli.dat"
 filebin = "weightsum_bin.dat"
 
 # same angular range as in weight_sum.cpp
-startangle = -45
-endangle = 270 - 45
-anglerange = endangle - startangle
+startangle = 0 # -45
+endangle = 360 # 270 - 45
 
+# plot ranges
+angle_range = endangle - startangle
+angle_ticks = 60  # 30
+E_range = 0.105
+E_ticks = 0.02
+S_range = 35
+S_ticks = 10
+
+# plot colours
 col_skx = "#ff0000"
 col_heli = "#0000ff"
 
+# point scales and clamps
 scale_w = 0.4
 scale_S = 0.9
+w_max = 10
 
+# show example data labels
+show_labels = 0
+
+
+# constants
 T = 28.5         # temperature
 kB = 0.0861733   # CODATA value from Boost.Units
 
@@ -34,6 +50,8 @@ bose(E) = (E >= 0) \
 #weight(w) = sqrt(w) * 2.5
 weight(w) = w
 
+w_clamp(w) = weight(w) > w_max ? w_max : weight(w) 
+
 
 set term pngcairo enhanced font "NimbusSans-Regular, 38" size 2000,1500
 set output "weightsum.png"
@@ -45,29 +63,29 @@ set border lw 6
 set xlabel "{/NimbusSans-Italic α} (deg)"
 set ylabel "{/NimbusSans-Italic E} (meV)" offset 1
 
-set xtics 30
+set xtics angle_ticks
 set mxtics 3
-set ytics 0.02
+set ytics E_ticks
 set mytics 2
 
-set xrange [-7 : anglerange + 5]
-set yrange [0 : 0.105]
-#set yrange [-0.105 : 0.105]
+set xrange [-7 : angle_range + 5]
+set yrange [0 : E_range]
+#set yrange [-E_range : E_range]
 
 set key top right samplen 1 Left reverse
 
 set size 0.75, 1
 plot \
-	file_heli using ($1/pi*180 - startangle):($5):((weight($6)+weight($7*0.5))*bose($5)*scale_w) with points ps var pt 7 lc rgb col_heli title "conical", \
-	file_skx using ($1/pi*180 - startangle):($5):((weight($6)+weight($7*0.5))*bose($5)*scale_w) with points ps var pt 7 lc rgb col_skx title "skyrmion"
+	file_heli using ($1/pi*180 - startangle):($5):(w_clamp((weight($6)+weight($7*0.5))*bose($5)*scale_w)) with points ps var pt 7 lc rgb col_heli title "conical", \
+	file_skx using ($1/pi*180 - startangle):($5):(w_clamp((weight($6)+weight($7*0.5))*bose($5)*scale_w)) with points ps var pt 7 lc rgb col_skx title "skyrmion"
 
 
 
 set xlabel "{/NimbusSans-Italic S(E)} (a.u.)"
 unset ylabel
 
-set xrange [0 : 35]
-set xtics 20
+set xrange [0 : S_range]
+set xtics S_ticks
 set mxtics 2
 
 #set format x " "
@@ -76,17 +94,19 @@ set format y ""
 set origin 0.7, 0
 set size 0.3, 1
 
-#set label 100 at screen 0.05, screen 0.95 "{/NimbusSans-Bold (a)}"
-#set label 100 at screen 0.95, screen 0.95 "{/NimbusSans-Bold (b)}"
+if(show_labels != 0) {
+	#set label 100 at screen 0.05, screen 0.95 "{/NimbusSans-Bold (a)}"
+	#set label 100 at screen 0.95, screen 0.95 "{/NimbusSans-Bold (b)}"
 
-set label 1000 at 20, 0.003 tc rgb col_skx "GM"
-set label 1001 at 20, 0.027 tc rgb col_skx "CCW"
-set label 1002 at 20, 0.051 tc rgb col_skx "(BM)"
-set label 1003 at 20, 0.065 tc rgb col_skx "(CW)"
+	set label 1000 at 20, 0.003 tc rgb col_skx "GM"
+	set label 1001 at 20, 0.027 tc rgb col_skx "CCW"
+	set label 1002 at 20, 0.051 tc rgb col_skx "(BM)"
+	set label 1003 at 20, 0.065 tc rgb col_skx "(CW)"
 
-set label 2000 at 20, 0.009 tc rgb col_heli "HM 1"
-set label 2001 at 20, 0.061 tc rgb col_heli "(HM 2)"
-set label 2002 at 20, 0.070 tc rgb col_heli "HM 3"
+	set label 2000 at 20, 0.009 tc rgb col_heli "HM 1"
+	set label 2001 at 20, 0.061 tc rgb col_heli "(HM 2)"
+	set label 2002 at 20, 0.070 tc rgb col_heli "HM 3"
+}
 
 plot \
 	filebin using ($10*scale_S):($1) w filledcurve lc rgb col_heli notitle, \
