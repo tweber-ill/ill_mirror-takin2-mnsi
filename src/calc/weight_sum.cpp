@@ -144,7 +144,7 @@ void calc_disp(const t_vec& Gvec,
 
 	t_real angle_begin = angle_begin_deg/180.*M_PI;
 	t_real angle_end = angle_end_deg/180.*M_PI;
-	t_real angle_delta = 2*M_PI/t_real(num_angles);
+	t_real angle_delta = (angle_end - angle_begin)/t_real(num_angles);
 
 	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
 	auto histWeightsSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
