@@ -1,10 +1,8 @@
 /**
  * calculates the integrated weights/energies for setup 3
  * @author Tobias Weber <tweber@ill.fr>
- * @date jun-20
+ * @date jun-2020
  * @license GPLv2 (see 'LICENSE' file)
- *
- * TODO: take into account the entire sector, not just the central path
  */
 
 #include "core/heli.h"
@@ -18,8 +16,10 @@
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/histogram.hpp>
+#include <boost/asio.hpp>
 namespace opts = boost::program_options;
 namespace hist = boost::histogram;
+namespace asio = boost::asio;
 
 using t_real = double;
 using t_cplx = std::complex<t_real>;
@@ -56,16 +56,41 @@ static void print_groundstate(const std::string& phase, const std::vector<t_vec_
 }
 
 
+
+static void show_progress(t_real done, bool init = false)
+{
+	static int last_percentage = -1;
+	int new_percentage = static_cast<int>(done * 100.);
+	if(init)
+		last_percentage = -1;
+
+	if(new_percentage != last_percentage)
+	{
+		std::cout << "\rRunning, " << new_percentage << "% done.        ";
+		std::cout.flush();
+
+		last_percentage = new_percentage;
+	}
+}
+
+
+
 void calc_disp(const t_vec& Gvec,
 	const t_vec& Bvec, const t_vec& Pvec,
-	t_real q, t_real q_oop,
+	t_real q_begin, t_real q_end, unsigned int num_qs, t_real q_oop,
 	bool bProj = true, bool filter_zero_weight = true,
 	t_real T = 28.5, t_real B = 0.158,
 	const std::string& skx_gs_file = "", const std::string& heli_gs_file = "",
 	bool explicit_calc = true,
-	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., int num_angles = 512,
-	int num_E_bins = 200, std::string outfile = "weightsum")
+	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., unsigned int num_angles = 512,
+	unsigned int num_E_bins = 200, std::string outfile = "weightsum",
+	unsigned int num_threads = 4)
 {
+	// timer
+	tl2::Stopwatch<t_real> timer;
+	timer.start();
+
+
 	// vector perpendicular to the pinning, but in the skyrmion plane
 	t_vec Pperpvec = tl2::cross_3(Pvec, Bvec);
 	Pperpvec /= tl2::veclen(Pperpvec);
@@ -146,6 +171,8 @@ void calc_disp(const t_vec& Gvec,
 	t_real angle_end = angle_end_deg/180.*M_PI;
 	t_real angle_delta = (angle_end - angle_begin)/t_real(num_angles);
 
+	t_real q_delta = (q_end - q_begin)/t_real(num_qs);
+
 	auto histWeightsNSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
 	auto histWeightsSF = hist::make_histogram(hist::axis::regular<t_real>(num_E_bins, -Erange, Erange, "E"));
 
@@ -174,61 +201,122 @@ void calc_disp(const t_vec& Gvec,
 			<< " " << std::left << std::setw(COL_SIZE) << "wSF1"
 			<< " " << std::left << std::setw(COL_SIZE) << "wSF2"
 			<< " " << std::left << std::setw(COL_SIZE) << "wNSF"
+			<< " " << std::left << std::setw(COL_SIZE) << "q_idx"
+			<< " " << std::left << std::setw(COL_SIZE) << "angle_idx"
 			<< "\n";
 	}
 
 
-	for(t_real angle = angle_begin; angle < angle_end; angle += angle_delta)
+	// thread pool
+	asio::thread_pool pool(num_threads);
+	std::mutex mtx;
+
+	// task
+	using t_task = std::packaged_task<void()>;
+	std::vector<std::shared_ptr<t_task>> tasks;
+	tasks.reserve(num_qs * num_angles);
+
+
+	for(int q_idx = 0; q_idx < num_qs; ++q_idx)
 	{
-		t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));  // in skx plane
-		qvec += q_oop * Bvec;                                                // out of skx plane
-		t_vec Qvec = Gvec + qvec;
+		const t_real q = q_begin + t_real(q_idx)*q_delta;
 
-		std::cout << "# angle: " << angle/M_PI*180.
-			<< ", Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
-			<< ", |q| = " << tl2::veclen(qvec) << "."
-			<< std::endl;
-
+		for(int angle_idx = 0; angle_idx < num_angles; ++angle_idx)
 		{
-			// skyrmion dispersion
-			auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] = skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
-			for(std::size_t i = 0; i < Es.size(); ++i)
+			const t_real angle = angle_begin + t_real(angle_idx)*angle_delta;
+
+			auto calc_task = [q, angle, q_idx, angle_idx, q_oop, Erange,
+				&Pvec, &Pperpvec, &Bvec, &Gvec,
+				&histWeightsNSF, &histWeightsSF, &histWeightsHeliNSF, &histWeightsHeliSF,
+				&ofstr_raw, &ofstr_raw_heli,
+				&skx, &heli, &mtx]()
 			{
-				histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
-				histWeightsSF(Es[i], hist::weight(wsSF1[i]));
+				t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));  // in skx plane
+				qvec += q_oop * Bvec;                                                // out of skx plane
+				t_vec Qvec = Gvec + qvec;
+				t_real circumference = q * 2.*M_PI;  // include the area element of the ring segment
 
-				ofstr_raw << std::left << std::setw(COL_SIZE) << angle
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
-					<< " " << std::left << std::setw(COL_SIZE) << Es[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsSF1[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsSF2[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsNSF[i]
-					<< std::endl;
-			}
-		}
+				//std::cout << "# Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
+				//	<< ", |q| = " << tl2::veclen(qvec)
+				//	<< ", angle: " << angle/M_PI*180.
+				//	<< std::endl;
 
-		{
-			// conical dispersion
-			auto [EsH, wsUnpolH, wsSF1H, wsSF2H, wsNSFH] = heli.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
-			for(std::size_t i=0; i<EsH.size(); ++i)
-			{
-				histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
-				histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
+				{
+					// skyrmion dispersion
+					auto [Es, wsUnpol, wsSF1, wsSF2, wsNSF] =
+						skx.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 
-				ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
-					<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
-					<< " " << std::left << std::setw(COL_SIZE) << EsH[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsSF1H[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsSF2H[i]
-					<< " " << std::left << std::setw(COL_SIZE) << wsNSFH[i]
-					<< std::endl;
-			}
-		}
+					for(std::size_t i = 0; i < Es.size(); ++i)
+					{
+						wsSF1[i] *= circumference;
+						wsSF2[i] *= circumference;
+						wsNSF[i] *= circumference;
+
+						std::lock_guard<decltype(mtx)> _lck(mtx);
+						histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
+						histWeightsSF(Es[i], hist::weight(wsSF1[i]));
+
+						ofstr_raw << std::left << std::setw(COL_SIZE) << angle
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
+							<< " " << std::left << std::setw(COL_SIZE) << Es[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsSF1[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsSF2[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsNSF[i]
+							<< " " << std::left << std::setw(COL_SIZE) << q_idx
+							<< " " << std::left << std::setw(COL_SIZE) << angle_idx
+							<< std::endl;
+					}
+				}
+
+				{
+					// conical dispersion
+					auto [EsH, wsUnpolH, wsSF1H, wsSF2H, wsNSFH] =
+						heli.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
+					for(std::size_t i = 0; i < EsH.size(); ++i)
+					{
+						wsSF1H[i] *= circumference;
+						wsSF2H[i] *= circumference;
+						wsNSFH[i] *= circumference;
+
+						std::lock_guard<decltype(mtx)> _lck(mtx);
+						histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
+						histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
+
+						ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[1]
+							<< " " << std::left << std::setw(COL_SIZE) << qvec[2]
+							<< " " << std::left << std::setw(COL_SIZE) << EsH[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsSF1H[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsSF2H[i]
+							<< " " << std::left << std::setw(COL_SIZE) << wsNSFH[i]
+							<< " " << std::left << std::setw(COL_SIZE) << q_idx
+							<< " " << std::left << std::setw(COL_SIZE) << angle_idx
+							<< std::endl;
+					}
+				}
+			};  // task
+
+
+			auto taskptr = std::make_shared<t_task>(calc_task);
+			tasks.push_back(taskptr);
+			asio::post(pool, [taskptr]() { (*taskptr)(); });
+		}  // angle iteration
+	}  // q radius iteration
+
+
+	show_progress(0, true);
+	for(std::size_t taskidx = 0; taskidx < tasks.size(); ++taskidx)
+	{
+		tasks[taskidx]->get_future().get();
+		t_real done = t_real(taskidx + 1) / t_real(tasks.size());
+		show_progress(done);
 	}
+
+	pool.join();
+	timer.stop();
 
 
 	std::ofstream ofstrBinned(outfile + "_bin.dat");
@@ -289,19 +377,31 @@ void calc_disp(const t_vec& Gvec,
 		++iterHeliNSF;
 		++iterNSF;
 	}
+
+
+	std::cout << "\nCalculation took " << timer.GetDur() << " s." << std::endl;
+	std::cout << "Wrote \"" << outfile << "*.dat\"." << std::endl;
 }
+
 
 
 int main(int argc, char** argv)
 {
-	t_real Gx = 0.,  Gy = 0., Gz = 0.;
-	t_real Px = 1.,  Py = 1., Pz = 0.;
+	std::cout
+		<< "--------------------------------------------------------------------------------\n"
+		<< "\tSpectral weight integration tool,\n\t\tT. Weber <tweber@ill.fr>, June 2020.\n"
+		<< "--------------------------------------------------------------------------------\n\n";
+
+	t_real Gx = 0., Gy =  0., Gz = 0.;
+	t_real Px = 1., Py =  1., Pz = 0.;
 	t_real Bx = 1., By = -1., Bz = 0.;
 
-	t_real q = 0.0123;    // momentum transfer in skyrmion plane
-	t_real q_oop = 0.0;   // momentum transfer out of skyrmion plane
+	t_real q_begin = 0.0123;  // momentum transfer in skyrmion plane (start radius)
+	t_real q_end = 0.0123;    // momentum transfer in skyrmion plane (end radius)
+	t_real q_oop = 0.0;       // momentum transfer out of skyrmion plane
+	unsigned int num_qs = 1;
 
-	int num_E_bins = 200;
+	unsigned int num_E_bins = 200;
 
 	bool proj = true;     // using the orthogonal 1-|Q><Q| projector
 	bool filter_zero_weight = true;
@@ -317,7 +417,10 @@ int main(int argc, char** argv)
 	// integration arc
 	t_real angle_begin = -45;
 	t_real angle_end = 270 - 45;
-	int num_angles = 512;
+	unsigned int num_angles = 512;
+
+	unsigned int num_threads =
+		std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
 
 
 	try
@@ -381,8 +484,14 @@ int main(int argc, char** argv)
 			"B", opts::value<decltype(B)>(&B),
 			"magnetic field magnitude"));
 		args.add(boost::make_shared<opts::option_description>(
-			"q", opts::value<decltype(q)>(&q),
-			"reduced momentum transfer"));
+			"q_begin", opts::value<decltype(q_begin)>(&q_begin),
+			"start reduced momentum transfer q"));
+		args.add(boost::make_shared<opts::option_description>(
+			"q_end", opts::value<decltype(q_end)>(&q_end),
+			"end reduced momentum transfer q"));
+		args.add(boost::make_shared<opts::option_description>(
+			"num_qs", opts::value<decltype(num_qs)>(&num_qs),
+			"number qs along the ring radius"));
 		args.add(boost::make_shared<opts::option_description>(
 			"q_oop", opts::value<decltype(q_oop)>(&q_oop),
 			"out-of-plane reduced momentum transfer"));
@@ -398,9 +507,9 @@ int main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"num_E_bins", opts::value<decltype(num_E_bins)>(&num_E_bins),
 			"number of energy bins"));
-		//args.add(boost::make_shared<opts::option_description>(
-		//	"num_threads", opts::value<decltype(num_threads)>(&num_threads),
-		//	"number of threads for calculation"));
+		args.add(boost::make_shared<opts::option_description>(
+			"num_threads", opts::value<decltype(num_threads)>(&num_threads),
+			"number of threads for calculation"));
 
 		clparser.options(args);
 		opts::basic_parsed_options<char> parsedopts = clparser.run();
@@ -412,7 +521,7 @@ int main(int argc, char** argv)
 		{
 			std::cout << args << std::endl;
 			std::cout << "example usage:\n\t"
-				<< argv[0] << " --Gx=0 --Gy=0 --Gz=0 --Bx=1 --By=-1 --Bz=0 --Px=1 --Py=1 --Pz=0 --T=28.5 --B=0.15 --num_angles=256 --angle_begin=0 --angle_end=360 --q=0.025\n"
+				<< argv[0] << " --Gx=0 --Gy=0 --Gz=0 --Bx=1 --By=-1 --Bz=0 --Px=1 --Py=1 --Pz=0 --T=28.5 --B=0.15 --num_angles=256 --angle_begin=0 --angle_end=360 --num_qs=1 --q_begin=0.025 --q_end=0.025\n"
 				<< std::endl;
 			return 0;
 		}
@@ -431,10 +540,14 @@ int main(int argc, char** argv)
 	Pvec /= tl2::veclen(Pvec);
 	Bvec /= tl2::veclen(Bvec);
 
+	std::cout << "Calculating spectral weight sum in " << num_threads << " threads...\n" << std::endl;
+
 	calc_disp(Gvec, Bvec, Pvec,
-		q, q_oop, proj, filter_zero_weight,
+		q_begin, q_end, num_qs, q_oop,
+		proj, filter_zero_weight,
 		T, B, skx_gs_file, heli_gs_file, explicit_calc,
 		angle_begin, angle_end, num_angles,
-		num_E_bins, outfile);
+		num_E_bins, outfile, num_threads);
+
 	return 0;
 }

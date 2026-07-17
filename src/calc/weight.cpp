@@ -1,7 +1,7 @@
 /**
  * calculates the weights/energies at a specific q
  * @author Tobias Weber <tweber@ill.fr>
- * @date sep-19
+ * @date sep-2019
  * @license GPLv2 (see 'LICENSE' file)
  */
 

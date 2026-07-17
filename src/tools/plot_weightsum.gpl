@@ -28,9 +28,9 @@ col_skx = "#ff0000"
 col_heli = "#0000ff"
 
 # point scales and clamps
-scale_w = 0.4
-scale_S = 0.9
-w_max = 10
+scale_w = 5
+scale_S = 10
+w_max = 15
 
 # show example data labels
 show_labels = 0

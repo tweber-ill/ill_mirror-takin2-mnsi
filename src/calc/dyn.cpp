@@ -687,12 +687,14 @@ int main(int argc, char **argv)
 	t_real B = 0.17, T = 28.5;
 	t_real qrange = 0.125;
 	t_real qdelta = 0.001;
+
 	bool alongqpara = false;
 	bool do_proj = true;
 	bool explicit_calc = true;
 	bool calc_nonrecip = false;
 	bool filter_zero_weight = false;
 	bool use_para_perp_calc = true;
+
 	std::string outfile = "dyn.dat";
 	std::string gs_file = "";
 
@@ -701,6 +703,7 @@ int main(int argc, char **argv)
 	t_real qh_end = 0.1, qk_end = 0., ql_end = 0.;
 	t_real qh_offs = 0., qk_offs = 0., ql_offs = 0.;
 	t_real Rx = 0., Ry = 0., Rz = 1., Ralpha = 0.;
+
 	std::size_t num_points = 256;
 	unsigned int num_threads =
 		std::max<unsigned int>(1, std::thread::hardware_concurrency()/2);
