@@ -43,7 +43,7 @@
 
 // default optimisation flags
 #ifndef MX_IS_HERM
-	#define MX_IS_HERM 1
+	#define MX_IS_HERM 0
 #endif
 #ifndef MXX_IS_DIAG
 	#define MXX_IS_DIAG 1
@@ -57,7 +57,6 @@
 
 #pragma message("MX_IS_HERM: " __TL2_STRCONV(MX_IS_HERM))
 #pragma message("MXX_IS_DIAG: " __TL2_STRCONV(MXX_IS_DIAG))
-#pragma message("INTERACTMAT_IS_HERM: " __TL2_STRCONV(INTERACTMAT_IS_HERM))
 
 
 namespace tl2 {

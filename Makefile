@@ -19,7 +19,7 @@ ifneq ($(mingw_build), 1)
 	endif
 
 	SYSINCS = -I/usr/local/include \
-		-I/usr/include/lapacke -I/usr/local/opt/lapack/include \
+		-I/usr/local/include/openblas -I/usr/include/lapacke -I/usr/local/opt/lapack/include \
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
 		-I/usr/local/include/Minuit2 \
 		-I/opt/homebrew/include \
@@ -27,7 +27,7 @@ ifneq ($(mingw_build), 1)
 		-I/opt/homebrew/Cellar/qt@5/5.15.18/include
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
-	LIBDIRS = -L/usr/local/opt/lapack/lib -L/usr/local/lib \
+	LIBDIRS = -L/usr/local/lib -L/usr/local/opt/lapack/lib \
 		-L/usr/local/opt/gcc/lib/gcc/current \
 		-L/opt/homebrew/lib \
 		-L/opt/homebrew/Cellar/gcc/16.1.0/lib/gcc/current/ \
@@ -86,7 +86,9 @@ DEFS = -DDEF_SKX_ORDER=8 -DDEF_HELI_ORDER=8 \
 	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI
 INCS = -Isrc -Iext -Iext/takin $(SYSINCS)
 
-LAPACKE_LIBS = -llapacke -llapack -lblas -lgfortran
+LAPACKE_LIBS = -llapacke -llapack -lblas
+#LAPACKE_LIBS = -lopenblas
+LAPACKE_LIBS += -lgfortran
 MINUIT_LIBS = -lMinuit2 -lMinuit2Math
 # -----------------------------------------------------------------------------
 

@@ -396,10 +396,10 @@ int main(int argc, char** argv)
 	t_real Px = 1., Py =  1., Pz = 0.;
 	t_real Bx = 1., By = -1., Bz = 0.;
 
-	t_real q_begin = 0.0123;  // momentum transfer in skyrmion plane (start radius)
-	t_real q_end = 0.0123;    // momentum transfer in skyrmion plane (end radius)
+	t_real q_begin = 0.0123 - 0.0025;  // momentum transfer in skyrmion plane (start radius)
+	t_real q_end = 0.0123 + 0.0025;    // momentum transfer in skyrmion plane (end radius)
 	t_real q_oop = 0.0;       // momentum transfer out of skyrmion plane
-	unsigned int num_qs = 1;
+	unsigned int num_qs = 8;
 
 	unsigned int num_E_bins = 200;
 
@@ -485,16 +485,16 @@ int main(int argc, char** argv)
 			"magnetic field magnitude"));
 		args.add(boost::make_shared<opts::option_description>(
 			"q_begin", opts::value<decltype(q_begin)>(&q_begin),
-			"start reduced momentum transfer q"));
+			"start reduced momentum transfer q in rlu"));
 		args.add(boost::make_shared<opts::option_description>(
 			"q_end", opts::value<decltype(q_end)>(&q_end),
-			"end reduced momentum transfer q"));
+			"end reduced momentum transfer q in rlu"));
 		args.add(boost::make_shared<opts::option_description>(
 			"num_qs", opts::value<decltype(num_qs)>(&num_qs),
 			"number qs along the ring radius"));
 		args.add(boost::make_shared<opts::option_description>(
 			"q_oop", opts::value<decltype(q_oop)>(&q_oop),
-			"out-of-plane reduced momentum transfer"));
+			"out-of-plane reduced momentum transfer in rlu"));
 		args.add(boost::make_shared<opts::option_description>(
 			"angle_begin", opts::value<decltype(angle_begin)>(&angle_begin),
 			"start angle of integration arc"));

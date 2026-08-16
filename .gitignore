@@ -31,7 +31,7 @@ tmp/**
 
 # External dependencies
 ext/tlibs
-ext/tlibs2
+#ext/tlibs2
 ext/takin
 ext/takin2
 ext/data
