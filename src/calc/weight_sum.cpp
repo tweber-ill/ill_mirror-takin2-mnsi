@@ -79,7 +79,7 @@ void calc_disp(const t_vec& Gvec,
 	const t_vec& Bvec, const t_vec& Pvec,
 	t_real q_begin, t_real q_end, unsigned int num_qs, t_real q_oop,
 	bool bProj = true, bool filter_zero_weight = true,
-	t_real T = 28.5, t_real B = 0.158,
+	t_real E_min = 1e-8, t_real T = 28.5, t_real B = 0.158,
 	const std::string& skx_gs_file = "", const std::string& heli_gs_file = "",
 	bool explicit_calc = true,
 	t_real angle_begin_deg = 0., t_real angle_end_deg = 360., unsigned int num_angles = 512,
@@ -225,7 +225,7 @@ void calc_disp(const t_vec& Gvec,
 		{
 			const t_real angle = angle_begin + t_real(angle_idx)*angle_delta;
 
-			auto calc_task = [q, angle, q_idx, angle_idx, q_oop, Erange,
+			auto calc_task = [q, angle, q_idx, angle_idx, q_oop, Erange, E_min,
 				&Pvec, &Pperpvec, &Bvec, &Gvec,
 				&histWeightsNSF, &histWeightsSF, &histWeightsHeliNSF, &histWeightsHeliSF,
 				&ofstr_raw, &ofstr_raw_heli,
@@ -253,8 +253,11 @@ void calc_disp(const t_vec& Gvec,
 						wsNSF[i] *= circumference;
 
 						std::lock_guard<decltype(mtx)> _lck(mtx);
-						histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
-						histWeightsSF(Es[i], hist::weight(wsSF1[i]));
+						if(std::abs(Es[i]) > E_min)
+						{
+							histWeightsNSF(Es[i], hist::weight(wsNSF[i]*0.5));
+							histWeightsSF(Es[i], hist::weight(wsSF1[i]));
+						}
 
 						ofstr_raw << std::left << std::setw(COL_SIZE) << angle
 							<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
@@ -281,8 +284,11 @@ void calc_disp(const t_vec& Gvec,
 						wsNSFH[i] *= circumference;
 
 						std::lock_guard<decltype(mtx)> _lck(mtx);
-						histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
-						histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
+						if(std::abs(EsH[i]) > E_min)
+						{
+							histWeightsHeliNSF(EsH[i], hist::weight(wsNSFH[i]*0.5));
+							histWeightsHeliSF(EsH[i], hist::weight(wsSF1H[i]));
+						}
 
 						ofstr_raw_heli << std::left << std::setw(COL_SIZE) << angle
 							<< " " << std::left << std::setw(COL_SIZE) << qvec[0]
@@ -413,6 +419,7 @@ int main(int argc, char** argv)
 
 	t_real T = 28.5;
 	t_real B = 0.158;
+	t_real E_min = 1e-8;
 
 	// integration arc
 	t_real angle_begin = -45;
@@ -484,6 +491,9 @@ int main(int argc, char** argv)
 			"B", opts::value<decltype(B)>(&B),
 			"magnetic field magnitude"));
 		args.add(boost::make_shared<opts::option_description>(
+			"E_min", opts::value<decltype(E_min)>(&E_min),
+			"minimum magnon energy"));
+		args.add(boost::make_shared<opts::option_description>(
 			"q_begin", opts::value<decltype(q_begin)>(&q_begin),
 			"start reduced momentum transfer q in rlu"));
 		args.add(boost::make_shared<opts::option_description>(
@@ -544,7 +554,7 @@ int main(int argc, char** argv)
 
 	calc_disp(Gvec, Bvec, Pvec,
 		q_begin, q_end, num_qs, q_oop,
-		proj, filter_zero_weight,
+		proj, filter_zero_weight, E_min,
 		T, B, skx_gs_file, heli_gs_file, explicit_calc,
 		angle_begin, angle_end, num_angles,
 		num_E_bins, outfile, num_threads);
