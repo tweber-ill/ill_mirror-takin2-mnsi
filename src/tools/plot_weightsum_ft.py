@@ -54,7 +54,7 @@ ws_skx = dat_skx[:, 5] + dat_skx[:, 7]*0.5
 
 dat_heli = np.loadtxt("weightsum_heli.dat")
 Es_heli = dat_heli[:, 4]
-ws_heli = dat_heli[:, 5] + dat_heli[:, 6] + dat_heli[:, 7]
+ws_heli = dat_heli[:, 5] dat_heli[:, 7]*0.5
 
 
 ts = np.logspace(0.1, 4., 128)
