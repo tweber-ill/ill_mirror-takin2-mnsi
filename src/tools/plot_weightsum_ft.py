@@ -23,7 +23,7 @@ min_E = 1e-8
 T = 28.5
 
 # domain population
-skx_pop = 0.55
+skx_pop = 0.5
 heli_pop = 1. - skx_pop
 
 
