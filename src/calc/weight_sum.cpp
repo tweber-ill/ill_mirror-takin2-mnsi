@@ -225,7 +225,8 @@ void calc_disp(const t_vec& Gvec,
 		{
 			const t_real angle = angle_begin + t_real(angle_idx)*angle_delta;
 
-			auto calc_task = [q, angle, q_idx, angle_idx, q_oop, Erange, E_min,
+			auto calc_task = [q, angle, q_delta, angle_delta,
+				q_idx, angle_idx, q_oop, Erange, E_min,
 				&Pvec, &Pperpvec, &Bvec, &Gvec,
 				&histWeightsNSF, &histWeightsSF, &histWeightsHeliNSF, &histWeightsHeliSF,
 				&ofstr_raw, &ofstr_raw_heli,
@@ -234,7 +235,8 @@ void calc_disp(const t_vec& Gvec,
 				t_vec qvec = q * (Pvec*std::cos(angle) + Pperpvec*std::sin(angle));  // in skx plane
 				qvec += q_oop * Bvec;                                                // out of skx plane
 				t_vec Qvec = Gvec + qvec;
-				t_real circumference = q * 2.*M_PI;  // include the area element of the ring segment
+				// approximate the area element of the ring segment
+				t_real area_elem = q * angle_delta * q_delta;
 
 				//std::cout << "# Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
 				//	<< ", |q| = " << tl2::veclen(qvec)
@@ -248,9 +250,9 @@ void calc_disp(const t_vec& Gvec,
 
 					for(std::size_t i = 0; i < Es.size(); ++i)
 					{
-						wsSF1[i] *= circumference;
-						wsSF2[i] *= circumference;
-						wsNSF[i] *= circumference;
+						wsSF1[i] *= area_elem;
+						wsSF2[i] *= area_elem;
+						wsNSF[i] *= area_elem;
 
 						std::lock_guard<decltype(mtx)> _lck(mtx);
 						if(std::abs(Es[i]) > E_min)
@@ -279,9 +281,9 @@ void calc_disp(const t_vec& Gvec,
 						heli.GetDisp(Qvec[0], Qvec[1], Qvec[2], -Erange, Erange);
 					for(std::size_t i = 0; i < EsH.size(); ++i)
 					{
-						wsSF1H[i] *= circumference;
-						wsSF2H[i] *= circumference;
-						wsNSFH[i] *= circumference;
+						wsSF1H[i] *= area_elem;
+						wsSF2H[i] *= area_elem;
+						wsNSFH[i] *= area_elem;
 
 						std::lock_guard<decltype(mtx)> _lck(mtx);
 						if(std::abs(EsH[i]) > E_min)
