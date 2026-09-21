@@ -8059,7 +8059,7 @@ requires is_quat<t_quat> && is_vec<t_vec>
 		T lenPerp2 = 0.;
 		const T eps = std::numeric_limits<T>::epsilon();
 
-		while(lenPerp2 <= eps)
+		do
 		{
 			vecRnd[0] = get_rand<T>(-1., 1.);
 			vecRnd[1] = get_rand<T>(-1., 1.);
@@ -8067,7 +8067,7 @@ requires is_quat<t_quat> && is_vec<t_vec>
 
 			vecPerp = cross<t_vec>({ vec0, vecRnd });
 			lenPerp2 = inner<t_vec>(vecPerp, vecPerp);
-		}
+		} while(lenPerp2 <= eps);
 
 		return rotation_quat<t_quat, t_vec, T>(vecPerp, pi<T>);
 	}

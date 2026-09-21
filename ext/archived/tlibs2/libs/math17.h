@@ -4271,7 +4271,7 @@ t_quat rotation_quat(const t_vec& _vec0, const t_vec& _vec1)
 		T lenPerp2 = 0.;
 		const T eps = std::numeric_limits<T>::epsilon();
 
-		while(lenPerp2 <= eps)
+		do
 		{
 			vecRnd[0] = get_rand<T>(-1., 1.); // vec0[2];
 			vecRnd[1] = get_rand<T>(-1., 1.); // 0;
@@ -4279,7 +4279,7 @@ t_quat rotation_quat(const t_vec& _vec0, const t_vec& _vec1)
 
 			vecPerp = cross_3<t_vec>(vec0, vecRnd);
 			lenPerp2 = inner<t_vec>(vecPerp, vecPerp);
-		}
+		} while(lenPerp2 <= eps);
 
 		return rotation_quat<t_quat, t_vec, T>(vecPerp, pi<T>);
 	}
