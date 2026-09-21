@@ -23,15 +23,15 @@ ifneq ($(mingw_build), 1)
 		-I/usr/include/qt5 -I/usr/include/x86_64-linux-gnu/qt5/ \
 		-I/usr/local/include/Minuit2 \
 		-I/opt/homebrew/include \
-		-I/opt/homebrew/Cellar/boost/1.89.0_1/include \
+		-I/opt/homebrew/Cellar/boost/1.92/include \
 		-I/opt/homebrew/Cellar/qt@5/5.15.18/include
 		#-I/usr/local/Cellar/qt/5.15.0/include \
 		#-I/home/tw/build/boost_1_73_0
 	LIBDIRS = -L/usr/local/lib -L/usr/local/opt/lapack/lib \
 		-L/usr/local/opt/gcc/lib/gcc/current \
 		-L/opt/homebrew/lib \
-		-L/opt/homebrew/Cellar/gcc/16.1.0/lib/gcc/current/ \
-		-L/opt/homebrew/Cellar/boost/1.89.0_1/lib
+		-L/opt/homebrew/Cellar/gcc/16.2.0/lib/gcc/current/ \
+		-L/opt/homebrew/Cellar/boost/1.92/lib
 
 	LIBBOOSTFILESYS = -lboost_filesystem
 	LIBBOOSTIO = -lboost_iostreams
@@ -101,8 +101,8 @@ MINUIT_LIBS = -lMinuit2 -lMinuit2Math
 all: prepare \
 	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight bin/fielddep \
-	bin/tof_img bin/tof_mask bin/tof_pol bin/tof_unite \
 	bin/heliphase bin/heli_gs bin/skx_gs bin/weight_sum \
+	bin/tof_img bin/tof_mask bin/tof_pol bin/tof_unite \
 	lib/skxmod.so lib/skxmod_grid.so
 
 clean:

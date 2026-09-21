@@ -59,6 +59,7 @@
 #include <vector>
 #include <unordered_map>
 #include <limits>
+#include <random>
 #include <iostream>
 #include <sstream>
 
@@ -355,6 +356,24 @@ bool is_in_range(T val, T centre, T pm)
 	if(val < centre-pm) return false;
 	if(val > centre+pm) return false;
 	return true;
+}
+
+
+template<class t_num>
+t_num get_rand(t_num min = 1, t_num max = -1)
+{
+	static std::mt19937 rng{std::random_device{}()};
+
+	if(max <= min)
+	{
+		min = std::numeric_limits<t_num>::lowest() / 10.;
+		max = std::numeric_limits<t_num>::max() / 10.;
+	}
+
+	if constexpr(std::is_integral_v<t_num>)
+		return std::uniform_int_distribution<t_num>(min, max)(rng);
+	else
+		return std::uniform_real_distribution<t_num>(min, max)(rng);
 }
 
 // -----------------------------------------------------------------------------
@@ -4248,10 +4267,20 @@ t_quat rotation_quat(const t_vec& _vec0, const t_vec& _vec1)
 	}
 	else if(vec_equal(vec0, t_vec(-vec1)))
 	{ // antiparallel vectors -> rotate about any perpendicular axis
-		t_vec vecPerp(3);
-		vecPerp[0] = vec0[2];
-		vecPerp[1] = 0;
-		vecPerp[2] = -vec0[0];
+		t_vec vecRnd(3), vecPerp(3);
+		T lenPerp2 = 0.;
+		const T eps = std::numeric_limits<T>::epsilon();
+
+		while(lenPerp2 <= eps)
+		{
+			vecRnd[0] = get_rand<T>(-1., 1.); // vec0[2];
+			vecRnd[1] = get_rand<T>(-1., 1.); // 0;
+			vecRnd[2] = get_rand<T>(-1., 1.); // -vec0[0];
+
+			vecPerp = cross_3<t_vec>(vec0, vecRnd);
+			lenPerp2 = inner<t_vec>(vecPerp, vecPerp);
+		}
+
 		return rotation_quat<t_quat, t_vec, T>(vecPerp, pi<T>);
 	}
 

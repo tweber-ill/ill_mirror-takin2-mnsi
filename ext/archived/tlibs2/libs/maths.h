@@ -471,7 +471,7 @@ t_scalar stoval(const t_str& str)
 
 
 template<class t_num>
-t_num get_rand(t_num min=1, t_num max=-1)
+t_num get_rand(t_num min = 1, t_num max = -1)
 {
 	static std::mt19937 rng{std::random_device{}()};
 
@@ -8052,7 +8052,23 @@ requires is_quat<t_quat> && is_vec<t_vec>
 	// antiparallel vectors -> rotate about any perpendicular axis
 	else if(equals<t_vec>(vec0, -vec1))
 	{
-		t_vec vecPerp = create<t_vec>({ vec0[2], T{0}, -vec0[0] });
+		//t_vec vecPerp = create<t_vec>({ vec0[2], T{0}, -vec0[0] });
+
+		t_vec vecRnd = zero<t_vec>(3);
+		t_vec vecPerp = zero<t_vec>(3);
+		T lenPerp2 = 0.;
+		const T eps = std::numeric_limits<T>::epsilon();
+
+		while(lenPerp2 <= eps)
+		{
+			vecRnd[0] = get_rand<T>(-1., 1.);
+			vecRnd[1] = get_rand<T>(-1., 1.);
+			vecRnd[2] = get_rand<T>(-1., 1.);
+
+			vecPerp = cross<t_vec>({ vec0, vecRnd });
+			lenPerp2 = inner<t_vec>(vecPerp, vecPerp);
+		}
+
 		return rotation_quat<t_quat, t_vec, T>(vecPerp, pi<T>);
 	}
 
