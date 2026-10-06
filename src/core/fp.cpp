@@ -101,8 +101,15 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 		// eigenvectors and -values
 		std::vector<t_vec_cplx> evecs;
 		std::vector<t_real> evals;
-		bool ev_ok = tl2::eigenvecsel_herm<t_real>(
-			tl2::prod_mm(m_sigma2, H), evecs, evals, true);
+		std::vector<t_cplx> evals_cplx;
+		//bool ev_ok = tl2::eigenvecsel_herm<t_real>(
+		//	tl2::prod_mm(m_sigma2, H), evecs, evals, true);
+		bool ev_ok = tl2::eigenvec_cplx<t_real>(
+			tl2::prod_mm(m_sigma2, H), evecs, evals_cplx, true);
+		// keep real part
+		evals.reserve(evals_cplx.size());
+		for(const t_cplx& eval : evals_cplx)
+			evals.push_back(eval.real());
 
 		return std::make_tuple(ev_ok, evals, evecs);
 	};
