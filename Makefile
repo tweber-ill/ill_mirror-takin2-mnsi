@@ -102,8 +102,8 @@ all: prepare \
 	bin/genskx bin/genheli bin/merge bin/convert bin/dump \
 	bin/drawskx bin/dyn bin/weight bin/fielddep \
 	bin/heliphase bin/heli_gs bin/skx_gs bin/weight_sum \
-	bin/tof_img bin/tof_mask bin/tof_pol bin/tof_unite \
-	lib/skxmod.so lib/skxmod_grid.so
+	lib/skxmod.so lib/skxmod_grid.so \
+	bin/tof_img bin/tof_mask bin/tof_pol bin/tof_unite
 
 clean:
 	find . -name "*.o" -exec rm -fv {} \;
@@ -224,6 +224,7 @@ bin/heli_gs: src/calc/heli_gs.cpp \
 	src/core/heli.cpp \
 	src/core/magsys.cpp ext/tlibs2/libs/log.cpp
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=9 \
+		-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
 		${MINUIT_LIBS} ${LAPACKE_LIBS}
@@ -233,6 +234,7 @@ bin/skx_gs: src/calc/skx_gs.cpp \
 	src/core/skx.cpp src/core/heli.cpp \
 	src/core/magsys.cpp ext/tlibs2/libs/log.cpp
 	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=9 \
+		-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
 		${MINUIT_LIBS} ${LAPACKE_LIBS}

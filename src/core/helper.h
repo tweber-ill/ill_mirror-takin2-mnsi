@@ -162,32 +162,15 @@ typename t_arr::value_type& get_comp(t_arr& arr, int SIZE,
  * index into extended system
  */
 template<class t_arr>
-const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
-	t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
-	int idx1, int idx2)
+const typename t_arr::value_type& get_ext_comp(
+	t_arr& arr, int ARRSIZE, int ORDER, int idx1, int idx2)
 {
-	if(!use_ext_sys)
-		return get_comp(arr, ARRSIZE, idx1, idx2);
-
-	const int MAXSIZE = 2*MAXORDER + 1;
-
-	// negative indices
-	idx1 = rel_to_abs_idx(idx1, MAXSIZE);
-	idx2 = rel_to_abs_idx(idx2, MAXSIZE);
-
 	static const typename t_arr::value_type zero{};
-	const int diffsize = MAXSIZE-ARRSIZE;
 
-	if(idx1 >= ORDER && (idx1 < MAXSIZE-ORDER-1 || idx1 < diffsize)) return zero;
-	if(idx2 >= ORDER && (idx2 < MAXSIZE-ORDER-1 || idx2 < diffsize)) return zero;
+	if(idx1 < -ORDER || idx1 > ORDER || idx2 < -ORDER || idx2 > ORDER)
+		return zero;
 
-	if(idx1 < ORDER && idx1 >= ARRSIZE) return zero;
-	if(idx2 < ORDER && idx2 >= ARRSIZE) return zero;
-
-	if(idx1 >= ORDER) idx1 -= diffsize;
-	if(idx2 >= ORDER) idx2 -= diffsize;
-
-	return arr[idx1*ARRSIZE + idx2];
+	return get_comp(arr, ARRSIZE, idx1, idx2);
 }
 
 
@@ -195,43 +178,17 @@ const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
  * index into extended system
  */
 template<class t_arr>
-const typename t_arr::value_type& get_ext_comp(bool use_ext_sys,
-	t_arr& arr, int ARRSIZE, int ORDER, int MAXORDER,
+const typename t_arr::value_type& get_ext_comp(
+	t_arr& arr, int ARRSIZE, int ORDER,
 	int idx1, int idx2, int idx3, int idx4)
 {
-	if(!use_ext_sys)
-		return get_comp(arr, ARRSIZE, idx1, idx2, idx3, idx4);
-
-	const int MAXSIZE = 2*MAXORDER + 1;
-
-	// negative indices
-	idx1 = rel_to_abs_idx(idx1, MAXSIZE);
-	idx2 = rel_to_abs_idx(idx2, MAXSIZE);
-	idx3 = rel_to_abs_idx(idx3, MAXSIZE);
-	idx4 = rel_to_abs_idx(idx4, MAXSIZE);
-
 	static const typename t_arr::value_type zero{};
-	const int diffsize = MAXSIZE-ARRSIZE;
 
-	if(idx1 >= ORDER && (idx1 < MAXSIZE-ORDER-1 || idx1 < diffsize)) return zero;
-	if(idx2 >= ORDER && (idx2 < MAXSIZE-ORDER-1 || idx2 < diffsize)) return zero;
-	if(idx3 >= ORDER && (idx3 < MAXSIZE-ORDER-1 || idx3 < diffsize)) return zero;
-	if(idx4 >= ORDER && (idx4 < MAXSIZE-ORDER-1 || idx4 < diffsize)) return zero;
+	if(idx1 < -ORDER || idx1 > ORDER || idx2 < -ORDER || idx2 > ORDER ||
+		idx3 < -ORDER || idx3 > ORDER || idx4 < -ORDER || idx4 > ORDER)
+		return zero;
 
-	if(idx1 < ORDER && idx1 >= ARRSIZE) return zero;
-	if(idx2 < ORDER && idx2 >= ARRSIZE) return zero;
-	if(idx3 < ORDER && idx3 >= ARRSIZE) return zero;
-	if(idx4 < ORDER && idx4 >= ARRSIZE) return zero;
-
-	if(idx1 >= ORDER) idx1 -= diffsize;
-	if(idx2 >= ORDER) idx2 -= diffsize;
-	if(idx3 >= ORDER) idx3 -= diffsize;
-	if(idx4 >= ORDER) idx4 -= diffsize;
-
-	return arr[idx1*ARRSIZE*ARRSIZE*ARRSIZE +
-		idx2*ARRSIZE*ARRSIZE +
-		idx3*ARRSIZE +
-		idx4];
+	return get_comp(arr, ARRSIZE, idx1, idx2, idx3, idx4);
 }
 
 

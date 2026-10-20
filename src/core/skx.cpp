@@ -323,7 +323,8 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 	}
 
 	// M-cross and fluctuation matrix
-	const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
+	//const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
+	const int MAXORDER = ORDER + std::max({ std::abs(Ghmag), std::abs(Gkmag), std::abs(Ghmag - Gkmag) });
 
 	auto mk_2dim = [MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
@@ -334,8 +335,7 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		{
 			for(std::size_t k_idx=0; k_idx<pks.size(); ++k_idx)
 			{
-				const t_mat_cplx& comp = get_ext_comp(true,
-					arr, SIZE, ORDER, MAXORDER,
+				const t_mat_cplx& comp = get_ext_comp(arr, SIZE, ORDER,
 					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
 					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
 				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
@@ -361,15 +361,32 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 	t_real Bx, t_real By, t_real Bz,
 	t_real Pinx, t_real Piny, t_real Pinz)
 {
+	const t_vec zvec = tl2::make_vec<t_vec>({ 0, 0, 1 });
+	const t_vec xvec = tl2::make_vec<t_vec>({ 1, 0, 0 });
+
 	t_vec B = tl2::make_vec<t_vec>({ Bx, By, Bz });
 	t_vec _Pin = tl2::make_vec<t_vec>({ Pinx, Piny, Pinz });
 
-	t_quat quatB = tl2::rotation_quat(B, tl2::make_vec<t_vec>({ 0, 0, 1 }));
+	t_quat quatB = tl2::rotation_quat(B, zvec);
 
 	t_vec Pin = tl2::quat_vec_prod(quatB, _Pin);
-	t_quat quatPin = tl2::rotation_quat(Pin, tl2::make_vec<t_vec>({ 1, 0, 0 }));
+	t_quat quatPin = tl2::rotation_quat(Pin, xvec);
+	//t_real anglePinX = std::acos(tl2::inner(Pin, xvec));
+	//t_quat quatPin = tl2::rotation_quat(zvec, -anglePinX);
 
 	m_rotCoord = quatPin * quatB;
+
+	// check coordinate system
+	t_vec chk_x = tl2::quat_vec_prod(m_rotCoord, _Pin);
+	t_vec chk_z = tl2::quat_vec_prod(m_rotCoord, B);
+	chk_x /= tl2::veclen(chk_x);
+	chk_z /= tl2::veclen(chk_z);
+	bool x_ok = tl2::vec_equal<t_vec>(chk_x, xvec, m_eps);
+	bool z_ok = tl2::vec_equal<t_vec>(chk_z, zvec, m_eps);
+	if(!x_ok)
+		std::cerr << "WARNING: Incorrect x trafo: " << chk_x << std::endl;
+	if(!z_ok)
+		std::cerr << "WARNING: Incorrect z trafo: " << chk_z << std::endl;
 }
 
 
