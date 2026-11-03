@@ -159,7 +159,7 @@ MxEigensys<t_mat_cplx> calc_mx_eigensys(const t_mat_cplx& Mx,
 
 /**
  * Calculates energies and dynamical structure factors from a precalculated M x eigensystem
- * and the fluctuation matrix already transformed into it (invsuscept = evecs^H Fluc evecs).
+ * with the fluctuation matrix already transformed into it.
  * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
  *	- personal communications with M. Garst, 2017-2020.
  *	- https://doi.org/10.1088/1361-6463/aa7573
