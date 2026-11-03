@@ -416,12 +416,8 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 	t_vec chk_z = tl2::quat_vec_prod(m_rotCoord, B);
 	chk_x /= tl2::veclen(chk_x);
 	chk_z /= tl2::veclen(chk_z);
-	bool x_ok = tl2::vec_equal<t_vec>(chk_x, xvec, m_eps);
-	bool z_ok = tl2::vec_equal<t_vec>(chk_z, zvec, m_eps);
-	if(!x_ok)
-		tl2::log_warn("WARNING: Incorrect x trafo: ", chk_x, ".");
-	if(!z_ok)
-		tl2::log_warn("WARNING: Incorrect z trafo: ", chk_z, ".");
+	if(!tl2::vec_equal<t_vec>(chk_x, xvec, m_eps)) tl2::log_warn("Incorrect x trafo: ", chk_x, ".");
+	if(!tl2::vec_equal<t_vec>(chk_z, zvec, m_eps)) tl2::log_warn("Incorrect z trafo: ", chk_z, ".");
 }
 
 
