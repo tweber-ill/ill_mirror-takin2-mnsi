@@ -1310,6 +1310,20 @@ t_mat prod_mm(const t_mat& mat0, const t_mat& mat1)
 
 
 /**
+ * matrix-matrix product with mat0 diagonal
+ */
+template<typename t_mat = ublas::matrix<double>>
+t_mat prod_mm_diag(const t_mat& mat0, const t_mat& mat1)
+{
+	t_mat mat = mat1;
+	for(std::size_t row=0; row<mat.size1(); ++row)
+		for(std::size_t col=0; col<mat.size2(); ++col)
+			mat(row, col) *= mat0(row, row);
+	return mat;
+}
+
+
+/**
  * matrix-matrix product -- ublas wrapper
  */
 template<typename t_mat = ublas::matrix<double>,

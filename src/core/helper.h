@@ -268,6 +268,76 @@ t_mat get_chiralpol(int which)
 
 
 /**
+ * calculate energies and weights from the eigensystem returned by tl2::calc_dynstrucfact_landau(_mxsys)
+ */
+template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real, class t_eigs>
+std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+weights_from_eigs(const t_eigs& eigs,
+	const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
+	t_real E_scale_fac, t_real w_scale_fac, t_real minE, t_real maxE,
+	t_real weighteps, bool bfilterzeroweight, int onlymode)
+{
+	// energies and spectral weights
+	struct EW
+	{
+		t_real E;
+		t_real wUnpol;
+		t_real wSF1, wSF2, wNSF;
+	};
+
+	std::size_t numEVals = std::get<0>(eigs).size();
+	std::vector<EW> EWs;
+	EWs.reserve(numEVals);
+
+	bool bProjNeutron = true;
+	int iCurMode = 0;
+	for(std::size_t ieval=0; ieval<numEVals; ++ieval)
+	{
+		auto E_weight = tl2::get_dynstrucfact_neutron<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+			std::get<0>(eigs)[ieval],  std::get<2>(eigs)[ieval],
+			bProjNeutron ? &projNeutron : nullptr, &polMat);
+
+		t_real E_meV = std::get<0>(E_weight) * E_scale_fac;
+
+		// filter energies if requested
+		if(maxE >= minE && (E_meV < minE || E_meV > maxE))
+			continue;
+
+		// only consider one of the modes, if desired
+		if(onlymode >=0 && onlymode != iCurMode++)
+			continue;
+
+		EW ew;
+		ew.E = E_meV;
+		ew.wUnpol = std::get<1>(E_weight)[0] * w_scale_fac;
+		ew.wSF1 = std::get<1>(E_weight)[1] * w_scale_fac;
+		ew.wSF2 = std::get<1>(E_weight)[2] * w_scale_fac;
+		ew.wNSF = std::get<1>(E_weight)[3] * w_scale_fac;
+		EWs.emplace_back(ew);
+	}
+
+
+	std::stable_sort(EWs.begin(), EWs.end(), [](const EW& ew1, const EW& ew2) -> bool
+	{ return ew1.E < ew2.E; });
+
+	std::vector<t_real> Es, wsUnpol, wsSF1, wsSF2, wsNSF;
+	for(const EW& ew : EWs)
+	{
+		if(bfilterzeroweight && ew.wUnpol < weighteps)
+			continue;
+
+		Es.push_back(ew.E);
+		wsUnpol.push_back(ew.wUnpol);
+		wsSF1.push_back(ew.wSF1);
+		wsSF2.push_back(ew.wSF2);
+		wsNSF.push_back(ew.wNSF);
+	}
+
+	return std::make_tuple(Es, wsUnpol, wsSF1, wsSF2, wsNSF);
+}
+
+
+/**
  * calculate energies and weights from Landau-Lifshitz M-cross and fluctuation matrices
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
@@ -280,72 +350,49 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 {
 	try
 	{
-		// energies and spectral weights
-		struct EW
-		{
-			t_real E;
-			t_real wUnpol;
-			t_real wSF1, wSF2, wNSF;
-		};
-
 		auto eigs = tl2::calc_dynstrucfact_landau<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 			Mx, Fluc, &eveps, &evlimit, 3, MxsubMatRowBegin, eveps);
 
-		std::size_t numEVals = std::get<0>(eigs).size();
-		std::vector<EW> EWs;
-		EWs.reserve(numEVals);
-
-		bool bProjNeutron = true;
-		int iCurMode = 0;
-		for(std::size_t ieval=0; ieval<numEVals; ++ieval)
-		{
-			auto E_weight = tl2::get_dynstrucfact_neutron<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-				std::get<0>(eigs)[ieval],  std::get<2>(eigs)[ieval],
-				bProjNeutron ? &projNeutron : nullptr, &polMat);
-
-			t_real E_meV = std::get<0>(E_weight) * E_scale_fac;
-
-			// filter energies if requested
-			if(maxE >= minE && (E_meV < minE || E_meV > maxE))
-				continue;
-
-			// only consider one of the modes, if desired
-			if(onlymode >=0 && onlymode != iCurMode++)
-				continue;
-
-			EW ew;
-			ew.E = E_meV;
-			ew.wUnpol = std::get<1>(E_weight)[0] * w_scale_fac;
-			ew.wSF1 = std::get<1>(E_weight)[1] * w_scale_fac;
-			ew.wSF2 = std::get<1>(E_weight)[2] * w_scale_fac;
-			ew.wNSF = std::get<1>(E_weight)[3] * w_scale_fac;
-			EWs.emplace_back(ew);
-		}
-
-
-		std::stable_sort(EWs.begin(), EWs.end(), [](const EW& ew1, const EW& ew2) -> bool
-		{ return ew1.E < ew2.E; });
-
-		std::vector<t_real> Es, wsUnpol, wsSF1, wsSF2, wsNSF;
-		for(const EW& ew : EWs)
-		{
-			if(bfilterzeroweight && ew.wUnpol < weighteps)
-				continue;
-
-			Es.push_back(ew.E);
-			wsUnpol.push_back(ew.wUnpol);
-			wsSF1.push_back(ew.wSF1);
-			wsSF2.push_back(ew.wSF2);
-			wsNSF.push_back(ew.wNSF);
-		}
-
-		return std::make_tuple(Es, wsUnpol, wsSF1, wsSF2, wsNSF);
+		return weights_from_eigs<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(eigs,
+			projNeutron, polMat, E_scale_fac, w_scale_fac, minE, maxE,
+			weighteps, bfilterzeroweight, onlymode);
 	}
 	catch(const std::exception& ex)
 	{
 		tl2::log_err(ex.what());
 
-		static const std::vector<t_real> empty;
+		std::vector<t_real> empty;
+		return std::make_tuple(empty, empty, empty, empty, empty);
+	}
+}
+
+
+/**
+ * calculate energies and weights from a precalculated (cached) M-cross eigensystem
+ * and the fluctuation matrix already transformed into it
+ */
+template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
+std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+calc_weights_mxsys(const tl2::MxEigensys<t_mat_cplx>& mxsys, const t_mat_cplx& invsuscept,
+	const t_mat_cplx& projNeutron, const std::vector<t_mat_cplx>& polMat,
+	t_real E_scale_fac = 1., t_real w_scale_fac = 1., t_real minE = -1, t_real maxE = -2,
+	t_real weighteps = 1e-6, bool bfilterzeroweight = 0, int onlymode = -1,
+	std::size_t MxsubMatRowBegin = 0)
+{
+	try
+	{
+		auto eigs = tl2::calc_dynstrucfact_landau_mxsys<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+			mxsys, invsuscept, 3, MxsubMatRowBegin);
+
+		return weights_from_eigs<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(eigs,
+			projNeutron, polMat, E_scale_fac, w_scale_fac, minE, maxE,
+			weighteps, bfilterzeroweight, onlymode);
+	}
+	catch(const std::exception& ex)
+	{
+		tl2::log_err(ex.what());
+
+		std::vector<t_real> empty;
 		return std::make_tuple(empty, empty, empty, empty, empty);
 	}
 }

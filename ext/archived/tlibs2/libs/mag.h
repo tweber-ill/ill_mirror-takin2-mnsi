@@ -43,7 +43,7 @@
 
 // default optimisation flags
 #ifndef MX_IS_HERM
-	#define MX_IS_HERM 0
+	#define MX_IS_HERM 1
 #endif
 #ifndef MXX_IS_DIAG
 	#define MXX_IS_DIAG 1
@@ -61,6 +61,12 @@
 
 namespace tl2 {
 
+template<class t_mat> struct MxEigensys
+{
+	t_mat evecs, evecsH, Mxx;
+};
+
+
 /**
  * Calculates energies and dynamical structure factors from Landau-Lifshitz (M x) and fluctuation matrices.
  * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
@@ -70,10 +76,8 @@ namespace tl2 {
  *	- https://kups.ub.uni-koeln.de/7937/
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
-std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
-calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
-	const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
-	std::size_t MxsubMatSize = 3, std::size_t MxsubMatRowBegin = 0, t_real eps = 1e-6)
+MxEigensys<t_mat_cplx> calc_mx_eigensys(const t_mat_cplx& Mx,
+	const t_real* mineval = nullptr, const t_real *maxeval = nullptr, t_real eps = 1e-6)
 {
 	constexpr t_cplx imag = t_cplx(0,1);
 
@@ -116,10 +120,8 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 		for(std::size_t elem=0; elem<Mxevals.size(); ++elem)
 		{
-			// upper eigenvalue limit
 			if(maxeval && std::abs(Mxevals[elem].imag()) < std::abs(*maxelem)**maxeval)
 				continue;
-			// lower eigenvalue limit
 			if(mineval && std::abs(Mxevals[elem].imag()) < *mineval)
 				continue;
 			Mxevecs_new.push_back(Mxevecs[elem]);
@@ -130,39 +132,57 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 		Mxevals = std::move(Mxevals_new);
 	}
 
-
 	// convert to eigenvector matrix
-	t_mat_cplx MxEvecs(Mx.size1(), Mxevecs.size());
-	for(std::size_t idx1=0; idx1<MxEvecs.size1(); ++idx1)
-		for(std::size_t idx2=0; idx2<MxEvecs.size2(); ++idx2)
-			MxEvecs(idx1, idx2) = Mxevecs[idx2][idx1];
-
-	t_mat_cplx MxEvecsH = hermitian(MxEvecs);
-	t_mat_cplx MxEvecs3 = submatrix_wnd<t_mat_cplx>(
-		MxEvecs, MxsubMatSize, Mxevecs.size(), MxsubMatRowBegin, 0);
-	t_mat_cplx MxEvecsH3 = hermitian(MxEvecs3);
-
-	// transform fluctuation matrix into Mx eigenvector system
-	t_mat_cplx invsuscept = prod_mm(MxEvecsH, prod_mm(Fluc, MxEvecs));
+	MxEigensys<t_mat_cplx> sys;
+	sys.evecs = t_mat_cplx(Mx.size1(), Mxevecs.size());
+	for(std::size_t idx1=0; idx1<sys.evecs.size1(); ++idx1)
+		for(std::size_t idx2=0; idx2<sys.evecs.size2(); ++idx2)
+			sys.evecs(idx1, idx2) = Mxevecs[idx2][idx1];
+	sys.evecsH = hermitian(sys.evecs);
 
 	// transform Mx into Mx eigenvector system
 	// Mxx is diagonal with this construction => directly use Mxevals
 #if MXX_IS_DIAG == 1
-	t_mat_cplx Mxx = imag * diag_matrix<t_mat_cplx>(Mxevals);
+	sys.Mxx = imag * diag_matrix<t_mat_cplx>(Mxevals);
 #else
-	t_mat_cplx Mxx = imag * prod_mm(MxEvecsH, prod_mm(Mx, MxEvecs));
+	sys.Mxx = imag * prod_mm(sys.evecsH, prod_mm(Mx, sys.evecs));
 
 #ifdef TL2_MAG_CHECKS
-	if(!tl2::is_diagonal_cplx(Mxx, eps))
+	if(!tl2::is_diagonal_cplx(sys.Mxx, eps))
 		tl2::log_warn("Mxx is not diagonal!");
 #endif
 #endif
+
+	return sys;
+}
+
+
+/**
+ * Calculates energies and dynamical structure factors from a precalculated M x eigensystem
+ * and the fluctuation matrix already transformed into it (invsuscept = evecs^H Fluc evecs).
+ * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
+ *	- personal communications with M. Garst, 2017-2020.
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://doi.org/10.1038/nmat4223 (supplement)
+ *	- https://kups.ub.uni-koeln.de/7937/
+ */
+template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
+std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
+calc_dynstrucfact_landau_mxsys(const MxEigensys<t_mat_cplx>& sys, const t_mat_cplx& invsuscept,
+	std::size_t MxsubMatSize = 3, std::size_t MxsubMatRowBegin = 0)
+{
+	t_mat_cplx MxEvecs3 = submatrix_wnd<t_mat_cplx>(
+		sys.evecs, MxsubMatSize, sys.evecs.size2(), MxsubMatRowBegin, 0);
 
 	// Landau-Lifshitz: d/dt dM = -g*Mx B_mean, B_mean = -chi^(-1) * dM
 	// E = EVals{ i g*Mx chi^(-1) }
 	// chi_dyn^(-1) = i*E/g*Mx^(-1) + chi^(-1)
 	// Mx*chi_dyn^(-1) = i*E/g + Mx*chi^(-1)
-	t_mat_cplx Interactmat = prod_mm(Mxx, invsuscept);
+#if MXX_IS_DIAG == 1
+	t_mat_cplx Interactmat = prod_mm_diag(sys.Mxx, invsuscept);
+#else
+	t_mat_cplx Interactmat = prod_mm(sys.Mxx, invsuscept);
+#endif
 
 	std::vector<t_vec_cplx> Interactevecs;
 	std::vector<t_cplx> Interactevals;
@@ -174,14 +194,39 @@ calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 	for(const t_vec_cplx& evec : Interactevecs)
 	{
-		t_mat_cplx matOuter = outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec);
-		t_mat_cplx emat = prod_mm(MxEvecs3, prod_mm(matOuter, MxEvecsH3));
-		emat /= inner_cplx<t_vec_cplx>(evec, prod_mv(Mxx, evec));
+		t_vec_cplx Mxevec = prod_mv(MxEvecs3, evec);
+		t_mat_cplx emat = outer_cplx<t_vec_cplx, t_mat_cplx>(Mxevec, Mxevec);
+		emat /= inner_cplx<t_vec_cplx>(evec, prod_mv(sys.Mxx, evec));
 
 		Interactemats.emplace_back(std::move(emat));
 	}
 
 	return std::make_tuple(std::move(Interactevals), std::move(Interactevecs), std::move(Interactemats));
+}
+
+
+/**
+ * Calculates energies and dynamical structure factors from Landau-Lifshitz (M x) and fluctuation matrices.
+ * Implements the mathematical formalism by M. Garst, J. Waizner, et al., references:
+ *	- personal communications with M. Garst, 2017-2020.
+ *	- https://doi.org/10.1088/1361-6463/aa7573
+ *	- https://doi.org/10.1038/nmat4223 (supplement)
+ *	- https://kups.ub.uni-koeln.de/7937/
+ */
+template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
+std::tuple<std::vector<t_cplx>, std::vector<t_vec_cplx>, std::vector<t_mat_cplx>>
+calc_dynstrucfact_landau(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
+	const t_real* mineval = nullptr, const t_real *maxeval = nullptr,
+	std::size_t MxsubMatSize = 3, std::size_t MxsubMatRowBegin = 0, t_real eps = 1e-6)
+{
+	MxEigensys<t_mat_cplx> sys = calc_mx_eigensys<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+		Mx, mineval, maxeval, eps);
+
+	// transform fluctuation matrix into Mx eigenvector system
+	t_mat_cplx invsuscept = prod_mm(sys.evecsH, prod_mm(Fluc, sys.evecs));
+
+	return calc_dynstrucfact_landau_mxsys<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+		sys, invsuscept, MxsubMatSize, MxsubMatRowBegin);
 }
 
 
@@ -203,7 +248,7 @@ get_dynstrucfact_neutron(
 	t_real E = eval.real();
 	t_mat_cplx emat = _emat;
 
-	// magnetic neutron scattering orthogonal projector: projNeutron = 1 - |G><G|
+	// magnetic neutron scattering orthogonal projector: projNeutron = 1 - |Q><Q|
 	if(projNeutron)
 	{
 		emat = prod_mm(emat, *projNeutron);

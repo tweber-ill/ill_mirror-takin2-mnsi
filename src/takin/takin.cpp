@@ -387,7 +387,7 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		{
 			m_iPolChan = tl2::str_to_var<decltype(m_iPolChan)>(strVal);
 		}
-		else if(strVar == "G" || strVal == "proj_neutron")
+		else if(strVar == "G" || strVar == "proj_neutron")
 		{
 			m_vecG = str_to_vec<decltype(m_vecG)>(strVal);
 

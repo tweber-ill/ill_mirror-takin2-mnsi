@@ -385,7 +385,7 @@ bool fit(t_func&& func,
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
-		ROOT::Minuit2::FunctionMinimum mini = migrad();
+		ROOT::Minuit2::FunctionMinimum mini = migrad(0, 1e-4);
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
 		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)
@@ -472,7 +472,7 @@ bool fit_expr(const std::string& func,
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(*chi2, params, 2);
-		ROOT::Minuit2::FunctionMinimum mini = migrad();
+		ROOT::Minuit2::FunctionMinimum mini = migrad(0, 1e-4);
 		bool bValidFit = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
 		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)
@@ -525,7 +525,7 @@ bool minimise(t_func&& func, const std::vector<std::string>& vecParamNames,
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
-		ROOT::Minuit2::FunctionMinimum mini = migrad();
+		ROOT::Minuit2::FunctionMinimum mini = migrad(0, 1e-4);
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
 		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)
@@ -578,7 +578,7 @@ bool minimise_expr(const std::string& func, const std::vector<std::string>& vecP
 		}
 
 		ROOT::Minuit2::MnMigrad migrad(chi2, params, 2);
-		ROOT::Minuit2::FunctionMinimum mini = migrad();
+		ROOT::Minuit2::FunctionMinimum mini = migrad(0, 1e-4);
 		bool bMinimumValid = mini.IsValid() && mini.HasValidParameters() && mini.UserState().IsValid();
 
 		for(std::size_t iParam=0; iParam<vecParamNames.size(); ++iParam)

@@ -17,6 +17,9 @@
 #ifndef __SKX_H__
 #define __SKX_H__
 
+#include <memory>
+#include <mutex>
+
 #include "magsys.h"
 #define USE_LAPACK
 #include "tlibs2/libs/math17.h"
@@ -53,6 +56,54 @@ public:
 	Skx();
 	virtual ~Skx() = default;
 
+	Skx(const Skx<t_real, t_cplx, ORDER>& skx)
+		: MagSystem<t_real, t_cplx, (ORDER+1)*ORDER/2>(skx)
+	{
+		this->operator=(skx);
+	}
+
+	Skx<t_real, t_cplx, ORDER>& operator=(const Skx<t_real, t_cplx, ORDER>& skx)
+	{
+		m_filterzeroweight = skx.m_filterzeroweight;
+		m_eps = skx.m_eps;
+		m_eveps = skx.m_eveps;
+		m_weighteps = skx.m_weighteps;
+		m_evlimit = skx.m_evlimit;
+
+		m_Bmat = skx.m_Bmat;
+		m_Binv = skx.m_Binv;
+
+		m_B = skx.m_B;
+		m_T = skx.m_T;
+		m_Bc2 = skx.m_Bc2;
+		m_Bc2_exp = skx.m_Bc2_exp;
+
+		m_fourier = skx.m_fourier;
+		for(int i = 0; i < 3; ++i)
+			m_idx2[i] = skx.m_idx2[i];
+		for(int i = 0; i < 4; ++i)
+			m_idx3[i] = skx.m_idx3[i];
+
+		m_allpeaks_rlu = skx.m_allpeaks_rlu;
+		m_peaks60_rlu = skx.m_peaks60_rlu;
+
+		m_M = skx.m_M;
+		m_Grlu = skx.m_Grlu;
+		m_rotCoord = skx.m_rotCoord;
+
+		m_polMat = skx.m_polMat;
+		m_bProjNeutron = skx.m_bProjNeutron;
+
+		m_mxstatic = nullptr;
+		if(skx.m_mxstatic)
+		{
+			m_mxstatic = std::make_shared<MxStatic>();
+			*m_mxstatic = *skx.m_mxstatic;
+		}
+
+		return *this;
+	}
+
 	virtual t_real F() override;
 
 	virtual void SetFourier(const std::vector<t_vec_cplx> &fourier, bool symm=true) override;
@@ -62,6 +113,8 @@ public:
 	{
 		if(!exp)
 			m_B = B;
+
+		m_mxstatic = nullptr;  // force recalculation of the static part of Mx
 	}
 
 	virtual void SetT(t_real T, bool exp=true) override
@@ -75,6 +128,8 @@ public:
 			m_T = T;
 			m_Bc2 = get_bc2(m_T, !exp, !SKX_USE_HOC);
 		}
+
+		m_mxstatic = nullptr;  // force recalculation of the static part of Mx
 	}
 
 	virtual t_real GetBC2(bool exp=true) const override
@@ -115,11 +170,21 @@ public:
 		GetDisp(t_real h, t_real k, t_real l, t_real minE=-1., t_real maxE=-2.) const override;
 
 	void SetWeightEps(t_real eps) { m_weighteps = eps; }
+	void SetEVLimit(t_real lim) { m_evlimit = lim; m_mxstatic = nullptr; }
+	void SetEVEps(t_real eps) { m_eveps = eps; m_mxstatic = nullptr; }
 
 	const std::vector<t_vec>& GetPeaks60() { return m_peaks60_rlu; }
 
 
 protected:
+	struct MxStatic
+	{
+		tl2::MxEigensys<t_mat_cplx> mxsys;
+		t_mat_cplx fluc_static;
+	};
+
+	void CalcMxStatic() const;
+
 	std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 		GetSpecWeights(int Ghmag, int Gkmag, t_real qh, t_real qk, t_real ql,
 			const t_mat_cplx& projNeutron,
@@ -163,6 +228,9 @@ private:
 	}};
 
 	bool m_bProjNeutron = true;
+
+	mutable std::mutex m_mxstatic_mtx{};
+	mutable std::shared_ptr<MxStatic> m_mxstatic = nullptr;
 };
 
 

@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 #include <functional>
 #include <iostream>
 
@@ -66,12 +67,12 @@ Skx<t_real, t_cplx, ORDER>::Skx()
 	{
 		if(!(pk_rlu[0] > pk_rlu[1] && pk_rlu[1] >= 0))
 			continue;
-		m_peaks60_rlu.emplace_back(std::move(pk_rlu));
+		m_peaks60_rlu.push_back(pk_rlu);
 	}
 
-	for(int i=0; i<3; ++i)
+	for(int i=0; i<4; ++i)
 	{
-		if(i<2) m_idx2[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
+		if(i<3) m_idx2[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 		m_idx3[i].reserve(m_allpeaks_rlu.size() * m_allpeaks_rlu.size() * m_allpeaks_rlu.size());
 	}
 
@@ -244,20 +245,20 @@ void Skx<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &fouri
 			M[0] = m[0]; M[1] = m[1]; M[2] = m_fourier[peak_idx+1][2];
 		}
 	}
+
+	std::lock_guard<std::mutex> _lck(m_mxstatic_mtx);
+	m_mxstatic = nullptr;  // force recalculation of the static part of Mx
 }
 
 
-/**
- * energies and spectral weights, see pp. 64-68 in [waizner17]
- */
 template<class t_real, class t_cplx, int ORDER>
-std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
-	t_real qh, t_real qk, t_real ql, const t_mat_cplx& projNeutron,
-	t_real minE, t_real maxE) const
+void Skx<t_real, t_cplx, ORDER>::CalcMxStatic() const
 {
-	avoid_G(qh, qk, ql, m_eps);
-	const t_vec q_lab = tl2::make_vec<t_vec>({ qh, qk, -ql });
+	std::lock_guard<std::mutex> _lck(m_mxstatic_mtx);
+	if(m_mxstatic)
+		return;
+
+	m_mxstatic = std::make_shared<MxStatic>();
 
 	// M-cross tensor, p. 67 in [waizner17]
 	auto Mx = std::make_unique<std::array<t_mat_cplx, SIZE*SIZE*SIZE*SIZE>>();
@@ -287,19 +288,68 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 		assign_or_add(fluccomp, mat);
 	}
 
-	for(const t_vec &pk_rlu : m_allpeaks_rlu)
+	auto mk_2dim = [this](const decltype(*Mx)& arr) -> t_mat_cplx
 	{
-		t_vec pk_lab = tl2::prod_mv(m_Bmat, pk_rlu);
+		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*m_allpeaks_rlu.size(), 3*m_allpeaks_rlu.size());
+		for(std::size_t h_idx=0; h_idx<m_allpeaks_rlu.size(); ++h_idx)
+		{
+			for(std::size_t k_idx=0; k_idx<m_allpeaks_rlu.size(); ++k_idx)
+			{
+				const t_mat_cplx& comp = get_ext_comp(arr, SIZE, ORDER,
+					m_allpeaks_rlu[h_idx][0], m_allpeaks_rlu[h_idx][1],
+					m_allpeaks_rlu[k_idx][0], m_allpeaks_rlu[k_idx][1]);
+				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
+			}
+		}
+		return mat;
+	};
+
+	m_mxstatic->mxsys = tl2::calc_mx_eigensys<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+		mk_2dim(*Mx) * g_g<t_real> / m_Bc2, &m_eveps, &m_evlimit, m_eveps);
+	m_mxstatic->fluc_static = tl2::prod_mm(m_mxstatic->mxsys.evecsH,
+		tl2::prod_mm(mk_2dim(*Fluc), m_mxstatic->mxsys.evecs));
+}
+
+
+/**
+ * energies and spectral weights, see pp. 64-68 in [waizner17]
+ */
+template<class t_real, class t_cplx, int ORDER>
+std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
+	t_real qh, t_real qk, t_real ql, const t_mat_cplx& projNeutron,
+	t_real minE, t_real maxE) const
+{
+	avoid_G(qh, qk, ql, m_eps);
+	const t_vec q_lab = tl2::make_vec<t_vec>({ qh, qk, -ql });
+
+	CalcMxStatic();
+
+	const auto iterG = std::find_if(m_allpeaks_rlu.begin(), m_allpeaks_rlu.end(),
+		[Ghmag, Gkmag](const t_vec_int& pk) -> bool
+		{ return pk[0] == Ghmag && pk[1] == Gkmag; });
+	if(iterG == m_allpeaks_rlu.end())
+	{
+		tl2::log_err("(", Ghmag, ", ", Gkmag, ") peak not found.");
+		std::vector<t_real> vec0{};
+		return std::make_tuple(vec0, vec0, vec0, vec0, vec0);
+	}
+
+	auto get_demag = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
+	{ // equ. 6.14 in [waizner17]
+		if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
+			return 0.;
+		return g_chi<t_real>/Q_sq * Qi*Qj;
+	};
+
+	t_mat_cplx D = tl2::zero_matrix<t_mat_cplx>(m_mxstatic->mxsys.evecs.size1(), m_mxstatic->mxsys.evecs.size2());
+
+	for(std::size_t pk_idx=0; pk_idx<m_allpeaks_rlu.size(); ++pk_idx)
+	{
+		t_vec pk_lab = tl2::prod_mv(m_Bmat, m_allpeaks_rlu[pk_idx]);
 		pk_lab.resize(3, true); pk_lab[2] = 0.;
 		const t_vec Q = pk_lab + q_lab;
 		const t_real Q_sq = tl2::inner(Q, Q);
-
-		auto get_demag = [this](t_real Qi, t_real Qj, t_real Q_sq) -> t_real
-		{ // equ. 6.14 in [waizner17]
-			if(tl2::float_equal<t_real>(Q_sq, 0., m_eps))
-				return 0.;
-			return g_chi<t_real>/Q_sq * Qi*Qj;
-		};
 
 		t_mat_cplx mat(3, 3);
 		for(int i=0; i<3; ++i)
@@ -318,38 +368,21 @@ Skx<t_real, t_cplx, ORDER>::GetSpecWeights(int Ghmag, int Gkmag,
 			}
 		}
 
-		const int hk[2] = { lattidx(pk_rlu[0]), lattidx(pk_rlu[1]) };
-		assign_or_add(get_comp(*Fluc, SIZE, hk[0], hk[1], hk[0], hk[1]), 2.*mat);
+		for(std::size_t k=0; k<3; ++k)
+			for(std::size_t i=0; i<3; ++i)
+				for(std::size_t col=0; col<m_mxstatic->mxsys.evecs.size2(); ++col)
+					D(3*pk_idx + i, col) += 2.*mat(i, k)*m_mxstatic->mxsys.evecs(3*pk_idx + k, col);
 	}
 
-	// M-cross and fluctuation matrix
-	//const int MAXORDER = ORDER + std::max(std::abs(Ghmag), std::abs(Gkmag));
-	const int MAXORDER = ORDER + std::max({ std::abs(Ghmag), std::abs(Gkmag), std::abs(Ghmag - Gkmag) });
-
-	auto mk_2dim = [MAXORDER, Ghmag, Gkmag](const decltype(*Mx)& arr) -> t_mat_cplx
-	{
-		std::vector<t_vec_int> pks = gen_peaks<t_vec_int>(MAXORDER);
-
-		t_mat_cplx mat = tl2::zero_matrix<t_mat_cplx>(3*pks.size(), 3*pks.size());
-		for(std::size_t h_idx=0; h_idx<pks.size(); ++h_idx)
-		{
-			for(std::size_t k_idx=0; k_idx<pks.size(); ++k_idx)
-			{
-				const t_mat_cplx& comp = get_ext_comp(arr, SIZE, ORDER,
-					pks[h_idx][0] + Ghmag, pks[h_idx][1] + Gkmag,
-					pks[k_idx][0] + Ghmag, pks[k_idx][1] + Gkmag);
-				tl2::submatrix_copy(mat, comp, h_idx*3, k_idx*3);
-			}
-		}
-		return mat;
-	};
+	// fluctuation matrix in the Mx eigenvector system
+	t_mat_cplx invsuscept = m_mxstatic->fluc_static + tl2::prod_mm(m_mxstatic->mxsys.evecsH, D);
 
 	// energies and weights
-	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
-		mk_2dim(*Mx) * g_g<t_real> / m_Bc2, mk_2dim(*Fluc),
+	return calc_weights_mxsys<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
+		m_mxstatic->mxsys, invsuscept,
 		projNeutron, m_polMat, g_muB<t_real> * m_Bc2_exp, 1.,
-		minE, maxE, m_eveps, m_evlimit, m_weighteps,
-		m_filterzeroweight, /*m_onlymode*/-1);
+		minE, maxE, m_weighteps,
+		m_filterzeroweight, /*m_onlymode*/-1, 3 * (iterG - m_allpeaks_rlu.begin()));
 }
 
 
@@ -370,10 +403,12 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 	t_quat quatB = tl2::rotation_quat(B, zvec);
 
 	t_vec Pin = tl2::quat_vec_prod(quatB, _Pin);
-	t_quat quatPin = tl2::rotation_quat(Pin, xvec);
-	//t_real anglePinX = std::acos(tl2::inner(Pin, xvec));
-	//t_quat quatPin = tl2::rotation_quat(zvec, -anglePinX);
+	Pin[2] = 0.;
+	if(tl2::veclen(Pin) < m_eps)
+		tl2::log_warn("P || B.");
 
+	//t_quat quatPin = tl2::rotation_quat(Pin, xvec);
+	t_quat quatPin = tl2::rotation_quat<t_quat>(zvec, -std::atan2(Pin[1], Pin[0]));
 	m_rotCoord = quatPin * quatB;
 
 	// check coordinate system
@@ -384,9 +419,9 @@ void Skx<t_real, t_cplx, ORDER>::SetCoords(
 	bool x_ok = tl2::vec_equal<t_vec>(chk_x, xvec, m_eps);
 	bool z_ok = tl2::vec_equal<t_vec>(chk_z, zvec, m_eps);
 	if(!x_ok)
-		std::cerr << "WARNING: Incorrect x trafo: " << chk_x << std::endl;
+		tl2::log_warn("WARNING: Incorrect x trafo: ", chk_x, ".");
 	if(!z_ok)
-		std::cerr << "WARNING: Incorrect z trafo: " << chk_z << std::endl;
+		tl2::log_warn("WARNING: Incorrect z trafo: ", chk_z, ".");
 }
 
 
