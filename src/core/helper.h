@@ -338,7 +338,7 @@ weights_from_eigs(const t_eigs& eigs,
 
 
 /**
- * calculate energies and weights from Landau-Lifshitz M-cross and fluctuation matrices
+ * calculate energies and weights from Landau-Lifshitz (M x) and fluctuation matrices
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
@@ -368,7 +368,7 @@ calc_weights(const t_mat_cplx& Mx, const t_mat_cplx& Fluc,
 
 
 /**
- * calculate energies and weights from a precalculated (cached) M-cross eigensystem
+ * calculate energies and weights from a precalculated M x eigensystem
  * and the fluctuation matrix already transformed into it
  */
 template<class t_mat_cplx, class t_vec_cplx, class t_cplx, class t_real>
