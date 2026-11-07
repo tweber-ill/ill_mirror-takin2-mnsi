@@ -32,7 +32,8 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 
 	// check magic values
 	char magic[4];
-	ifstr.read(magic, sizeof(magic));
+	if(!ifstr.read(magic, sizeof(magic)))
+		return std::make_tuple(false, 0., 0., t_fouriers{}, '-');
 	if(magic[0]!='g' || magic[1]!='s' || magic[2]!='_')
 	{
 		std::cerr << "Error: File \"" << infile << "\""
@@ -51,8 +52,10 @@ load_gs(const std::string& infile, char expected_gs_type = '*')
 	// read temperature and field
 	t_real T_theo = 0.;
 	t_real B_theo = 0.;
-	ifstr.read((char*)&T_theo, sizeof(T_theo));
-	ifstr.read((char*)&B_theo, sizeof(B_theo));
+	if(!ifstr.read((char*)&T_theo, sizeof(T_theo)))
+		return std::make_tuple(false, 0., 0., t_fouriers{}, '-');
+	if(!ifstr.read((char*)&B_theo, sizeof(B_theo)))
+		return std::make_tuple(false, 0., 0., t_fouriers{}, '-');
 
 	// read fourier components
 	t_fouriers fouriers;

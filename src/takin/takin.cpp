@@ -118,7 +118,7 @@ SkxMod::SkxMod()
 	m_heli.SetB(heligs_B, false);
 	m_heli.SetT(28.5, true);
 	m_heli.SetB(0.35, true);
-	m_lf.SetT(28.5);
+	//m_lf.SetT(28.5);
 
 	m_heli.SetFourier(heligs);
 	m_skx.SetFourier(skxgs);
@@ -316,6 +316,9 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 		if(strVar == "proj_neutron")
 		{
 			m_iProjNeutron = tl2::str_to_var<int>(strVal);
+			m_skx.SetProjNeutron(m_iProjNeutron!=0);
+			m_fp.SetProjNeutron(m_iProjNeutron!=0);
+			m_heli.SetProjNeutron(m_iProjNeutron!=0);
 		}
 		else if(strVar == "which_disp")
 		{
@@ -373,7 +376,7 @@ void SkxMod::SetVars(const std::vector<SkxMod::t_var>& vecVars)
 			m_fp.SetT(m_dT, true);
 			m_heli.SetT(m_dT, true);
 			m_skx.SetT(m_dT, true);
-			m_lf.SetT(m_dT);
+			//m_lf.SetT(m_dT);
 		}
 		else if(strVar == "B")
 		{
@@ -497,6 +500,7 @@ SqwBase* SkxMod::shallow_copy() const
 	pMod->m_dhighq = this->m_dhighq;
 	pMod->m_iFilterLowE = this->m_iFilterLowE;
 	pMod->m_iFilterHighq = this->m_iFilterHighq;
+	pMod->m_iOnlyMode = this->m_iOnlyMode;
 
 	return pMod;
 }

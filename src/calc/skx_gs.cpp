@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 		"T_theo", opts::value<decltype(T_theo)>(&T_theo),
 		("theoretical temperature, default: " + std::to_string(T_theo)).c_str()));
 
-	t_real B_theo = 25.052945;
+	t_real B_theo = 23.9283; //25.052945;
 	args.add(boost::make_shared<opts::option_description>(
 		"B_theo", opts::value<decltype(B_theo)>(&B_theo),
 		("theoretical field, default: " + std::to_string(B_theo)).c_str()));

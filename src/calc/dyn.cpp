@@ -287,7 +287,9 @@ static void calc_disp_para_perp(char dyntype, bool do_proj,
 	ofstr << "#\n";
 	ofstr << "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n";
 #ifndef __MINGW32__
-	ofstr << "# User: " << getpwuid(geteuid())->pw_name << "\n";
+	const auto* pwd = getpwuid(geteuid());
+	if(pwd)
+		ofstr << "# User: " << pwd->pw_name << "\n";
 #endif
 	ofstr << "# Calculation time: " << timer.GetDur() << " s.\n";
 	ofstr << "# Skx order: " << DEF_SKX_ORDER << "\n";
@@ -543,7 +545,9 @@ static void calc_disp_path(char dyntype, bool do_proj,
 	ofstr << "#\n";
 	ofstr << "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n";
 #ifndef __MINGW32__
-	ofstr << "# User: " << getpwuid(geteuid())->pw_name << "\n";
+	const auto* pwd = getpwuid(geteuid());
+	if(pwd)
+		ofstr << "# User: " << pwd->pw_name << "\n";
 #endif
 	ofstr << "# Calculation time: " << timer.GetDur() << " s.\n";
 	ofstr << "# Skx order: " << DEF_SKX_ORDER << "\n";

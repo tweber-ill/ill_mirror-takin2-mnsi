@@ -64,7 +64,7 @@ public:
 		if(exp)
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, false);
+			m_Bc2 = get_bc2_exp(m_T);
 		}
 	}
 

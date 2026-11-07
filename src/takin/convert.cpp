@@ -27,14 +27,14 @@ bool convert(
 {
 	std::cout << "Converting data file \"" << filenameDat << "\"..." << std::endl;
 
-	std::ifstream ifDat(filenameDat);
+	std::ifstream ifDat(filenameDat, std::ios::binary);
 	if(!ifDat)
 	{
 		std::cerr << "Error: Cannot open data file \"" << filenameDat << "\"." << std::endl;
 		return false;
 	}
 
-	std::ofstream ofDat(filenameNewDat);
+	std::ofstream ofDat(filenameNewDat, std::ios::binary);
 	if(!ofDat)
 	{
 		std::cerr << "Error: Cannot open output file \"" << filenameNewDat << "\"." << std::endl;
@@ -210,7 +210,7 @@ bool convert(
 
 	std::cout << "\nConverting index file \"" << filenameIdx << "\"..." << std::endl;
 
-	std::ifstream ifIdx(filenameIdx);
+	std::ifstream ifIdx(filenameIdx, std::ios::binary);
 	if(!ifIdx)
 	{
 		std::cerr << "Error: Cannot open index file \"" << filenameIdx << "\"." << std::endl;

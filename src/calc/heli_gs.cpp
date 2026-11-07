@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 		"T_theo", opts::value<decltype(T_theo)>(&T_theo),
 		("theoretical temperature, default: " + std::to_string(T_theo)).c_str()));
 
-	t_real B_theo = 22.5;
+	t_real B_theo = 23.9283; // 22.5;
 	args.add(boost::make_shared<opts::option_description>(
 		"B_theo", opts::value<decltype(B_theo)>(&B_theo),
 		("theoretical field, default: " + std::to_string(B_theo)).c_str()));
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
 	t_real B_exp = 0.171;
 	args.add(boost::make_shared<opts::option_description>(
-		"B_exp", opts::value<decltype(B_theo)>(&B_theo),
+		"B_exp", opts::value<decltype(B_exp)>(&B_exp),
 		("experimental field, default: " + std::to_string(B_exp)).c_str()));
 
 	t_real scale0 = 10.;
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 	if(B_half_BC2)
 		B_theo = bc2/2.;
 	else if(B_from_exp)
-		B_theo = get_B_theo(T_theo, T_exp, B_exp, !HELI_USE_HOC);
+		B_theo = get_B_theo(T_theo, T_exp, B_exp, g_hoc_b<t_real, HELI_USE_HOC>);
 	heli.SetB(B_theo, false);
 
 	// print the table of fourier components
@@ -150,7 +150,14 @@ int main(int argc, char** argv)
 	std::cout << "B_theo = " << B_theo << ", BC2_theo = " << bc2
 		<< ", fraction = " << B_theo/bc2 << std::endl;
 	std::cout << "F_start = " << heli.F() << std::endl;
-	bool ok = heli.minimise(ORDER, 0,1,0, 0,1,1);
+	bool ok = false;
+	const int max_pass = 4;
+	for(int pass = 0; pass < max_pass; ++pass)
+	{
+		ok = heli.minimise(ORDER, 0,1,0, 0,1,1);
+		if(ok)
+			break;
+	}
 	std::cout << "F_min = " << heli.F() << " (ok: " << std::boolalpha << ok << ")" << std::endl;
 
 	std::cout << "\nFourier components for use in heli_default_gs.cxx:\n";

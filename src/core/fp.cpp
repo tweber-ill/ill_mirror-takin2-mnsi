@@ -122,11 +122,13 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 	 * G(x, x') = sum{j} |v_j'> <v_j| / E_j
 	 * with eigenvectors |v_j> and eigenvalues E_j.
 	 */
-	auto get_weights = [this, &projNeutron](const t_vec_cplx& evec, const t_vec_cplx& evec_m) -> auto
+	auto get_weights = [this, &projNeutron](const t_vec_cplx& evec) -> auto
 	{
 		static constexpr t_cplx imag = t_cplx(0, 1);
 
-		t_mat_cplx kernel = tl2::outer<t_vec_cplx, t_mat_cplx>(evec, evec_m);
+		//t_mat_cplx kernel = tl2::outer<t_vec_cplx, t_mat_cplx>(evec, evec_m);
+		t_mat_cplx kernel = tl2::outer_cplx<t_vec_cplx, t_mat_cplx>(evec, evec)
+		  / tl2::mat_elem(evec, m_sigma2, evec);
 		t_mat_cplx weight(3, 3);
 
 		for(int i = 0; i < 3; ++i)
@@ -169,8 +171,8 @@ FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_rea
 		return std::make_tuple(empty, empty, empty, empty, empty);
 	}
 
-	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights( evecs[0], evecs[0]);
-	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs[1], evecs[1]);
+	auto [wAll_p, wSF1_p, wSF2_p, wNSF_p] = get_weights( evecs[0]);
+	auto [wAll_m, wSF1_m, wSF2_m, wNSF_m] = get_weights(-evecs[1]);
 
 
 	std::vector<t_real> Es = {

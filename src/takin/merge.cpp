@@ -29,8 +29,8 @@ int main()
 	// --------------------------------------------------------------------
 
 
-	std::ofstream ofstrMergedIdx(filename + ".idx");
-	std::ofstream ofstrMergedBin(filename + ".bin");
+	std::ofstream ofstrMergedIdx(filename + ".idx", std::ios::binary);
+	std::ofstream ofstrMergedBin(filename + ".bin", std::ios::binary);
 
 	std::size_t offs = 0;
 	for(std::size_t diridx=0; diridx<totaldirs; ++diridx)
@@ -44,7 +44,7 @@ int main()
 
 
 			// correct indices
-			std::ifstream ifstrIdx(filename_idx);
+			std::ifstream ifstrIdx(filename_idx, std::ios::binary);
 			if(!ifstrIdx)
 			{
 				std::cerr << "Could not open \"" << filename_idx << "\"" << std::endl;
@@ -79,7 +79,7 @@ int main()
 
 
 			// add offset (sizes of all previous binary files) to indices
-			std::ifstream ifstrBin(filename_bin);
+			std::ifstream ifstrBin(filename_bin, std::ios::binary);
 			if(!ifstrBin)
 			{
 				std::cerr << "Could not open \"" << filename_bin << "\"" << std::endl;

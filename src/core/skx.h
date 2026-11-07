@@ -98,6 +98,8 @@ public:
 		if(skx.m_mxstatic)
 		{
 			m_mxstatic = std::make_shared<MxStatic>();
+
+			std::lock_guard<std::mutex> _lck(m_mxstatic_mtx);
 			*m_mxstatic = *skx.m_mxstatic;
 		}
 
@@ -121,12 +123,12 @@ public:
 	{
 		if(exp)
 		{
-			m_Bc2_exp = get_bc2(T, !exp, !SKX_USE_HOC);
+			m_Bc2_exp = get_bc2_exp(T);
 		}
 		else
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, !exp, !SKX_USE_HOC);
+			m_Bc2 = get_bc2_theo(m_T, g_hoc_b<t_real, SKX_USE_HOC>);
 		}
 
 		m_mxstatic = nullptr;  // force recalculation of the static part of Mx
@@ -207,7 +209,7 @@ private:
 
 	t_real m_B = 0;
 	t_real m_T = -1000;
-	t_real m_Bc2 = 0;
+	t_real m_Bc2 = get_bc2_theo<t_real>(m_T, g_hoc_b<t_real, SKX_USE_HOC>);
 	t_real m_Bc2_exp = 0.322;
 
 	std::vector<t_vec_cplx> m_fourier{};

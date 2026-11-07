@@ -95,12 +95,12 @@ public:
 		if(exp)
 		{
 			m_T = T;
-			m_Bc2 = get_bc2(m_T, !exp, !HELI_USE_HOC);
+			m_Bc2 = get_bc2_exp(m_T);
 		}
 		else
 		{
 			m_T_theo = T;
-			m_Bc2_theo = get_bc2(m_T_theo, !exp, !HELI_USE_HOC);
+			m_Bc2_theo = get_bc2_theo(m_T_theo, g_hoc_b<t_real, HELI_USE_HOC>);
 		}
 	}
 
@@ -140,7 +140,8 @@ private:
 	t_real m_eps = 1e-5;
 	t_real m_B = 0.2, m_B_theo = 25.;
 	t_real m_T = 27.5, m_T_theo = -1000.;
-	t_real m_Bc2 = 0.3, m_Bc2_theo = 45.;
+	t_real m_Bc2 = 0.3;
+	t_real m_Bc2_theo = get_bc2_theo<t_real>(m_T_theo, g_hoc_b<t_real, HELI_USE_HOC>);
 
 	std::vector<t_vec_cplx> m_fourier{};
 	std::vector<int> m_idx2[3], m_idx3[4];
@@ -149,6 +150,7 @@ private:
 	bool m_filterzeroweight = false;
 	t_real m_eveps = 1e-6;
 	t_real m_weighteps = 1e-6;
+	t_real m_pitch = 1.;
 
 	t_vec m_Grlu{};
 	t_quat m_rotCoord{};

@@ -196,7 +196,14 @@ calc_dynstrucfact_landau_mxsys(const MxEigensys<t_mat_cplx>& sys, const t_mat_cp
 	{
 		t_vec_cplx Mxevec = prod_mv(MxEvecs3, evec);
 		t_mat_cplx emat = outer_cplx<t_vec_cplx, t_mat_cplx>(Mxevec, Mxevec);
+#if MXX_IS_DIAG == 1
+		t_cplx norm = 0.;
+		for(std::size_t comp = 0; comp < evec.size(); ++comp)
+			norm += std::norm(evec[comp]) / sys.Mxx(comp, comp);
+		emat /= norm;
+#else
 		emat /= inner_cplx<t_vec_cplx>(evec, prod_mv(sys.Mxx, evec));
+#endif
 
 		Interactemats.emplace_back(std::move(emat));
 	}

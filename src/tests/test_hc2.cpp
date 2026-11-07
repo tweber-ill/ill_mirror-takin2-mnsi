@@ -16,7 +16,7 @@ int main()
 
 	for(double T = 0.; T < 30.5; T += dT)
 	{
-		double hc2 = get_bc2<double>(T, false);
+		double hc2 = get_bc2_exp<double>(T);
 
 		std::cout 
 			<< std::left << std::setw(10) << T

@@ -56,7 +56,7 @@ Longfluct::t_real Longfluct::S_para(const Longfluct::t_vec& q, Longfluct::t_real
 	t_real S = 0.;
 	for(const t_vec& sat : m_sats)
 	{
-		S += g_kB<t_real> * m_T * m_A /
+		S += /*g_kB<t_real> * m_T **/ m_A /
 		(
 			(m_inv_correl*m_inv_correl + tl2::inner(q-sat, q-sat)) / (kh*kh) +
 			std::pow(m_Gamma*E / Ec2, 2.)

@@ -267,7 +267,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 
 	// map actual (E, w) data
 	const t_real *pBranches = (t_real*)fileDat.map(dat_file_offs+sizeof(iNumBranches), iNumBranches*sizeof(t_real)*4);
-	if(!pMemDat)
+	if(!pBranches)
 	{
 		tl2::log_err("Data file \"", m_strDataFile, "\" cannot be mapped (2).");
 		return std::make_tuple(std::vector<t_real>(), std::vector<t_real>());

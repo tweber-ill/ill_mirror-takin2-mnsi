@@ -134,10 +134,7 @@ t_real Skx<t_real, t_cplx, ORDER>::F()
 	const t_vec_cplx& m0 = m_M(0, 0);
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dipolar interaction involving m0
-	static const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
-	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
-
+	t_cplx cF = 0.;
 	cF += (m_T + 1.) * m0_sq; // m^2 involving m0
 	cF += m0_sq * m0_sq;      // m^4 involving m0
 

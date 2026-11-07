@@ -34,9 +34,9 @@
 template<class t_real, class t_cplx, int ORDER>
 Heli<t_real, t_cplx, ORDER>::Heli()
 {
-	for(int i=0; i<3; ++i)
+	for(int i=0; i<4; ++i)
 	{
-		if(i<2) m_idx2[i].reserve(SIZE * SIZE);
+		if(i<3) m_idx2[i].reserve(SIZE * SIZE);
 		m_idx3[i].reserve(SIZE * SIZE * SIZE);
 	}
 
@@ -79,17 +79,17 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 	const t_vec_cplx& m0 = m_fourier[0];
 	const auto m0_sq = tl2::inner(m0, m0);
 
-	// dipolar interaction involving m0
-	const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
-	t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
-
+	// not needed as fields are already internal
+	//const t_mat_cplx demag = tl2::diag_matrix<t_mat_cplx>({1./3., 1./3., 1./3.});
+	//t_cplx cF = g_chi<t_real> * tl2::inner(m0, tl2::prod_mv(demag, m0));
+	t_cplx cF = 0.;
 	cF += (m_T_theo + 1.) * m0_sq;  // m^2 involving m0
 	cF += m0_sq * m0_sq;            // m^4 involving m0
 
 	const t_real mult = 2.;   // 2 * top peaks
 	for(int i=/*-ORDER*/ 1; i<=ORDER; ++i)
 	{
-		const t_real q = t_real(i); // q_vec = [0, 0, q]
+		const t_real q = t_real(i) * m_pitch; // q_vec = [0, 0, q]
 		const t_real q_sq = q*q;
 
 		const t_vec_cplx& mi = get_comp(m_fourier, i);
@@ -100,7 +100,7 @@ t_real Heli<t_real, t_cplx, ORDER>::F()
 		cF += mult * g_chi<t_real> * mi[2]/**q*/ * mj[2]/**q / q_sq*/;
 
 		// dmi, mi * ([0,0,q] x mj) = mi * (-q*mj[1], q*mj[0], 0])
-		cF += -mult * t_cplx(0., 2.) * (-mi[0]*q*mj[1] + mi[1]*q*mj[0]);
+		cF += -mult * t_cplx(0., 2.) * (-mi[0]*mj[1] + mi[1]*mj[0])*q;
 
 		cF += mult * m_sq * q_sq;             // (del m)^2
 		cF += mult * (m_T_theo + 1.) * m_sq;  // m^2
@@ -160,6 +160,41 @@ void Heli<t_real, t_cplx, ORDER>::SetFourier(const std::vector<t_vec_cplx> &four
 	// add complex conjugate bottom peaks
 	for(std::size_t i=ORDER_FOURIER; i>=1; --i)
 		m_fourier.push_back(tl2::conjugate_vec(m_fourier[i]));
+
+	// optimise pitch
+	const t_real eps = 1e-14;
+	const int NEWTON_ITERS = 32;
+
+	const t_real mult = 2.;
+	t_real M = 0., dmi = 0., hoc = 0.;
+	for(int i=1; i<=ORDER; ++i)
+	{
+		const t_real q = t_real(i);
+		const t_real q_sq = q*q;
+
+		const t_vec_cplx& mi = get_comp(m_fourier, i);
+		const t_vec_cplx mj = tl2::conjugate_vec(mi);
+		const t_real m_sq = tl2::inner(mi, mj).real();
+
+		M += mult * m_sq * q_sq;
+		dmi += (-mult * t_cplx(0., 2.) * (-mi[0]*mj[1] + mi[1]*mj[0]) * q).real();
+		hoc += mult * g_hoc_b<t_real, HELI_USE_HOC> * m_sq * q_sq*q_sq;
+	}
+	if(M <= m_eps)
+		return;
+
+	for(int iter=0; iter<NEWTON_ITERS; ++iter)
+	{
+		const t_real dF = 2.*M*m_pitch + dmi + 4.*hoc*m_pitch*m_pitch*m_pitch;
+		const t_real d2F = 2.*M + 12.*hoc*m_pitch*m_pitch;
+		if(d2F <= 0. || std::abs(d2F) < eps)
+			break;
+
+		const t_real dpitch = dF / d2F;
+		m_pitch -= dpitch;
+		if(std::abs(dpitch) < eps)
+			break;
+	}
 }
 
 
@@ -174,6 +209,10 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	avoid_G(qh, qk, ql, m_eps);
 	ql = -ql;
 
+	const t_real period = m_explicitcalc ? t_real(1) : m_pitch;
+	const int zone = std::clamp(static_cast<int>(std::floor(ql / period)), -ORDER/2, ORDER/2);
+	ql -= t_real(zone) * period;
+
 	constexpr const t_cplx imag = t_cplx(0, 1);
 	t_mat_cplx Mx2d, Fluc2d;
 	t_real w_scale = 1.;
@@ -187,6 +226,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		return g_chi<t_real>/Q_sq * Qi*Qj;
 	};
 
+	t_real pitch_qmin = 1.;
 	if(!m_explicitcalc)  // calculate using ground state magnetisation
 	{
 		// M-cross tensor, p. 67 in [waizner17]
@@ -215,7 +255,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 
 		for(int pk_kh=-ORDER; pk_kh<=ORDER; ++pk_kh)
 		{
-			t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh) });
+			t_vec Q = tl2::make_vec<t_vec>({ qh, qk, ql + t_real(pk_kh)*m_pitch });
 			const t_real Q_sq = tl2::inner(Q, Q);
 
 			t_mat_cplx mat(3, 3);
@@ -260,7 +300,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		Mx2d = mk_2dim(*Mx) / m_Bc2_theo;
 		Fluc2d = mk_2dim(*Fluc);
 		w_scale = 1.;
-		mxrowbegin = 0;
+		mxrowbegin = /*0*/ 3 * rel_to_abs_idx(zone, SIZE);
 		polMat[0] = get_chiralpol<t_mat_cplx>(1);   // SF1
 		polMat[1] = get_chiralpol<t_mat_cplx>(2);   // SF2
 		polMat[2] = get_chiralpol<t_mat_cplx>(3);   // NSF
@@ -269,25 +309,24 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 	{
 #if HELI_USE_HOC != 0
 		constexpr const t_real A1 = g_hoc<t_real>, A2 = A1*A1, A3 = A2*A1;
-		static const t_real D_qmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
+		const t_real D_qmin = (-2.*imag*std::pow(2., 2./3.) * std::pow(3., 5./6.) * A1 *
 			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) /
 			(std::pow(2., 1./3.) * (3.+imag*std::sqrt(3.)) * A1 + std::pow(3., 1./6.) * (std::sqrt(3.)-imag) *
 			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
-		static const t_real pitch_qmin = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
+		pitch_qmin = ((324.*A3 - 9.*imag*(std::sqrt(3.)-imag)*A2*std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) +
 			(3.*imag + std::sqrt(3)) * std::sqrt(t_cplx(A3*(2.+27.*A1))) * std::pow(-54.*A2+6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 1./3.) -
 			A1*(36.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))) -3.*imag*std::pow(3., 1./6.) * std::pow(-18.*A2 + 2.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) +
 			std::pow(-54.*A2 + 6.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))) /
 			(2.*std::pow(2., 1./3.) * std::pow(3., 1./6.) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.) *
 			(std::pow(2., 1./3.) * (-3.*imag+std::sqrt(3.))*A1 - imag*std::pow(3., 1./6) *
 			(-imag+std::sqrt(3.)) * std::pow(-9.*A2+std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.)))).real();
-		static const t_real hoc_qmin = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
+		const t_real hoc_qmin = (std::pow(std::pow(2., 1./3.) * (std::sqrt(3.)-3.*imag) * A1 -
 			imag*std::pow(3., 1./6.)*(std::sqrt(3.)-imag) *
 			std::pow(-9.*A2 + std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.), 2.) /
 			(24.*std::pow(2., 1./3.) * A1*std::pow(-27.*A2+3.*std::sqrt(t_cplx(3.*(A3*(2.+27.*A1)))), 2./3.))).real();
 #else
-		static const t_real D_qmin = 1.;
-		static const t_real pitch_qmin = 1.;
-		static const t_real hoc_qmin = 0.;
+		const t_real D_qmin = 1.;
+		const t_real hoc_qmin = 0.;
 #endif
 
 		const t_real M_amp = m_B / m_Bc2;
@@ -299,7 +338,7 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		Mx2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 		Fluc2d = tl2::zero_m<t_mat_cplx>(3*SIZE, 3*SIZE);
 		w_scale = g_g<t_real>;
-		mxrowbegin = 3 * ORDER;
+		mxrowbegin = 3 * (ORDER + zone);
 
 		for(int pk=0; pk<SIZE; ++pk)
 		{
@@ -351,10 +390,16 @@ Heli<t_real, t_cplx, ORDER>::GetSpecWeights(t_real qh, t_real qk, t_real ql,
 		polMat[2] = get_polmat<t_mat_cplx>(3); // NSF
 	}
 
+#if MXX_IS_DIAG == 1
+	if(m_explicitcalc)
+		w_scale /= 2.*g_g<t_real>;
+#endif
+
 	// energies and weights
 	return calc_weights<t_mat_cplx, t_vec_cplx, t_cplx, t_real>(
 		Mx2d * g_g<t_real>, Fluc2d,
-		projNeutron, polMat, g_muB<t_real> * m_Bc2, w_scale,
+		// the original hoc factor was fitted with the pitch_qmin division not included, so it could be left out
+		projNeutron, polMat, g_muB<t_real> * m_Bc2 / pitch_qmin, w_scale,
 		minE, maxE, m_eveps, -1., m_weighteps,
 		m_filterzeroweight, m_onlymode, mxrowbegin);
 }
@@ -383,6 +428,9 @@ Heli<t_real, t_cplx, ORDER>::GetDisp(t_real h, t_real k, t_real l, t_real minE, 
 	t_vec qrlu = Qrlu - m_Grlu;
 	t_vec qkh = qrlu / g_kh_rlu<t_real>(m_T);
 	qkh = tl2::quat_vec_prod(m_rotCoord, qkh);
+
+	if(!m_explicitcalc)
+		qkh *= m_pitch;
 
 	// orthogonal 1-|Q><Q| projector for neutron scattering
 	t_mat_cplx projNeutron = tl2::unit_m<t_mat_cplx>(3);
