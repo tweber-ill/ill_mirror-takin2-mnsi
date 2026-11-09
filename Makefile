@@ -80,7 +80,7 @@ endif
 #
 STD = -std=c++17
 LIBDEFS = -fPIC
-DEFS = -DDEF_SKX_ORDER=8 -DDEF_HELI_ORDER=8 \
+DEFS = -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=9 \
 	-DNO_MINIMISATION -DNO_REDEFINITIONS \
 	-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 	-D__HACK_FULL_INST__ #-DPLUGIN_APPLI
@@ -223,7 +223,7 @@ bin/heliphase: src/calc/heliphase.cpp src/core/heli.cpp \
 bin/heli_gs: src/calc/heli_gs.cpp \
 	src/core/heli.cpp \
 	src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=8 \
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_HELI_ORDER=9 \
 		-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
@@ -233,7 +233,7 @@ bin/heli_gs: src/calc/heli_gs.cpp \
 bin/skx_gs: src/calc/skx_gs.cpp \
 	src/core/skx.cpp src/core/heli.cpp \
 	src/core/magsys.cpp ext/tlibs2/libs/log.cpp
-	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=8 -DDEF_HELI_ORDER=8 \
+	$(CXX) $(STD) $(OPT) $(INCS) -DDEF_SKX_ORDER=9 -DDEF_HELI_ORDER=9 \
 		-DSKX_USE_HOC=1 -DHELI_USE_HOC=1 \
 		-DNO_REDEFINITIONS -D__HACK_FULL_INST__ \
 		$(LIBDIRS) -o $@ $+ $(LIBBOOSOPTS) \
