@@ -63,6 +63,9 @@ template<class t_real, class t_cplx>
 std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
 FP<t_real, t_cplx>::GetDisp(t_real h, t_real k, t_real l, t_real /*minE*/, t_real /*maxE*/) const
 {
+	t_real eps = 1e-5;
+	avoid_G(h, k, l, eps);
+
 	const t_real dh0_shift = 0.007523;
 	const t_real dh0 = dh0_shift + (m_B - m_Bc2) / m_Bc2;	// for given g_hoc
 

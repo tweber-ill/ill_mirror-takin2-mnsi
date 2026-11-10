@@ -57,7 +57,7 @@ bool circular_mask(
 			t_real angle = std::atan2(y_pos, x_pos);
 
 			bool in_ring = (rad>=rad1 && rad<=rad2);
-			bool in_seg = (angle>=start_angle || angle<=end_angle);
+			bool in_seg = (angle>=start_angle && angle<=end_angle);
 
 			if(has_bckgrd && (!in_ring || !in_seg))
 				continue;

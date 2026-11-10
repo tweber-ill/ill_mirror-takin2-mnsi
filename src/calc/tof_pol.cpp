@@ -87,7 +87,7 @@ process_tof(const fs::path& tof_file, const fs::path& out_file, int foil=3)
 
 	// output file for tof channel counts
 	std::ostringstream cnts_file;
-	cnts_file << out_file.string() << ".cnt";
+	cnts_file << out_file.string() << "_" << foil << ".cnt";
 	std::ofstream ofstr_cnts(cnts_file.str());
 	ofstr_cnts << "#"
 		<< std::setw(15) << std::right << "channel"

@@ -225,7 +225,7 @@ void calc_disp(const t_vec& Gvec,
 		{
 			const t_real angle = angle_begin + t_real(angle_idx)*angle_delta;
 
-			auto calc_task = [q, angle, q_delta, angle_delta,
+			auto calc_task = [q, angle, q_delta, angle_delta, num_qs, num_angles,
 				q_idx, angle_idx, q_oop, Erange, E_min,
 				&Pvec, &Pperpvec, &Bvec, &Gvec,
 				&histWeightsNSF, &histWeightsSF, &histWeightsHeliNSF, &histWeightsHeliSF,
@@ -236,7 +236,11 @@ void calc_disp(const t_vec& Gvec,
 				qvec += q_oop * Bvec;                                                // out of skx plane
 				t_vec Qvec = Gvec + qvec;
 				// approximate the area element of the ring segment
-				t_real area_elem = q * angle_delta * q_delta;
+				t_real area_elem = 1.;
+				if(num_qs > 1)
+					area_elem = q * q_delta;
+				if(num_angles > 1)
+					area_elem *= angle_delta;
 
 				//std::cout << "# Q = (" << Qvec[0] << ", " << Qvec[1] << ", " << Qvec[2] << ")"
 				//	<< ", |q| = " << tl2::veclen(qvec)

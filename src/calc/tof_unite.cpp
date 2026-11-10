@@ -29,7 +29,7 @@ bool unite_tof(const fs::path& united, const std::vector<fs::path>& tofs)
 	// tof file data type for counts
 	using t_data = std::uint32_t;
 
-	std::ofstream ofstr(united.string());
+	std::ofstream ofstr(united.string(), std::ios_base::binary);
 	if(!ofstr)
 		return false;
 	auto sum_data = std::make_unique<std::array<t_data, TOF_COUNT*PSD_WIDTH*PSD_HEIGHT>>();

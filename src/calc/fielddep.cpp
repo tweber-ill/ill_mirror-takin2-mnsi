@@ -176,6 +176,9 @@ int main(int argc, char** argv)
 		{
 			std::cout << "Helimagnon [h], skyrmion [s] or field-polarised [f] dynamics: ";
 			std::cin >> dyntype; dyntype = std::tolower(dyntype);
+			if(dyntype != 's' && dyntype != 'h' && dyntype != 'f')
+				break;
+
 			std::cout << "G = ";
 			std::cin >> Gx >> Gy >> Gz;
 			std::cout << "Q = ";
